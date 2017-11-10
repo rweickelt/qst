@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configurations XML_version="1.2" id="configurations_0">
+<configuration XML_version="1.2" id="configuration_0">
+        <instance XML_version="1.2" desc="Texas Instruments XDS110 USB Debug Probe" href="connections/TIXDS110_Connection.xml" id="Texas Instruments XDS110 USB Debug Probe" xml="TIXDS110_Connection.xml" xmlpath="connections"/>
+        <connection XML_version="1.2" id="Texas Instruments XDS110 USB Debug Probe">
+        	
+        		   <instance XML_version="1.2" href="drivers/tixds510icepick_c.xml" id="drivers" xml="tixds510icepick_c.xml" xmlpath="drivers"/>
+        	
+        		   <instance XML_version="1.2" href="drivers/tixds510cs_dap.xml" id="drivers" xml="tixds510cs_dap.xml" xmlpath="drivers"/>
+        	
+        		   <instance XML_version="1.2" href="drivers/tixds510cortexM.xml" id="drivers" xml="tixds510cortexM.xml" xmlpath="drivers"/>
+        	
+            
+                  <property Type="choicelist" id="dataFileRequired" desc="Board Data File" Value="0">
+  <choice value="auto generate"/>
+  <choice value="auto generate with extra config file">
+    <property Type="filepathfield" Value="" id="dataFileExtraConfig" desc="Extra Config File" Extensions="Config Files (*.dat)|*.dat|All Files (*.*)|*.*||"/>
+  </choice>
+  <choice value="specify custom">
+    <property Type="filepathfield" Value="" id="dataFile" desc="Custom Board.dat file" Extensions="Config Files (*.dat)|*.dat|All Files (*.*)|*.*||"/>
+  </choice>
+</property>
+            
+                  <property Type="choicelist" Value="1" id="Debug Probe Selection">
+  <choice Name="Only one XDS110 installed" value="0"/>
+  <choice Name="Select by serial number" value="0">
+    <property Type="stringfield" Value="L1234" id="-- Enter the serial number"/>
+  </choice>
+</property>
+            
+                  <property id="Power Selection" Type="choicelist" Value="0">
+  <choice Name="Target supplied power" value="0">
+    <property id="Voltage Selection" Type="choicelist" Value="0">
+      <choice Name="Default" value="0"/>
+      <choice Name="User specified value" value="1">
+        <property id="Voltage Level" Type="stringfield" Value=""/>
+      </choice>
+    </property>
+  </choice>
+  <choice Name="Probe supplied power" value="1">
+    <property id="Voltage Level" Type="stringfield" Value=""/>
+  </choice>
+</property>
+            
+                  <property Type="choicelist" Value="0" id="The JTAG TCLK Frequency (MHz)">
+  <choice Name="Fixed default 2.5MHz frequency" value="DEFAULT"/>
+  <choice Name="Fixed with user specified value" value="SPECIFIC">
+    <property Type="stringfield" Value="1.0MHz" id="-- Enter a value from 100.0kHz to 2.5MHz"/>
+  </choice>
+</property>
+            
+                  <property Type="choicelist" Value="1" id="JTAG Signal Isolation">
+  <choice Name="Don't isolate JTAG signals at final disconnect" value="disable"/>
+  <choice Name="Do isolate JTAG signals at final disconnect" value="enable"/>
+</property>
+            
+                  <property id="SWD Mode Settings" desc="JTAG / SWD / cJTAG Mode" Type="choicelist" Value="4">
+  <choice Name="JTAG (1149.1), SWD and cJTAG are disabled" value="nothing"/>
+  <choice Name="SWD Mode - Aux COM port is target UART port" value="nothing"/>
+  <choice Name="SWD Mode - Aux COM port is target TDO pin" value="nothing"/>
+  <choice Name="cJTAG (1149.7) 4-pin standard mode" value="enable"/>
+  <choice Name="cJTAG (1149.7) 2-pin advanced modes" value="enable">
+    <property Type="choicelist" Value="1" id="Target Scan Format">
+      <choice Name="OSCAN1 format - non-adaptive scans" value="oscan1"/>
+      <choice Name="OSCAN2 format - faster transitions" value="oscan2"/>
+    </property>
+    <property id="XDS110 Aux Port" desc="Auxiliary COM Port Connection" Type="choicelist" Value="0">
+      <choice Name="Aux COM port is target UART port" value="aux_uart"/>
+      <choice Name="Aux COM port is target TDO pin" value="tdo_pin"/>
+    </property>
+  </choice>
+</property>
+            
+            <platform XML_version="1.2" id="platform_0">
+                <instance XML_version="1.2" desc="CC1310F128" href="devices/cc1310f128.xml" id="CC1310F128" xml="cc1310f128.xml" xmlpath="devices"/>
+            </platform>
+        </connection>
+    </configuration>
+</configurations>

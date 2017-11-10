@@ -1,0 +1,5 @@
+module ti
+
+UniflashProbe           1.0 UniflashProbe.qml
+FlashProgrammerProbe    1.0 FlashProgrammerProbe.qml
+
