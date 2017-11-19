@@ -98,8 +98,7 @@ quint32 RocHostController::registerObject(RocHostObject* object)
         // Try to connect first
         if (!m_socket.connectToTarget("/dev/ttyACM3"))
         {
-            Console::printError(m_socket.errorString());
-            ::exit(qst::ExitApplicationError);
+            QST_ERROR_AND_EXIT(m_socket.errorString());
         }
         roc::MessageHeader resetMessage;
         resetMessage.type = roc::Reset;
@@ -130,8 +129,7 @@ quint32 RocHostController::registerObject(RocHostObject* object)
         }
         else if (!timeoutTimer.isActive())
         {
-            Console::printError("Target does not respond.");
-            ::exit(qst::ExitApplicationError);
+            QST_ERROR_AND_EXIT("Target does not respond.");
         }
     }
     return m_ids.value(object, 0);

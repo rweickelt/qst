@@ -37,7 +37,6 @@ public:
 
     static void printWarning(const QString& text);
     static void printError(const QString& text);
-    static void printQmlError(const QString& text, const QString& filename);
 
 private:
     Console();

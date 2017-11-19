@@ -74,8 +74,7 @@ public:
     Q_PROPERTY(QString workingDirectory READ workingDirectory CONSTANT)
     Q_PROPERTY(QString message MEMBER m_message)
 
-    void classBegin();
-    void componentComplete();
+    void componentComplete() override;
 
     static TestCase* instance();
 
@@ -105,10 +104,16 @@ protected:
     Q_INVOKABLE void waitUntilExpression(QJSValue expression, int milliseconds, const QString& file, int line);
     Q_INVOKABLE QString qmlCallerFile();
     Q_INVOKABLE QString qmlCallerLine();
+
+    void initTestCase() override;
+
+
     Project* project() const;
 
 public:
     TestCase(QObject *parent = 0);
+    QString errorString() const;
+    bool hasErrors() const;
     qint64 elapsedTime() const;
     Result result() const;
     State state() const;
@@ -139,12 +144,16 @@ private:
     qint64 m_executionTime;
 
     static QPointer<TestCase> m_currentTestCase;
+    QString m_errorString;
 };
 
 Q_DECLARE_METATYPE(TestCase::State)
 QML_DECLARE_TYPEINFO(TestCase, QML_HAS_ATTACHED_PROPERTIES)
 
+inline QString TestCase::errorString() const { return m_errorString; }
+inline bool TestCase::hasErrors() const { return !m_errorString.isEmpty(); }
 inline TestCase::Result TestCase::result() const { return m_result; }
 inline TestCase::State TestCase::state() const { return m_state; }
+
 
 #endif // TESTCASE_H

@@ -24,7 +24,7 @@
 #include "testcase.h"
 #include "testcaseattached.h"
 #include "console.h"
-#include "log.h"
+#include "proxylogger.h"
 #include "project.h"
 #include "qst.h"
 
@@ -48,28 +48,25 @@ TestCase::TestCase(QObject *parent) : Component(parent)
     m_transitionPending = false;
 }
 
-void TestCase::classBegin()
-{
-}
-
 void TestCase::componentComplete()
 {
-    QDir projectWorkDir(project()->workingDirectory());
-    if (!projectWorkDir.exists(m_name))
+    QStringList availableMethods;
+    for (int i = 0; i < metaObject()->methodCount(); i++)
     {
-        if ((!projectWorkDir.mkdir(m_name)))
+        QMetaMethod method = metaObject()->method(i);
+        if (method.methodType() == QMetaMethod::Slot)
         {
-            Console::printError(QString("Could not create working directory '%1'.")
-                                .arg(projectWorkDir.absoluteFilePath(m_name)));
-            ::exit(qst::ExitApplicationError);
+            availableMethods << method.name();
         }
+    }
+    if (!availableMethods.contains("run"))
+    {
+        m_errorString = QString("Test case '%1' does not define a 'run' method.").arg(m_name);
     }
 }
 
 TestCase::Result TestCase::exec()
 {
-    QList<Component*> children = childrenByType<Component>();
-
     for (m_state = Uninitialized; m_state != Destroyed; m_state = m_nextState)
     {
         m_transitionPending = false;
@@ -98,11 +95,6 @@ TestCase::Result TestCase::exec()
             Q_ASSERT(false); // should never reach this point
             break;
         }
-
-        QMetaEnum metaEnum = QMetaEnum::fromType<TestCase::State>();
-        QString state = metaEnum.valueToKey(m_state);
-        QString nextState = metaEnum.valueToKey(m_nextState);
-        log()->printInfo("TestCase", QString("Transitioning from state %1 to %2.").arg(state).arg(nextState));
     }
 
     return m_result;
@@ -110,29 +102,12 @@ TestCase::Result TestCase::exec()
 
 TestCase::State TestCase::unitializedStateFunction()
 {
-//    Console::printToStdOut(QString("# Starting %1").arg(m_name));
     m_result = Unfinished;
 
     m_children = childrenByType<Component>();
     m_children << this;
 
     m_currentTestCase = this;
-
-    QStringList availableMethods;
-    for (int i = 0; i < metaObject()->methodCount(); i++)
-    {
-        QMetaMethod method = metaObject()->method(i);
-        if (method.methodType() == QMetaMethod::Slot)
-        {
-            availableMethods << method.name();
-        }
-    }
-    if (!availableMethods.contains("run"))
-    {
-        Console::printError(QString("Test case '%1' does not define a 'run' method.").arg(m_name));
-        m_result = TestCase::Fail;
-        return TestCase::Destroyed;
-    }
 
     // created() is a signal that even QML children can subscribe.
     for (Component* child : m_children)
@@ -203,18 +178,25 @@ TestCase::State TestCase::cleaningUpTestFunctionStateFunction()
     }
     emit finished();
 
+    LogInfo info;
     switch (m_result)
     {
     case Unfinished:
     case Success:
-        Console::printToStdOut(QString("PASS, %1").arg(this->m_name));
+        info.type = LogInfo::Success;
+        info.test = m_name;
+        info.component = m_name;
+        info.file = m_callerFile;
+        ProxyLogger::instance()->print(info);
         break;
     case Fail:
-        Console::printToStdOut(QString("FAIL, %1, %2:%3, %4")
-                               .arg(m_name)
-                               .arg(m_callerFile)
-                               .arg(m_callerLine)
-                               .arg(m_message));
+        info.type = LogInfo::Fail;
+        info.test = m_name;
+        info.component = m_name;
+        info.file = m_callerFile;
+        info.line = m_callerLine;
+        info.message = m_message;
+        ProxyLogger::instance()->print(info);
         break;
     }
 
@@ -413,4 +395,18 @@ QString TestCase::workingDirectory() const
 {
     return QDir(project()->workingDirectory()).absoluteFilePath(m_name);
 }
+
+void TestCase::initTestCase()
+{
+    QDir projectWorkDir(project()->workingDirectory());
+    if (!projectWorkDir.exists(m_name))
+    {
+        if ((!projectWorkDir.mkdir(m_name)))
+        {
+            QST_ERROR_AND_EXIT(QString("Could not create working directory '%1'.")
+                                .arg(projectWorkDir.absoluteFilePath(m_name)));
+        }
+    }
+}
+
 

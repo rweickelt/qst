@@ -48,7 +48,13 @@ QstTestResults QstTestResults::fromQstOutput(const QByteArray& text)
     QstTestResults results;
 
     QStringList lines = QString::fromLatin1(text).trimmed().split('\n');
-    QRegularExpression parser("^(?<result>\\w+), (?<name>[\\w\\-]+)(, (?<position>.*), (?<message>.*))?$");
+    QRegularExpression parser(
+                "^(?<result>\\w+)"
+                ",\\s*(?<name>[\\w\\-]+)"
+                ",\\s*(?<component>[\\w\\-]*)"
+                "(,\\s*(?<position>.*)"
+                ",\\s*(?<message>.*))?$"
+    );
 
     for (const QString& line : lines)
     {
@@ -58,6 +64,7 @@ QstTestResults QstTestResults::fromQstOutput(const QByteArray& text)
             QstOutput& newEntry = results.m_data[parsed.captured("name")];
             newEntry.result = parsed.captured("result");
             newEntry.name = parsed.captured("name");
+            newEntry.component = parsed.captured("component");
             newEntry.location = parsed.captured("position");
             newEntry.message = parsed.captured("message");
 

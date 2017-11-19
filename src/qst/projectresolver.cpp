@@ -22,7 +22,7 @@
  ** $END_LICENSE$
 ****************************************************************************/
 #include "console.h"
-#include "log.h"
+#include "logger.h"
 #include "projectresolver.h"
 #include "qst.h"
 #include "project.h"
@@ -193,6 +193,14 @@ void ProjectResolver::completeCreate(Item* item)
         for (const auto& error : item->factory->errors())
         {
             m_errors.append(error.toString());
+        }
+    }
+    if (item->qstBaseType == "TestCase")
+    {
+        TestCase* test = static_cast<TestCase*>(item->object.data());
+        if (test->hasErrors())
+        {
+            m_errors.append(test->errorString());
         }
     }
 }

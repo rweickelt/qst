@@ -1,7 +1,7 @@
 #!/bin/bash
 # Various sanity checks, quick & dirty.
 
-for f in $(git diff --cached --name-only | grep -e "\.c\$\|\.cpp\$\|\.h\$\|\.qml\$\|\.rst\$\|\.cfg\$\|\.md\$"); do
+for f in $(git diff --cached --name-only --diff-filter=AM | grep -e "\.c\$\|\.cpp\$\|\.h\$\|\.qml\$\|\.rst\$\|\.cfg\$\|\.md\$"); do
     # No Windows line endings.
     if file "$f" | grep "CRLF" 2>&1 1>/dev/null; then
         wrong_line_ending_files="$wrong_line_ending_files $f"
@@ -16,7 +16,7 @@ done
 
 year=`date +"%Y"`
 copyright_line="Copyright[[:space:]](C)[[:space:]].*${year}.*The[[:space:]]Qst[[:space:]]Project\."
-for f in $(git diff --cached --name-only | grep -e "\.c\$\|\.cpp\$\|\.h\$"); do
+for f in $(git diff --cached --name-only --diff-filter=AM | grep -e "\.c\$\|\.cpp\$\|\.h\$"); do
     # Ensure correct copyright line
     if ! grep -i -e "$copyright_line" $f 2>&1 1>/dev/null; then
         missing_copyright_files="$missing_copyright_files $f"

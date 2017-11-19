@@ -32,6 +32,7 @@ class QByteArray;
 
 struct QstOutput {
     QString name;
+    QString component;
     QString result;
     QString location;
     QString message;
