@@ -21,24 +21,41 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#include "console.h"
+#ifndef LOG_H
+#define LOG_H
 
+#include <QtGlobal>
+#include <QtCore/QFile>
 #include <QtCore/QString>
+#include <QtCore/QTextStream>
 
-
-void Console::printError(const QString& text)
+struct LogInfo
 {
-    printToStdError(text);
-}
+    enum Type {
+        Error,
+        Fail,
+        Info,
+        Success,
+        Warning
+    };
 
-void Console::printToStdOut(const QString& text)
-{
-    fputs(qPrintable(text), stdout);
-    fputs("\n", stdout);
-}
+    QString test;
+    QString component;
+    QString file;
+    int line = 0;
+    QString message;
+    Type type = Info;
+};
 
-void Console::printToStdError(const QString& text)
+
+class Logger
 {
-    fputs(qPrintable(text), stderr);
-    fputs("\n", stdout);
-}
+public:
+    Logger() {}
+    virtual void print(const LogInfo& info) = 0;
+
+private:
+    Q_DISABLE_COPY(Logger)
+};
+
+#endif // LOG_H

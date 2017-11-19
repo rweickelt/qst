@@ -27,10 +27,12 @@
 #include "component.h"
 #include "console.h"
 #include "file.h"
+#include "plaintextlogger.h"
 #include "pinprobe.h"
 #include "processprobe.h"
 #include "project.h"
 #include "projectresolver.h"
+#include "proxylogger.h"
 #include "qst.h"
 #include "testcase.h"
 #include "testcaseattached.h"
@@ -52,7 +54,8 @@ int main(int argc, char *argv[])
     CommandlineParser cli(app.arguments());
     if (cli.hasErrors())
     {
-        Console::printError(cli.errorString());
+        Console::printError(QString("Error: %1").arg(cli.errorString()));
+        Console::printToStdOut(cli.helpText());
         return qst::ExitApplicationError;
     }
 
@@ -69,8 +72,7 @@ int main(int argc, char *argv[])
         Console::printToStdOut(QCoreApplication::applicationVersion());
         return qst::ExitNormal;
     default:
-        Console::printError("Command '%1' not known.");
-        return qst::ExitApplicationError;
+        Q_ASSERT(false);
     }
 }
 
@@ -98,6 +100,9 @@ void execRunCommand()
 
     qmlRegisterSingletonType<Qst>("qst", 1,0, "Qst", &Qst::createSingleInstance);
     qmlRegisterSingletonType<Qst>("qst", 1,0, "File", &File::createSingleInstance);
+
+    PlaintextLogger plaintextLogger;
+    ProxyLogger::instance()->registerLogger(&plaintextLogger);
 
     ProjectResolver resolver(&engine, options->projectFilepath);
     resolver.loadRootFile();

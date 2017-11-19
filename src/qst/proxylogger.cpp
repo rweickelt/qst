@@ -21,63 +21,35 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#include "log.h"
-#include "console.h"
 
-#include <QtCore/QPointer>
+#include "proxylogger.h"
+
+#include <QtCore/QGlobalStatic>
 
 namespace {
-    Log* singleLogInstance = 0;
+    Q_GLOBAL_STATIC(ProxyLogger, singleLoggerObject)
 }
 
-Log* log() {
-    return Log::instance();
-}
-
-/*
-Config object must exist by the time, Log is created.
-*/
-Log::Log()
+ProxyLogger::ProxyLogger()
 {
-    m_level = WarningLevel;
+
 }
 
-Log* Log::instance()
+void ProxyLogger::registerLogger(Logger* logger)
 {
-    if (!singleLogInstance)
+    Q_ASSERT(logger != NULL);
+    m_loggers.append(logger);
+}
+
+void ProxyLogger::print(const LogInfo& info)
+{
+    for (const auto logger : m_loggers)
     {
-        singleLogInstance = new Log();
+        logger->print(info);
     }
-    return singleLogInstance;
 }
 
-
-void Log::printError(const QString& module, const QString& text)
+ProxyLogger* ProxyLogger::instance()
 {
-    if (m_level < ErrorLevel)
-    {
-        return;
-    }
-
-    Console::printToStdError(QString("Error, %1: %2").arg(module, text));
-}
-
-void Log::printInfo(const QString& module, const QString& text)
-{
-    if (m_level < InfoLevel)
-    {
-        return;
-    }
-
-    Console::printToStdError(QString("Info, %1: %2").arg(module, text));
-}
-
-void Log::printWarning(const QString& module, const QString& text)
-{
-    if (m_level < WarningLevel)
-    {
-        return;
-    }
-
-    Console::printToStdError(QString("Warning, %1: %2").arg(module, text));
+    return singleLoggerObject();
 }

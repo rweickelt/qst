@@ -11,7 +11,7 @@ QtApplication {
     Depends { name : "Qt.qml-private"; }
     Depends { name : "shared-types" }
 
-    cpp.cxxLanguageVersion : "c++11"
+    cpp.cxxLanguageVersion : "c++14"
 
     consoleApplication : true
     targetName : "qst"
@@ -27,11 +27,15 @@ QtApplication {
         "console.h",
         "file.cpp",
         "file.h",
-        "log.cpp",
-        "log.h",
+        "logger.cpp",
+        "logger.h",
         "main.cpp",
+        "plaintextlogger.cpp",
+        "plaintextlogger.h",
         "projectresolver.cpp",
         "projectresolver.h",
+        "proxylogger.cpp",
+        "proxylogger.h",
         "qst.cpp",
         "qsterror.cpp",
         "qsterror.h",
@@ -59,7 +63,7 @@ QtApplication {
         "testrunner.cpp",
         "testrunner.h",
         "textfile.cpp",
-        "textfile.h"
+        "textfile.h",
     ]
 
     Group {

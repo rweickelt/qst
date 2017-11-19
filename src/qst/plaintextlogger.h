@@ -21,24 +21,16 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#include "console.h"
+#ifndef PLAINTEXTLOGGER_H
+#define PLAINTEXTLOGGER_H
 
-#include <QtCore/QString>
+#include "logger.h"
 
-
-void Console::printError(const QString& text)
+class PlaintextLogger : public Logger
 {
-    printToStdError(text);
-}
+public:
+    PlaintextLogger();
+    virtual void print(const LogInfo &info) override;
+};
 
-void Console::printToStdOut(const QString& text)
-{
-    fputs(qPrintable(text), stdout);
-    fputs("\n", stdout);
-}
-
-void Console::printToStdError(const QString& text)
-{
-    fputs(qPrintable(text), stderr);
-    fputs("\n", stdout);
-}
+#endif // PLAINTEXTLOGGER_H

@@ -56,22 +56,19 @@ void Project::componentComplete()
         {
             if (!QDir().mkpath(workDirPath))
             {
-                Console::printError(QString("Could not create working directory '%1'.")
+                QST_ERROR_AND_EXIT(QString("Could not create working directory '%1'.")
                                     .arg(workDirPath));
-                ::exit(qst::ExitApplicationError);
             }
         }
         else if (!QFileInfo(workDirPath).isDir())
         {
-            Console::printError(QString("Value of --working-directory is not a valid directory."));
-            ::exit(qst::ExitApplicationError);
+            QST_ERROR_AND_EXIT(QString("Value of --working-directory is not a valid directory."));
         }
         else
         {
             if (!QFileInfo(workDirPath).isWritable())
             {
-                Console::printError(QString("Working directory is not writable."));
-                ::exit(qst::ExitApplicationError);
+                QST_ERROR_AND_EXIT(QString("Working directory is not writable."));
             }
         }
     }
@@ -85,9 +82,8 @@ void Project::componentComplete()
         workDirPath = QDir(QDir::temp()).filePath(workDirName);
         if (!QDir(workDirPath).exists() && !QDir(QDir::temp()).mkdir(workDirName))
         {
-            Console::printError(QString("Could not create temporary directory '%1'.")
+            QST_ERROR_AND_EXIT(QString("Could not create temporary directory '%1'.")
                                 .arg(workDirPath));
-            ::exit(qst::ExitApplicationError);
         }
         m_workingDirectory = workDirPath;
     }

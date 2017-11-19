@@ -34,18 +34,21 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QStringList>
 
+namespace {
+
 const QString metaDescription =
-        "Quick test system %1\n"
+        "Qst %1\n"
         "Usage: qst command [command parameters]\n"
         "\n"
         "Available commands:\n"
         "  help      Shows general help or command-specific help.\n"
-        "  run       Executes one or more test cases. This is the default.\n"
+        "  run       Executes one or more test cases.\n"
         "  version   Diplays version information.\n";
 
 const QString runCommandDescription =
         "Executes one or more test cases.";
 
+}
 
 CommandlineParser::CommandlineParser(QStringList arguments)
 {
@@ -54,9 +57,8 @@ CommandlineParser::CommandlineParser(QStringList arguments)
 
     if (arguments.length() < 2)
     {
-        Console::printError("Too few arguments");
-        Console::printToStdOut(metaDescription);
-        ::exit(qst::ExitApplicationError);
+        m_errorString = "Too few arguments";
+        return;
     }
 
     QString command = arguments.at(1);
@@ -113,9 +115,9 @@ CommandlineParser::CommandlineParser(QStringList arguments)
             QFileInfo projectFilepath = parser.value(projectFilepathOption);
             if (!projectFilepath.exists())
             {
-                Console::printError(QString("Specified project filepath '%1' does not exist.")
-                                   .arg(parser.value(projectFilepathOption)));
-                ::exit(-1);
+                m_errorString = QString("Specified project filepath '%1' does not exist.")
+                        .arg(parser.value(projectFilepathOption));
+                return;
             }
 
             if (projectFilepath.isDir())
@@ -124,15 +126,15 @@ CommandlineParser::CommandlineParser(QStringList arguments)
                 QStringList files = projectDir.entryList(QStringList("*.qml"), QDir::Files);
                 if (files.empty())
                 {
-                    Console::printError(QString("Specified project filepath '%1' does not contain any project file.")
-                                       .arg(parser.value(projectFilepathOption)));
-                    ::exit(-1);
+                    m_errorString = QString("Specified project filepath '%1' does not contain any project file.")
+                            .arg(parser.value(projectFilepathOption));
+                    return;
                 }
                 else if (files.size() > 1)
                 {
-                    Console::printError(QString("Specified project filepath '%1' contains multiple files.")
-                                       .arg(parser.value(projectFilepathOption)));
-                    ::exit(-1);
+                    m_errorString = QString("Specified project filepath '%1' contains multiple files.")
+                            .arg(parser.value(projectFilepathOption));
+                    return;
                 }
                 else
                 {
@@ -154,13 +156,13 @@ CommandlineParser::CommandlineParser(QStringList arguments)
             QStringList files = projectDir.entryList(QStringList("*.qml"), QDir::Files);
             if (files.empty())
             {
-                Console::printError(QString("Current directory does not contain any project file."));
-                ::exit(-1);
+                m_errorString = QString("Current directory does not contain any project file.");
+                return;
             }
             else if (files.size() > 1)
             {
-                Console::printError(QString("Current directory contains multiple qml files."));
-                ::exit(-1);
+                m_errorString = QString("Current directory contains multiple qml files.");
+                return;
             }
             else
             {
@@ -183,22 +185,22 @@ CommandlineParser::CommandlineParser(QStringList arguments)
             {
                 if (!QDir().mkpath(workDirPath))
                 {
-                    Console::printError(QString("Could not create working directory '%1'.")
-                                        .arg(workDirPath));
-                    ::exit(qst::ExitApplicationError);
+                    m_errorString = QString("Could not create working directory '%1'.")
+                            .arg(workDirPath);
+                    return;
                 }
             }
             else if (!QFileInfo(workDirPath).isDir())
             {
-                Console::printError(QString("Value of --working-directory is not a valid directory."));
-                ::exit(qst::ExitApplicationError);
+                m_errorString = QString("Value of --working-directory is not a valid directory.");
+                return;
             }
             else
             {
                 if (!QFileInfo(workDirPath).isWritable())
                 {
-                    Console::printError(QString("Working directory is not writable."));
-                    ::exit(qst::ExitApplicationError);
+                    m_errorString = QString("Working directory is not writable.");
+                    return;
                 }
             }
         }
@@ -210,6 +212,11 @@ CommandlineParser::CommandlineParser(QStringList arguments)
     else if (command == "version")
     {
         m_options->command = ApplicationOptions::VersionCommand;
+    }
+    else
+    {
+        m_errorString = QString("Command '%1' not known.").arg(command);
+        return;
     }
 }
 

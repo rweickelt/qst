@@ -21,39 +21,5 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#ifndef LOG_H
-#define LOG_H
-
-#include <QtGlobal>
-#include <QtCore/QFile>
-#include <QtCore/QTextStream>
-
-class Log
-{
-public:
-    enum LogLevel
-    {
-        SilentLevel = 0,
-        ErrorLevel = 1,
-        WarningLevel = 2,
-        InfoLevel = 3
-    };
-
-    static Log* instance();
-
-    void printError(const QString& module, const QString& text);
-    void printInfo(const QString& module, const QString& text);
-    void printWarning(const QString& module, const QString& text);
-
-private:
-    Log();
-    Q_DISABLE_COPY(Log)
-
-    LogLevel m_level;
-    QFile m_logFile;
-    QTextStream m_logStream;
-};
-
-Log* log();
-
-#endif // LOG_H
+#include "logger.h"
+#include "console.h"

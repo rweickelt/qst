@@ -21,24 +21,24 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#include "console.h"
+#ifndef PROXYLOGGER_H
+#define PROXYLOGGER_H
 
-#include <QtCore/QString>
+#include "logger.h"
 
+#include <QtCore/QList>
 
-void Console::printError(const QString& text)
+class ProxyLogger : public Logger
 {
-    printToStdError(text);
-}
+public:
+    ProxyLogger();
+    void registerLogger(Logger* logger);
+    virtual void print(const LogInfo& info) override;
 
-void Console::printToStdOut(const QString& text)
-{
-    fputs(qPrintable(text), stdout);
-    fputs("\n", stdout);
-}
+    static ProxyLogger* instance();
 
-void Console::printToStdError(const QString& text)
-{
-    fputs(qPrintable(text), stderr);
-    fputs("\n", stdout);
-}
+private:
+    QList<Logger*> m_loggers;
+};
+
+#endif // PROXYLOGGER_H

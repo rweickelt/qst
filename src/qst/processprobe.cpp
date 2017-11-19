@@ -21,7 +21,7 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#include "log.h"
+#include "logger.h"
 #include "processprobe.h"
 #include "qst.h"
 #include "testcase.h"

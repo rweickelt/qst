@@ -21,16 +21,40 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
+#include "console.h"
+#include "proxylogger.h"
 #include "qst.h"
 #include "testcase.h"
 #include "textfile.h"
 
+#include <QtCore/QGlobalStatic>
 #include <QtQml/QJSEngine>
 #include <QtQml/QQmlEngine>
 
-namespace qst
-{
+QJSEngine* Qst::jsEngine;
 
+
+
+namespace qst {
+
+void error(const QString& message)
+{
+    Console::printError(QString("Error: %1").arg(message));
+    ::exit(qst::ExitApplicationError);
+}
+
+void info(const QString& file, int line, const QString& message)
+{
+    LogInfo info {
+        .test = TestCase::instance()->name(),
+        .component = "",
+        .file = file,
+        .line = line,
+        .message = message,
+        .type = LogInfo::Info
+    };
+    ProxyLogger::instance()->print(info);
+}
 
 void verify(bool condition, const QString& file, int line, const QString& message)
 {
@@ -39,11 +63,19 @@ void verify(bool condition, const QString& file, int line, const QString& messag
     }
 }
 
-
+void warning(const QString& file, int line, const QString& message)
+{
+    LogInfo info {
+        .test = TestCase::instance()->name(),
+        .component = "",
+        .file = file,
+        .line = line,
+        .message = message,
+        .type = LogInfo::Warning
+    };
+    ProxyLogger::instance()->print(info);}
 
 }
-
-QJSEngine* Qst::jsEngine;
 
 QObject* Qst::createObject(const QString& typeName, const QVariantMap& arguments)
 {
