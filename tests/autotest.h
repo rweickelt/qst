@@ -22,42 +22,26 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
-#ifndef QSTTESTRESULTS_H
-#define QSTTESTRESULTS_H
+#ifndef AUTOTEST_H
+#define AUTOTEST_H
 
-#include <QtCore/QHash>
-#include <QtCore/QString>
+#include <qsttest.h>
 
-class QByteArray;
+#include <QtCore/QObject>
+#include <QtTest/QtTest>
 
-struct QstOutput {
-    QString name;
-    QString component;
-    QString result;
-    QString location;
-    QString message;
-};
-
-class QstTestResults
+class AutoTest : public QstTest
 {
-public:
-    // We are fine with implicitly created constructors and assignment
+    Q_OBJECT
 
-    static QstTestResults fromQstOutput(const QByteArray& text);
-
-    bool hasFailed(const QString& name) const;
-    bool hasPassed(const QString& name) const;
-    bool contains(const QString& name) const;
-    const QstOutput output(const QString& name) const;
-
-    quint32 failCount() const;
-    quint32 passCount() const;
-
-private:
-    QHash<QString, QstOutput>  m_data;
-    quint32 m_failCount;
-    quint32 m_passCount;
+private slots:
+    void project();
+    void testCase();
+    void testCaseName();
+    void errorHandling();
+    void processProbe();
+    void workingDirectory_data();
+    void workingDirectory();
 };
 
-
-#endif // QSTTESTRESULTS_H
+#endif // AUTOTEST_H

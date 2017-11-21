@@ -21,43 +21,36 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
+#include "qsttest.h"
+#include "qsttestresults.h"
 
-#ifndef QSTTESTRESULTS_H
-#define QSTTESTRESULTS_H
+#include <QtCore/QCoreApplication>
+#include <QtTest/QTest>
 
-#include <QtCore/QHash>
-#include <QtCore/QString>
+#ifndef PROJECTPATH
+#error PROJECTPATH is not defined.
+#endif
 
-class QByteArray;
-
-struct QstOutput {
-    QString name;
-    QString component;
-    QString result;
-    QString location;
-    QString message;
-};
-
-class QstTestResults
+QString QstTest::dataPath(const QString& directory) const
 {
-public:
-    // We are fine with implicitly created constructors and assignment
+    return QDir(PROJECTPATH "/tests/testdata/").absoluteFilePath(directory);
+}
 
-    static QstTestResults fromQstOutput(const QByteArray& text);
+QString QstTest::defaultImportPath() const
+{
+    return QDir(PROJECTPATH "/share/qst/imports/").absolutePath();
+}
 
-    bool hasFailed(const QString& name) const;
-    bool hasPassed(const QString& name) const;
-    bool contains(const QString& name) const;
-    const QstOutput output(const QString& name) const;
+QstTestResults QstTest::execQstRun(const QStringList& arguments)
+{
+    QStringList cmdLine = { "run", "--import", defaultImportPath() };
+    cmdLine += arguments;
+    QDir qstDir(QCoreApplication::applicationDirPath());
+    m_qstProcess.start(qstDir.absoluteFilePath("qst"), cmdLine);
+    if (!m_qstProcess.waitForFinished(500))
+    {
+        m_qstProcess.kill();
+    }
 
-    quint32 failCount() const;
-    quint32 passCount() const;
-
-private:
-    QHash<QString, QstOutput>  m_data;
-    quint32 m_failCount;
-    quint32 m_passCount;
-};
-
-
-#endif // QSTTESTRESULTS_H
+    return QstTestResults::fromQstOutput(m_qstProcess.readAllStandardOutput());
+}

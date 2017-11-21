@@ -21,28 +21,20 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
+#ifndef MANUALTEST_H
+#define MANUALTEST_H
 
-#ifndef BLACKBOXTEST_H
-#define BLACKBOXTEST_H
+#include <qsttest.h>
 
-#include <QObject>
+#include <QtCore/QObject>
 #include <QtTest/QtTest>
 
-class BlackboxTest : public QObject
+class ManualTest : public QstTest
 {
     Q_OBJECT
-public:
-    explicit BlackboxTest(QObject *parent = 0);
 
 private slots:
-    void project();
-    void testCase();
-    void testCaseName();
-    void errorHandling();
-    void processProbe();
-    void workingDirectory_data();
-    void workingDirectory();
     void pinProbe();
 };
 
-#endif // BLACKBOXTEST_H
+#endif // MANUALTEST_H

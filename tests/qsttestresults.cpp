@@ -27,17 +27,6 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QRegularExpression>
 
-#include <QtCore/QDebug>
-
-namespace {
-    QstOutput defaultOutput;
-}
-
-QstTestResults::QstTestResults()
-{
-
-}
-
 bool QstTestResults::contains(const QString& name) const
 {
     return m_data.contains(name);
