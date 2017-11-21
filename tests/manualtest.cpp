@@ -21,43 +21,18 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
+#include "manualtest.h"
+#include <qtest.h>
+#include <qsttestresults.h>
 
-#ifndef QSTTESTRESULTS_H
-#define QSTTESTRESULTS_H
-
-#include <QtCore/QHash>
-#include <QtCore/QString>
-
-class QByteArray;
-
-struct QstOutput {
-    QString name;
-    QString component;
-    QString result;
-    QString location;
-    QString message;
-};
-
-class QstTestResults
+void ManualTest::pinProbe()
 {
-public:
-    // We are fine with implicitly created constructors and assignment
+    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("pinprobe/readwrite.qml") });
+    if (qstProcess().exitCode() != 2)
+    {
+        QFAIL(qstProcess().readAllStandardError());
+    }
+    VERIFY_PASS(results, "readwrite");
+}
 
-    static QstTestResults fromQstOutput(const QByteArray& text);
-
-    bool hasFailed(const QString& name) const;
-    bool hasPassed(const QString& name) const;
-    bool contains(const QString& name) const;
-    const QstOutput output(const QString& name) const;
-
-    quint32 failCount() const;
-    quint32 passCount() const;
-
-private:
-    QHash<QString, QstOutput>  m_data;
-    quint32 m_failCount;
-    quint32 m_passCount;
-};
-
-
-#endif // QSTTESTRESULTS_H
+QTEST_GUILESS_MAIN(ManualTest)
