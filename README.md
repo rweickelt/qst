@@ -1,5 +1,7 @@
 
+[![Build Status](https://travis-ci.org/rweickelt/qst.svg?branch=master)](https://travis-ci.org/rweickelt/qst)
 [![Documentation Status](https://readthedocs.org/projects/qst/badge/?version=latest)](http://qst.readthedocs.io/en/latest/?badge=latest)
+
 
 Qst
 ===

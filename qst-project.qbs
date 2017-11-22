@@ -2,6 +2,7 @@ import qbs
 
 Project {
     name: "qst-test-system"
+
     references : [
         "src/src.qbs",
         "examples/examples.qbs",
@@ -11,8 +12,11 @@ Project {
     ]
 
     qbsSearchPaths: [
-        "qbs"
+        sourceDirectory + "/qbs"
     ]
 
     minimumQbsVersion: "1.6"
+
+    property bool runAutotest: false
+    property bool installTests: false
 }

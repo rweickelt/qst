@@ -1,0 +1,28 @@
+language: cpp
+
+sudo: required
+
+services:
+  - docker
+
+addons:
+  apt:
+    packages:
+      - docker-ce
+
+before_install:
+  - docker build -f docker/Dockerfile -t rweickelt/qst-build .
+
+script:
+  - docker run -v ${PWD}:/data/qst "rweickelt/qst-build" install
+        --file /data/qst/qst-project.qbs
+        --install-root /data/qst/install-root
+        release
+        profile:simplelink_cc13x0
+  - docker run -v ${PWD}:/data/qst "rweickelt/qst-build" install
+        --file /data/qst/qst-project.qbs
+        --install-root /data/qst/install-root
+        release
+        profile:qt5
+        project.runAutotest:true
+  - find install-root/
