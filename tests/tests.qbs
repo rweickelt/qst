@@ -28,8 +28,8 @@ Project {
     QtApplication {
         type: [ "application", "autotest" ]
 
-        name : "autotest"
-        targetName: "autotest"
+        name : "auto"
+        targetName: "qst-auto-test"
         destinationDirectory: "bin"
 
         Depends { name : "Qt.testlib" }
@@ -43,15 +43,17 @@ Project {
             "autotest.h"
         ]
 
-        cpp.defines: base.concat([
-            'PROJECTPATH="' + path + '/../' + '"'
-        ])
+        Group {
+            fileTagsFilter: product.type
+            qbs.install: project.installTests
+            qbs.installDir : "bin"
+        }
     }
 
     QtApplication {
-        type: [ "application", "autotest" ]
-        name : "manualtest"
-        targetName: "manualtest"
+        type: [ "application" ]
+        name : "pinprobe-test"
+        targetName: "qst-pinprobe-test"
         destinationDirectory: "bin"
 
         Depends { name: "Qt.testlib" }
@@ -64,23 +66,21 @@ Project {
             "manualtest.h",
         ]
 
-        cpp.defines: base.concat([
-            'PROJECTPATH="' + path + '/../' + '"'
-        ])
+        Group {
+            fileTagsFilter: product.type
+            qbs.install: project.installTests
+            qbs.installDir : "bin"
+        }
     }
 
     Product {
         type: ["resources"]
         name: "testdata"
         files: ["testdata/**/*"]
+    }
 
-        Export {
-            Depends { name: "cpp" }
-
-            cpp.defines: base.concat([
-                'TESTDATA_PATH="' + path + '/testdata/' + '"'
-            ])
-        }
+    AutotestRunner {
+        builtByDefault: project.runAutotest
     }
 
 }

@@ -25,25 +25,29 @@
 #include "qsttestresults.h"
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QProcessEnvironment>
 #include <QtTest/QTest>
 
 #ifndef PROJECTPATH
 #error PROJECTPATH is not defined.
 #endif
 
+const QDir QstTest::m_dataDirectory =
+        QDir(QProcessEnvironment::systemEnvironment().value(
+                 "PROJECTPATH", PROJECTPATH) + "/tests/testdata/");
+
+const QString QstTest::m_defaultImportPath =
+        QDir(QProcessEnvironment::systemEnvironment().value(
+                 "PROJECTPATH", PROJECTPATH) + "/share/qst/imports/").absolutePath();
+
 QString QstTest::dataPath(const QString& directory) const
 {
-    return QDir(PROJECTPATH "/tests/testdata/").absoluteFilePath(directory);
-}
-
-QString QstTest::defaultImportPath() const
-{
-    return QDir(PROJECTPATH "/share/qst/imports/").absolutePath();
+    return m_dataDirectory.absoluteFilePath(directory);
 }
 
 QstTestResults QstTest::execQstRun(const QStringList& arguments)
 {
-    QStringList cmdLine = { "run", "--import", defaultImportPath() };
+    QStringList cmdLine = { "run", "--import", m_defaultImportPath };
     cmdLine += arguments;
     QDir qstDir(QCoreApplication::applicationDirPath());
     m_qstProcess.start(qstDir.absoluteFilePath("qst"), cmdLine);

@@ -43,6 +43,8 @@ protected:
 
 private:
     QProcess m_qstProcess;
+    static const QDir m_dataDirectory;
+    static const QString m_defaultImportPath;
 };
 
 inline QProcess& QstTest::qstProcess() { return m_qstProcess; }
