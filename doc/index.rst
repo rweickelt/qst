@@ -1,9 +1,11 @@
-Overview
-========
+Qts Documentation
+=================
+
+Qst is a firmware test automation suite for embedded devices.
 
 .. toctree::
-   :hidden:
    :maxdepth: 2
    :caption: Contents:
 
+   tutorial
    reference
