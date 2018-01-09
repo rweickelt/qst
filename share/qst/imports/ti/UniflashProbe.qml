@@ -6,18 +6,17 @@ ProcessProbe {
     property string installPath : "/opt/ti/uniflash_4.2"
     property string programmer
     property string serial
-    property string cpu
+    property string device
     property string file
-    property bool done : false
 
-    program : installPath + "/dslite.sh"
+    program : installPath + "/dslite" + ((Qst.hostOS === "windows") ? ".bat" : ".sh")
 
-    function load() {
-        testCase.verify(File.exists(program), program + " not found. Check 'installPath' property.");
-        testCase.verify(File.exists(file), file + " not found. Check 'file' property.");
+    function flash() {
+        Qst.verify(File.exists(program), program + " not found. Check 'installPath' property.");
+        Qst.verify(File.exists(file), file + " not found. Check 'file' property.");
 
-        var configFilePath = "/tmp/UniFlashProbe"
-                + "-" + cpu
+        var configFilePath = test.workingDirectory + "/UniFlashProbe"
+                + "-" + device
                 + "-" + serial
                 + ".xml";
         var configFile = Qst.createObject("TextFile", { filePath : configFilePath });
@@ -27,7 +26,7 @@ ProcessProbe {
 
         probe.arguments = [
             "--mode",
-            "load",
+            "flash",
             "--config=" + configFilePath,
             probe.file
         ];
@@ -35,11 +34,9 @@ ProcessProbe {
     }
 
     onFinished: {
-        console.warn("bla");
-        testCase.compare(probe.exitCode, 0, "UniflashProbe '" + probe.name
+        Qst.compare(probe.exitCode, 0, "UniflashProbe '" + probe.name
                 + "' exited with " + probe.exitCode
                 + ": " + probe.readAllStandardError() + probe.readAllStandardOutput());
-        probe.done = true;
     }
 
     property string xmlconfig :
@@ -62,7 +59,7 @@ ProcessProbe {
                 </choice>
             </property>
             <platform XML_version=\"1.2\" id=\"platform_0\">
-                <instance XML_version=\"1.2\" desc=\"" + probe.cpu.toUpperCase() + "\" href=\"devices/" + probe.cpu.toLowerCase() + ".xml\" id=\"" + probe.cpu.toUpperCase() + "\" xml=\"" + probe.cpu.toLowerCase() + ".xml\" xmlpath=\"devices\"/>
+                <instance XML_version=\"1.2\" desc=\"" + probe.device.toUpperCase() + "\" href=\"devices/" + probe.device.toLowerCase() + ".xml\" id=\"" + probe.device.toUpperCase() + "\" xml=\"" + probe.device.toLowerCase() + ".xml\" xmlpath=\"devices\"/>
             </platform>
         </connection>
     </configuration>
