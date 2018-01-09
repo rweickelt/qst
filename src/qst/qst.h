@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -27,8 +27,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QString>
 
-class QJSEngine;
-class QQmlEngine;
+class TestCase;
 
 namespace qst {
 
@@ -58,20 +57,21 @@ void warning(const QString& file, int line, const QString& message);
 #define QST_WARNING(message) \
     qst::warning(__FILE__, __LINE__, message)
 
-class Qst : public QObject
+class QstService : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString hostOS READ hostOS)
+    Q_PROPERTY(QString hostOS READ hostOS CONSTANT)
+    Q_PROPERTY(TestCase* currentTestCase READ currentTestCase CONSTANT)
 
 public:
+    QstService(QObject* parent = 0);
+
     Q_INVOKABLE QObject* createObject(const QString& typeName, const QVariantMap& arguments);
+    TestCase* currentTestCase();
     QString hostOS() const;
 
-    static QObject* createSingleInstance(QQmlEngine* engine, QJSEngine* scriptEngine);
-
 private:
-    static QJSEngine* jsEngine;
 };
 
 

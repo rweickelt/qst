@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -27,13 +27,8 @@
 #include "testcase.h"
 #include "textfile.h"
 
-#include <QtCore/QGlobalStatic>
-#include <QtQml/QJSEngine>
+#include <QtCore/QDebug>
 #include <QtQml/QQmlEngine>
-
-QJSEngine* Qst::jsEngine;
-
-
 
 namespace qst {
 
@@ -77,7 +72,11 @@ void warning(const QString& file, int line, const QString& message)
 
 }
 
-QObject* Qst::createObject(const QString& typeName, const QVariantMap& arguments)
+QstService::QstService(QObject *parent) : QObject(parent)
+{
+}
+
+QObject* QstService::createObject(const QString& typeName, const QVariantMap& arguments)
 {
     if (typeName == "TextFile")
     {
@@ -85,7 +84,7 @@ QObject* Qst::createObject(const QString& typeName, const QVariantMap& arguments
         TextFile::OpenMode openMode =
                 qvariant_cast<TextFile::OpenMode>(arguments.value("openMode", TextFile::ReadWrite));
         QString codec = arguments.value("codec", "UTF-8").toString();
-        return new TextFile(jsEngine, filePath, openMode, codec);
+        return new TextFile(qmlEngine(this), filePath, openMode, codec);
     }
     else
     {
@@ -93,16 +92,25 @@ QObject* Qst::createObject(const QString& typeName, const QVariantMap& arguments
     }
 }
 
-QString Qst::hostOS() const
+TestCase* QstService::currentTestCase()
 {
-    return QSysInfo::kernelType();
+    return TestCase::instance();
 }
 
 
-QObject* Qst::createSingleInstance(QQmlEngine* engine, QJSEngine* scriptEngine)
+QString QstService::hostOS() const
 {
-    Q_UNUSED(engine);
-    jsEngine = scriptEngine;
-
-    return new Qst();
+    QString kernel = QSysInfo::kernelType();
+    if (kernel == "winnt")
+    {
+        return "windows";
+    }
+    else if (kernel == "darwin")
+    {
+        return QSysInfo::productType();
+    }
+    else
+    {
+        return kernel;
+    }
 }

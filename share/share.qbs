@@ -18,9 +18,10 @@ Product {
             "AbstractConstraint.qml",
             "DurationConstraint.qml",
             "PropertyValueSequence.qml",
-            "Qst.js",
+            "Qst.qml",
             "qmldir",
             "SignalTrigger.qml",
+            "qst_internal.js",
         ]
 
         fileTags : ["qst resources"]

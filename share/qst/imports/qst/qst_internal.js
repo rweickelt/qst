@@ -1,42 +1,3 @@
-
-function waitUntil(expression, milliseconds) {
-    if (typeof(expression) !== "function") {
-        var message = "expression must be a function";
-        test.finishAndExit(TestCase.Fail, test.qmlCallerFile(), test.qmlCallerLine(), message);
-    }
-
-    test.waitUntilExpression(Qt.binding(expression), milliseconds, test.qmlCallerFile(), test.qmlCallerLine());
-}
-
-// Waits a given time
-function wait(milliseconds) {
-    test.waitMilliseconds(milliseconds, test.qmlCallerFile(), test.qmlCallerLine());
-}
-
-// Verifies that 'condition' is true. Otherwise the
-// test case is aborted with 'message'.
-function verify(condition, message) {
-    if (condition === false) {
-        if (message === undefined) {
-            message = "verify() failed";
-        }
-        test.finishAndExit(TestCase.Fail, test.qmlCallerFile(), test.qmlCallerLine(), message);
-    }
-}
-
-function compare(actual, expected, message) {
-    var act = internal_formatValue(actual)
-    var exp = internal_formatValue(expected)
-    var success = internal_compare(actual, expected)
-
-    if (success === false) {
-        if (message === undefined) {
-            message = "Compared values are not the same";
-        }
-        test.finishAndExit(TestCase.Fail, test.qmlCallerFile(), test.qmlCallerLine(), message);
-    }
-}
-
 // Determine what is o.
 //
 // Code has been taken from qmltest framework.
@@ -45,7 +6,7 @@ function compare(actual, expected, message) {
 // Discussions and reference: http://philrathe.com/articles/equiv
 // Test suites: http://philrathe.com/tests/equiv
 // Author: Philippe Rathé <prathe@gmail.com>
-function internal_typeof(o) {
+function typeOf(o) {
     if (typeof o === "undefined") {
         return "undefined";
 
@@ -104,7 +65,7 @@ function internal_typeof(o) {
 // Discussions and reference: http://philrathe.com/articles/equiv
 // Test suites: http://philrathe.com/tests/equiv
 // Author: Philippe Rathé <prathe@gmail.com>
-function internal_compare(act, exp) {
+function compare(act, exp) {
     var success = false;
 
     if (act === exp) {
@@ -112,7 +73,7 @@ function internal_compare(act, exp) {
     } else if (act === null || exp === null || typeof act === "undefined" || typeof exp === "undefined") {
         success = false; // don't lose time with error prone cases
     } else {
-        var typeExp = internal_typeof(exp), typeAct = internal_typeof(act)
+        var typeExp = typeOf(exp), typeAct = typeOf(act)
 
         if (typeExp !== typeAct) {
             // allow object vs string comparison (e.g. for colors)
@@ -138,11 +99,11 @@ function internal_compare(act, exp) {
                 success = true
             }
         } else if (typeExp === "array") {
-            success = internal_compareArrays(act, exp)
+            success = compareArrays(act, exp)
         } else if (typeExp === "object") {
-            success = internal_compareObjects(act, exp)
+            success = compareObjects(act, exp)
         } else if (typeExp === "declarativeitem") {
-            success = internal_compareObjects(act, exp) // @todo improve comparison of declarative items
+            success = compareObjects(act, exp) // @todo improve comparison of declarative items
         } else if (typeExp === "vector3d") {
             success = (Math.abs(act.x - exp.x) <= 0.00001 &&
                        Math.abs(act.y - exp.y) <= 0.00001 &&
@@ -161,7 +122,7 @@ function internal_compare(act, exp) {
 
 // Code has been taken from qmltest framework.
 // http://code.qt.io/cgit/qt-labs/qtest-qml.git/
-function internal_compareObjects(act, exp) {
+function compareObjects(act, exp) {
     var i;
     var eq = true; // unless we can proove it
     var aProperties = [], bProperties = []; // collection of strings
@@ -174,7 +135,7 @@ function internal_compareObjects(act, exp) {
     for (i in act) { // be strict: don't ensures hasOwnProperty and go deep
         aProperties.push(i); // collect act's properties
 
-        if (!internal_compare(act[i], exp[i])) {
+        if (!compare(act[i], exp[i])) {
             eq = false;
             break;
         }
@@ -185,19 +146,19 @@ function internal_compareObjects(act, exp) {
     }
 
     // Ensures identical properties name
-    return eq && internal_compare(aProperties.sort(), bProperties.sort());
+    return eq && compare(aProperties.sort(), bProperties.sort());
 
 }
 
 // Code has been taken from qmltest framework.
 // http://code.qt.io/cgit/qt-labs/qtest-qml.git/
-function internal_compareArrays(actual, expected) {
+function compareArrays(actual, expected) {
     if (actual.length != expected.length) {
         return false
     }
 
     for (var i = 0, len = actual.length; i < len; i++) {
-        if (!internal_compare(actual[i], expected[i])) {
+        if (!compare(actual[i], expected[i])) {
             return false
         }
     }
@@ -207,7 +168,7 @@ function internal_compareArrays(actual, expected) {
 
 // Code has been taken from qmltest framework.
 // http://code.qt.io/cgit/qt-labs/qtest-qml.git/
-function internal_formatValue(value) {
+function formatValue(value) {
     if (typeof value == "object") {
         if ("x" in value && "y" in value && "z" in value) {
             return "Qt.vector3d(" + value.x + ", " +

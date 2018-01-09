@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -95,11 +95,11 @@ void execRunCommand()
     qmlRegisterType<PinProbe>("qst", 1,0, "PinProbe");
     qmlRegisterType<ProcessProbe>("qst", 1,0, "ProcessProbe");
     qmlRegisterType<Project>("qst", 1,0, "Project");
+    qmlRegisterType<QstService>("qst", 1, 0, "QstService");
 
     qRegisterMetaType<TestCase::State>();
 
-    qmlRegisterSingletonType<Qst>("qst", 1,0, "Qst", &Qst::createSingleInstance);
-    qmlRegisterSingletonType<Qst>("qst", 1,0, "File", &File::createSingleInstance);
+    qmlRegisterSingletonType<File>("qst", 1,0, "File", &File::createSingleInstance);
 
     PlaintextLogger plaintextLogger;
     ProxyLogger::instance()->registerLogger(&plaintextLogger);
