@@ -4,7 +4,7 @@ Component {
     id : component
     name : "child-component"
 
-    TestCase.onStarted: {
+    Testcase.onStarted: {
         Qst.verify(false, "must fail");
     }
 }

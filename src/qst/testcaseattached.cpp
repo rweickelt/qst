@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -23,6 +23,6 @@
 ****************************************************************************/
 #include "testcaseattached.h"
 
-TestCaseAttached::TestCaseAttached(QObject *parent) : QObject(parent)
+TestcaseAttached::TestcaseAttached(QObject *parent) : QObject(parent)
 {
 }

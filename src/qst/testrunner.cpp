@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -27,7 +27,7 @@
 
 #include <QtCore/QCoreApplication>
 
-TestRunner::TestRunner(const QList<QPointer<TestCase> >& testCases)
+TestRunner::TestRunner(const QList<QPointer<Testcase> >& testCases)
 {
     m_testCases = testCases;
 }
@@ -39,7 +39,7 @@ void TestRunner::execTestCases()
         m_results << m_testCases[index]->exec();
     }
 
-    if (m_results.contains(TestCase::Fail))
+    if (m_results.contains(Testcase::Fail))
     {
         QCoreApplication::exit(qst::ExitTestCaseFailed);
     }

@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -26,7 +26,7 @@
 
 #include <QtCore/QObject>
 
-class TestCaseAttached : public QObject
+class TestcaseAttached : public QObject
 {
     Q_OBJECT
 public:
@@ -38,7 +38,7 @@ signals:
     void finished();
 
 public:
-    explicit TestCaseAttached(QObject *parent = 0);
+    explicit TestcaseAttached(QObject *parent = 0);
 
 public slots:
 };

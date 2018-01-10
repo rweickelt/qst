@@ -41,7 +41,7 @@ void error(const QString& message)
 void info(const QString& file, int line, const QString& message)
 {
     LogInfo info {
-        .test = TestCase::instance()->name(),
+        .test = Testcase::instance()->name(),
         .component = "",
         .file = file,
         .line = line,
@@ -54,14 +54,14 @@ void info(const QString& file, int line, const QString& message)
 void verify(bool condition, const QString& file, int line, const QString& message)
 {
     if (!condition) {
-        TestCase::instance()->finishAndExit(TestCase::Fail, file, line, message);
+        Testcase::instance()->finishAndExit(Testcase::Fail, file, line, message);
     }
 }
 
 void warning(const QString& file, int line, const QString& message)
 {
     LogInfo info {
-        .test = TestCase::instance()->name(),
+        .test = Testcase::instance()->name(),
         .component = "",
         .file = file,
         .line = line,
@@ -92,9 +92,9 @@ QObject* QstService::createObject(const QString& typeName, const QVariantMap& ar
     }
 }
 
-TestCase* QstService::currentTestCase()
+Testcase* QstService::currentTestcase()
 {
-    return TestCase::instance();
+    return Testcase::instance();
 }
 
 

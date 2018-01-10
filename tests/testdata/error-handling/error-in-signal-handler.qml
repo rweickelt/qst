@@ -1,12 +1,12 @@
 import qst 1.0
 
-TestCase {
+Testcase {
     id : testCase
     name : "error-in-signal-handler"
 
     function run() { }
 
-    TestCase.onFinished: {
+    Testcase.onFinished: {
         nonExistingVariable = 0;
     }
 }

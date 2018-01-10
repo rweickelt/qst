@@ -1,7 +1,7 @@
 import qst 1.0
 import QtQml 2.2
 
-TestCase {
+Testcase {
     id : testCase
     name : "verify-fail-in-component-signal-handler"
 

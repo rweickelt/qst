@@ -14,7 +14,7 @@ The firmware is bundled with Qst in the subfolder share/qst/firmware/.
 import qst 1.0
 import ti 1.0
 
-TestCase {
+Testcase {
     id: base
     name: "install-launchpad-probe"
 

@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -32,7 +32,7 @@
 #include <QtQml/QQmlListProperty>
 #include <QtQml/QQmlParserStatus>
 
-class TestCase;
+class Testcase;
 
 class Component : public QObject, public QQmlParserStatus
 {
@@ -41,7 +41,7 @@ class Component : public QObject, public QQmlParserStatus
     Q_DISABLE_COPY(Component)
     Q_CLASSINFO("DefaultProperty", "children")
 
-    friend class TestCase;
+    friend class Testcase;
 
     Q_PROPERTY(QQmlListProperty<QObject> children READ children CONSTANT)
     Q_PROPERTY(QString name READ name WRITE setName)
@@ -49,7 +49,7 @@ class Component : public QObject, public QQmlParserStatus
 public:
     explicit Component(QObject* parent = 0);
     QQmlListProperty<QObject> children();
-    TestCase* testCase();
+    Testcase* testCase();
 
     template <typename T>
     QList<T*> childrenByType() const;

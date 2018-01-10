@@ -3,7 +3,7 @@ Project Item
 
 ..  cpp:class:: Project
 
-    A container item for multiple :cpp:class:`TestCase` items.
+    A container item for multiple :cpp:class:`Testcase` items.
 
 ..  cpp:namespace:: Testcase
 

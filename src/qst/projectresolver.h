@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -72,7 +72,7 @@ public:
     bool hasErrors() const;
 
     void loadRootFile();
-    QList<QPointer<TestCase> > testcases() const;
+    QList<QPointer<Testcase> > testcases() const;
 
 private:
     Item beginCreate(const QString& filepath);
@@ -87,7 +87,7 @@ private:
     QStringList m_filepaths;
     QPointer<Project> m_project;
     QString m_rootFilepath;
-    QList<QPointer<TestCase> > m_testCases;
+    QList<QPointer<Testcase> > m_testCases;
 };
 
 inline QStringList ProjectResolver::errors() const

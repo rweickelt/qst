@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -34,14 +34,14 @@ QQmlListProperty<QObject> Component::children()
     return QQmlListProperty<QObject>(this, m_children);
 }
 
-TestCase* Component::testCase()
+Testcase* Component::testCase()
 {
     for (QObject* currentObject = this; currentObject != NULL;
          currentObject = currentObject->parent())
     {
-        if (currentObject->metaObject()->inherits(&TestCase::staticMetaObject))
+        if (currentObject->metaObject()->inherits(&Testcase::staticMetaObject))
         {
-            return qobject_cast<TestCase*>(currentObject);
+            return qobject_cast<Testcase*>(currentObject);
         }
     }
     Q_ASSERT(false);

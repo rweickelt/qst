@@ -7,15 +7,15 @@ QstService {
     function waitUntil(expression, milliseconds) {
         if (typeof(expression) !== "function") {
             var message = "expression must be a function";
-            currentTestCase.finishAndExit(TestCase.Fail, currentTestCase.qmlCallerFile(), currentTestCase.qmlCallerLine(), message);
+            currentTestcase.finishAndExit(Testcase.Fail, currentTestcase.qmlCallerFile(), currentTestcase.qmlCallerLine(), message);
         }
 
-        currentTestCase.waitUntilExpression(Qt.binding(expression), milliseconds, currentTestCase.qmlCallerFile(), currentTestCase.qmlCallerLine());
+        currentTestcase.waitUntilExpression(Qt.binding(expression), milliseconds, currentTestcase.qmlCallerFile(), currentTestcase.qmlCallerLine());
     }
 
     // Waits a given time
     function wait(milliseconds) {
-        currentTestCase.waitMilliseconds(milliseconds, currentTestCase.qmlCallerFile(), currentTestCase.qmlCallerLine());
+        currentTestcase.waitMilliseconds(milliseconds, currentTestcase.qmlCallerFile(), currentTestcase.qmlCallerLine());
     }
 
     // Verifies that 'condition' is true. Otherwise the
@@ -25,7 +25,7 @@ QstService {
             if (message === undefined) {
                 message = "verify() failed";
             }
-            currentTestCase.finishAndExit(TestCase.Fail, currentTestCase.qmlCallerFile(), currentTestCase.qmlCallerLine(), message);
+            currentTestcase.finishAndExit(Testcase.Fail, currentTestcase.qmlCallerFile(), currentTestcase.qmlCallerLine(), message);
         }
     }
 
@@ -38,7 +38,7 @@ QstService {
             if (message === undefined) {
                 message = "Compared values are not the same";
             }
-            currentTestCase.finishAndExit(TestCase.Fail, currentTestCase.qmlCallerFile(), currentTestCase.qmlCallerLine(), message);
+            currentTestcase.finishAndExit(Testcase.Fail, currentTestcase.qmlCallerFile(), currentTestcase.qmlCallerLine(), message);
         }
     }
 }

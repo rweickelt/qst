@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -37,12 +37,12 @@
 #include "component.h"
 
 class Project;
-class TestCaseAttached;
+class TestcaseAttached;
 
-class TestCase : public Component
+class Testcase : public Component
 {
     Q_OBJECT
-    Q_DISABLE_COPY(TestCase)
+    Q_DISABLE_COPY(Testcase)
 
     friend class ProjectResolver;
     friend class TestRunner;
@@ -76,7 +76,7 @@ public:
 
     void componentComplete() override;
 
-    static TestCase* instance();
+    static Testcase* instance();
 
 signals:
     // Emitted after the test case constructor has been finished.
@@ -92,7 +92,7 @@ signals:
     void finished();
 
 public slots:
-    void finishAndExit(TestCase::Result result, const QString& file = "", int line = 0, const QString& message = "");
+    void finishAndExit(Testcase::Result result, const QString& file = "", int line = 0, const QString& message = "");
 
 
 protected slots:
@@ -111,7 +111,7 @@ protected:
     Project* project() const;
 
 public:
-    TestCase(QObject *parent = 0);
+    Testcase(QObject *parent = 0);
     QString errorString() const;
     bool hasErrors() const;
     qint64 elapsedTime() const;
@@ -119,7 +119,7 @@ public:
     State state() const;
     QString workingDirectory() const;
 
-    static TestCaseAttached* qmlAttachedProperties(QObject *);
+    static TestcaseAttached* qmlAttachedProperties(QObject *);
 
 private:
     State unitializedStateFunction();
@@ -143,17 +143,17 @@ private:
     QElapsedTimer m_timer;
     qint64 m_executionTime;
 
-    static QPointer<TestCase> m_currentTestCase;
+    static QPointer<Testcase> m_currentTestCase;
     QString m_errorString;
 };
 
-Q_DECLARE_METATYPE(TestCase::State)
-QML_DECLARE_TYPEINFO(TestCase, QML_HAS_ATTACHED_PROPERTIES)
+Q_DECLARE_METATYPE(Testcase::State)
+QML_DECLARE_TYPEINFO(Testcase, QML_HAS_ATTACHED_PROPERTIES)
 
-inline QString TestCase::errorString() const { return m_errorString; }
-inline bool TestCase::hasErrors() const { return !m_errorString.isEmpty(); }
-inline TestCase::Result TestCase::result() const { return m_result; }
-inline TestCase::State TestCase::state() const { return m_state; }
+inline QString Testcase::errorString() const { return m_errorString; }
+inline bool Testcase::hasErrors() const { return !m_errorString.isEmpty(); }
+inline Testcase::Result Testcase::result() const { return m_result; }
+inline Testcase::State Testcase::state() const { return m_state; }
 
 
 #endif // TESTCASE_H

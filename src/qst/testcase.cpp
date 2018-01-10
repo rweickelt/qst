@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -37,9 +37,9 @@
 #include <private/qv4engine_p.h>
 #include <private/qv8engine_p.h>
 
-QPointer<TestCase> TestCase::m_currentTestCase;
+QPointer<Testcase> Testcase::m_currentTestCase;
 
-TestCase::TestCase(QObject *parent) : Component(parent)
+Testcase::Testcase(QObject *parent) : Component(parent)
 {
     m_state = Uninitialized;
     m_nextState = Uninitialized;
@@ -48,7 +48,7 @@ TestCase::TestCase(QObject *parent) : Component(parent)
     m_transitionPending = false;
 }
 
-void TestCase::componentComplete()
+void Testcase::componentComplete()
 {
     QStringList availableMethods;
     for (int i = 0; i < metaObject()->methodCount(); i++)
@@ -65,7 +65,7 @@ void TestCase::componentComplete()
     }
 }
 
-TestCase::Result TestCase::exec()
+Testcase::Result Testcase::exec()
 {
     for (m_state = Uninitialized; m_state != Destroyed; m_state = m_nextState)
     {
@@ -100,7 +100,7 @@ TestCase::Result TestCase::exec()
     return m_result;
 }
 
-TestCase::State TestCase::unitializedStateFunction()
+Testcase::State Testcase::unitializedStateFunction()
 {
     m_result = Unfinished;
 
@@ -112,7 +112,7 @@ TestCase::State TestCase::unitializedStateFunction()
     // created() is a signal that even QML children can subscribe.
     for (Component* child : m_children)
     {
-        QObject* attached = qmlAttachedPropertiesObject<TestCase>(child, false);
+        QObject* attached = qmlAttachedPropertiesObject<Testcase>(child, false);
         if (attached != NULL)
         {
             m_attachedObjects << attached;
@@ -125,9 +125,9 @@ TestCase::State TestCase::unitializedStateFunction()
 }
 
 
-TestCase::State TestCase::initingTestCaseStateFunction()
+Testcase::State Testcase::initingTestCaseStateFunction()
 {
-    this->connect(qmlEngine(this), &QQmlEngine::warnings, this, &TestCase::onQmlEngineWarnings);
+    this->connect(qmlEngine(this), &QQmlEngine::warnings, this, &Testcase::onQmlEngineWarnings);
 
     for (auto child : m_children)
     {
@@ -137,7 +137,7 @@ TestCase::State TestCase::initingTestCaseStateFunction()
     return InitingTestFunction;
 }
 
-TestCase::State TestCase::initingTestFunctionStateFunction()
+Testcase::State Testcase::initingTestFunctionStateFunction()
 {
     for (auto child : m_children)
     {
@@ -147,7 +147,7 @@ TestCase::State TestCase::initingTestFunctionStateFunction()
     return Running;
 }
 
-TestCase::State TestCase::runningStateFunction()
+Testcase::State Testcase::runningStateFunction()
 {
     for (auto attached : m_attachedObjects)
     {
@@ -170,7 +170,7 @@ TestCase::State TestCase::runningStateFunction()
     return CleaningUpTestFunction;
 }
 
-TestCase::State TestCase::cleaningUpTestFunctionStateFunction()
+Testcase::State Testcase::cleaningUpTestFunctionStateFunction()
 {
     for (auto attached : m_attachedObjects)
     {
@@ -203,7 +203,7 @@ TestCase::State TestCase::cleaningUpTestFunctionStateFunction()
     return CleaningUpTestCase;
 }
 
-TestCase::State TestCase::cleaningUpTestCaseStateFunction()
+Testcase::State Testcase::cleaningUpTestCaseStateFunction()
 {
     // If nothing else has determined the result until now,
     // then it must be successful.
@@ -218,7 +218,7 @@ TestCase::State TestCase::cleaningUpTestCaseStateFunction()
     }
     emit destruction();
 
-    this->disconnect(qmlEngine(this), &QQmlEngine::warnings, this, &TestCase::onQmlEngineWarnings);
+    this->disconnect(qmlEngine(this), &QQmlEngine::warnings, this, &Testcase::onQmlEngineWarnings);
 
     return Destroyed;
 }
@@ -229,7 +229,7 @@ Aborts the test case and sets the test case result to result.
 
 This function is to be called from C++ code.
 */
-void TestCase::finishAndExit(TestCase::Result result, const QString& file, int line, const QString& message)
+void Testcase::finishAndExit(Testcase::Result result, const QString& file, int line, const QString& message)
 {
 
     // This seems to be the only way to inject an exception in the Qml engine from C++ context.
@@ -242,18 +242,18 @@ void TestCase::finishAndExit(TestCase::Result result, const QString& file, int l
 
     switch (result)
     {
-    case TestCase::Fail:
-        engine->throwError(QString("TestCase::Fail"));
+    case Testcase::Fail:
+        engine->throwError(QString("Testcase::Fail"));
         break;
         // More results, i.e. Skip?
     default:
         // Should never be called with result = Success or anything else.
-        Q_ASSERT_X(false, "TestCase::finishAndExit()", message.toLocal8Bit());
+        Q_ASSERT_X(false, "Testcase::finishAndExit()", message.toLocal8Bit());
         break;
     }
 }
 
-void TestCase::waitUntilExpression(QJSValue expression, int milliseconds, const QString& file, int line)
+void Testcase::waitUntilExpression(QJSValue expression, int milliseconds, const QString& file, int line)
 {
     m_callerFile = file;
     m_callerLine = line;
@@ -274,7 +274,7 @@ void TestCase::waitUntilExpression(QJSValue expression, int milliseconds, const 
             }
             else if (!timer.isActive())
             {
-                TestCase::instance()->finishAndExit(TestCase::Fail,  __FILE__, __LINE__, "timeout");
+                Testcase::instance()->finishAndExit(Testcase::Fail,  __FILE__, __LINE__, "timeout");
                 return;
             }
         }
@@ -300,7 +300,7 @@ void TestCase::waitUntilExpression(QJSValue expression, int milliseconds, const 
     }
 }
 
-qint64 TestCase::elapsedTime() const
+qint64 Testcase::elapsedTime() const
 {
     if (m_timer.isValid())
     {
@@ -315,7 +315,7 @@ qint64 TestCase::elapsedTime() const
 }
 
 
-void TestCase::waitMilliseconds(int milliseconds, const QString& file, int line)
+void Testcase::waitMilliseconds(int milliseconds, const QString& file, int line)
 {
     m_callerFile = file;
     m_callerLine = line;
@@ -324,7 +324,7 @@ void TestCase::waitMilliseconds(int milliseconds, const QString& file, int line)
     eventLoop.exec();
 }
 
-QString TestCase::qmlCallerFile()
+QString Testcase::qmlCallerFile()
 {
     QV4::ExecutionEngine *engine = QV8Engine::getV4(qmlEngine(this)->handle());
     QV4::StackTrace trace = engine->stackTrace(2);
@@ -332,7 +332,7 @@ QString TestCase::qmlCallerFile()
     return frame.source;
 }
 
-QString TestCase::qmlCallerLine()
+QString Testcase::qmlCallerLine()
 {
     QV4::ExecutionEngine *engine = QV8Engine::getV4(qmlEngine(this)->handle());
     QV4::StackTrace trace = engine->stackTrace(2);
@@ -345,7 +345,7 @@ QString TestCase::qmlCallerLine()
 This slot is invoked whenever an exception in the QML engine observes
 an exception.
 */
-void TestCase::onQmlEngineWarnings(const QList<QQmlError> &warnings)
+void Testcase::onQmlEngineWarnings(const QList<QQmlError> &warnings)
 {
     Q_ASSERT(warnings.size() == 1);
 
@@ -354,7 +354,7 @@ void TestCase::onQmlEngineWarnings(const QList<QQmlError> &warnings)
 
     const QQmlError& error = warnings.first();
 
-    if (error.description() != "Error: TestCase::Fail")
+    if (error.description() != "Error: Testcase::Fail")
     {
         // Exception caused by QML code. This includes syntax and reference errors.
         // We need to store heritage information here.
@@ -369,34 +369,34 @@ void TestCase::onQmlEngineWarnings(const QList<QQmlError> &warnings)
     // QML functions.
     if (engine->callDepth > 0)
     {
-        engine->throwError("TestCase::Fail");
+        engine->throwError("Testcase::Fail");
     }
 }
 
-TestCaseAttached* TestCase::qmlAttachedProperties(QObject* object)
+TestcaseAttached* Testcase::qmlAttachedProperties(QObject* object)
 {
-    return new TestCaseAttached(object);
+    return new TestcaseAttached(object);
 }
 
-Project* TestCase::project() const
+Project* Testcase::project() const
 {
     Project* project = qvariant_cast<Project*>(qmlContext(this)->contextProperty("project"));
     Q_ASSERT(project != NULL);
     return project;
 }
 
-TestCase* TestCase::instance()
+Testcase* Testcase::instance()
 {
     Q_ASSERT(!m_currentTestCase.isNull());
     return m_currentTestCase.data();
 }
 
-QString TestCase::workingDirectory() const
+QString Testcase::workingDirectory() const
 {
     return QDir(project()->workingDirectory()).absoluteFilePath(m_name);
 }
 
-void TestCase::initTestCase()
+void Testcase::initTestCase()
 {
     QDir projectWorkDir(project()->workingDirectory());
     if (!projectWorkDir.exists(m_name))

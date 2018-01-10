@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -36,14 +36,14 @@ class TestRunner : public QObject
 {
     Q_OBJECT
 public:
-    TestRunner(const QList<QPointer<TestCase> >& testCases);
+    TestRunner(const QList<QPointer<Testcase> >& testCases);
 
 public slots:
     void execTestCases();
 
 private:
-    QList<QPointer<TestCase> > m_testCases;
-    QList<TestCase::Result> m_results;
+    QList<QPointer<Testcase> > m_testCases;
+    QList<Testcase::Result> m_results;
 };
 
 #endif // TESTCASERUNNER_H

@@ -1,13 +1,13 @@
 import qst 1.0
 
-TestCase {
+Testcase {
     id : testCase
     name : "verify-fail-attached-signal"
 
     function run() { }
 
     Component {
-        TestCase.onStarted : {
+        Testcase.onStarted : {
             verify(false, "must fail")
         }
     }

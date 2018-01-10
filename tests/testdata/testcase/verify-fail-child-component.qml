@@ -1,6 +1,6 @@
 import qst 1.0
 
-TestCase {
+Testcase {
     id : tc
     name : "verify-fail-child-component"
 

@@ -27,7 +27,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QString>
 
-class TestCase;
+class Testcase;
 
 namespace qst {
 
@@ -62,13 +62,13 @@ class QstService : public QObject
     Q_OBJECT
 
     Q_PROPERTY(QString hostOS READ hostOS CONSTANT)
-    Q_PROPERTY(TestCase* currentTestCase READ currentTestCase CONSTANT)
+    Q_PROPERTY(Testcase* currentTestcase READ currentTestcase CONSTANT)
 
 public:
     QstService(QObject* parent = 0);
 
     Q_INVOKABLE QObject* createObject(const QString& typeName, const QVariantMap& arguments);
-    TestCase* currentTestCase();
+    Testcase* currentTestcase();
     QString hostOS() const;
 
 private:

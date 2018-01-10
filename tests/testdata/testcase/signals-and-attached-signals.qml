@@ -2,7 +2,7 @@ import qst 1.0
 import QtQml 2.2 as QtQml
 
 
-TestCase {
+Testcase {
     id : testCase
     name : "signals-and-attached-signals"
 
@@ -45,11 +45,11 @@ TestCase {
     }
 
     Component {
-        TestCase.onStarted : {
+        Testcase.onStarted : {
             observedExecutionPath = observedExecutionPath.concat("component.onStarted");
         }
 
-        TestCase.onFinished : {
+        Testcase.onFinished : {
             observedExecutionPath = observedExecutionPath.concat("component.onFinished");
         }
     }

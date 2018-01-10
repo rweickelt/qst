@@ -1,6 +1,6 @@
 import qst 1.0
 
-TestCase {
+Testcase {
     name : "wait"
 
     property int waitTime : 50

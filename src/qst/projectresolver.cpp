@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -53,9 +53,9 @@ void ProjectResolver::loadRootFile()
         return;
     }
 
-    if (rootItem.qstBaseType == "TestCase")
+    if (rootItem.qstBaseType == "Testcase")
     {
-        TestCase* testCase = qobject_cast<TestCase*>(rootItem.object);
+        Testcase* testCase = qobject_cast<Testcase*>(rootItem.object);
         // Stand-alone test case. We need a default Project component
         // to satisfy minimum requirements.
         Item projectComponent = this->createDefaultProjectComponent();
@@ -106,9 +106,9 @@ void ProjectResolver::loadRootFile()
             unresolved.append(makeAbsolute(references,
                     item.context->contextProperty("path").toString()));
         }
-        else if (item.qstBaseType == "TestCase")
+        else if (item.qstBaseType == "Testcase")
         {
-            m_testCases.append(qobject_cast<TestCase*>(item.object));
+            m_testCases.append(qobject_cast<Testcase*>(item.object));
             item.context->setContextProperty("project", m_project);
             item.context->setContextProperty("test", item.object);
         }
@@ -161,19 +161,19 @@ ProjectResolver::Item ProjectResolver::beginCreate(const QString& filepath)
     {
         item.qstBaseType = "Project";
     }
-    else if (item.object->metaObject()->inherits(&TestCase::staticMetaObject))
+    else if (item.object->metaObject()->inherits(&Testcase::staticMetaObject))
     {
-        item.qstBaseType = "TestCase";
+        item.qstBaseType = "Testcase";
         if (item.object->property("name").toString().isEmpty())
         {
-            m_errors.append(QString("TestCase component in %1 must define a unique name.").arg(filepath));
+            m_errors.append(QString("Testcase component in %1 must define a unique name.").arg(filepath));
             item.state = Item::Invalid;
             return item;
         }
     }
     else
     {
-        m_errors.append(QString("The type %1 is not allowed as root component in %2. Allowed types are Project, TestCase")
+        m_errors.append(QString("The type %1 is not allowed as root component in %2. Allowed types are Project, Testcase")
                         .arg(item.object->metaObject()->className())
                         .arg(filepath));
         item.state = Item::Invalid;
@@ -195,9 +195,9 @@ void ProjectResolver::completeCreate(Item* item)
             m_errors.append(error.toString());
         }
     }
-    if (item->qstBaseType == "TestCase")
+    if (item->qstBaseType == "Testcase")
     {
-        TestCase* test = static_cast<TestCase*>(item->object.data());
+        Testcase* test = static_cast<Testcase*>(item->object.data());
         if (test->hasErrors())
         {
             m_errors.append(test->errorString());
@@ -221,7 +221,7 @@ ProjectResolver::Item ProjectResolver::createDefaultProjectComponent()
     return project;
 }
 
-QList<QPointer<TestCase> > ProjectResolver::testcases() const
+QList<QPointer<Testcase> > ProjectResolver::testcases() const
 {
     return m_testCases;
 }

@@ -90,14 +90,14 @@ void execRunCommand()
     }
 
     qmlRegisterType<Component>("qst", 1,0, "Component");
-    qmlRegisterType<TestCase>("qst", 1,0, "TestCase");
-    qmlRegisterType<TestCaseAttached>();
+    qmlRegisterType<Testcase>("qst", 1,0, "Testcase");
+    qmlRegisterType<TestcaseAttached>();
     qmlRegisterType<PinProbe>("qst", 1,0, "PinProbe");
     qmlRegisterType<ProcessProbe>("qst", 1,0, "ProcessProbe");
     qmlRegisterType<Project>("qst", 1,0, "Project");
     qmlRegisterType<QstService>("qst", 1, 0, "QstService");
 
-    qRegisterMetaType<TestCase::State>();
+    qRegisterMetaType<Testcase::State>();
 
     qmlRegisterSingletonType<File>("qst", 1,0, "File", &File::createSingleInstance);
 

@@ -1,7 +1,7 @@
 import qst 1.0
 
 // An empty test function should make the test pass.
-TestCase {
+Testcase {
     id : testCase
     name : "empty-run-function"
 
