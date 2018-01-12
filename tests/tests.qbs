@@ -52,8 +52,8 @@ Project {
 
     QtApplication {
         type: [ "application" ]
-        name : "pinprobe-test"
-        targetName: "qst-pinprobe-test"
+        name : "launchpad-probe-test"
+        targetName: "qst-launchpad-probe-test"
         destinationDirectory: "bin"
 
         Depends { name: "Qt.testlib" }
@@ -62,8 +62,8 @@ Project {
         consoleApplication: true
 
         files : [
-            "manualtest.cpp",
-            "manualtest.h",
+            "launchpadprobetest.cpp",
+            "launchpadprobetest.h",
         ]
 
         Group {

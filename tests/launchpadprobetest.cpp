@@ -21,11 +21,11 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#include "manualtest.h"
+#include "launchpadprobetest.h"
 #include <qtest.h>
 #include <qsttestresults.h>
 
-void ManualTest::pinProbe()
+void LaunchpadProbeTest::pinProbe()
 {
     QstTestResults results = execQstRun(QStringList{ "-f", dataPath("pinprobe/readwrite.qml") }, 100000);
     if (qstProcess().exitCode() != 0)
@@ -35,4 +35,4 @@ void ManualTest::pinProbe()
     VERIFY_PASS(results, "readwrite");
 }
 
-QTEST_GUILESS_MAIN(ManualTest)
+QTEST_GUILESS_MAIN(LaunchpadProbeTest)

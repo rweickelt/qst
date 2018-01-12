@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -21,15 +21,15 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#ifndef MANUALTEST_H
-#define MANUALTEST_H
+#ifndef LAUNCHPADPROBETEST_H
+#define LAUNCHPADPROBETEST_H
 
 #include <qsttest.h>
 
 #include <QtCore/QObject>
 #include <QtTest/QtTest>
 
-class ManualTest : public QstTest
+class LaunchpadProbeTest : public QstTest
 {
     Q_OBJECT
 
@@ -37,4 +37,4 @@ private slots:
     void pinProbe();
 };
 
-#endif // MANUALTEST_H
+#endif // LAUNCHPADPROBETEST_H
