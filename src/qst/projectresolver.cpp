@@ -157,6 +157,10 @@ ProjectResolver::Item ProjectResolver::beginCreate(const QString& filepath)
 
     Q_ASSERT(!item.object.isNull());
 
+    if (item.object->metaObject()->inherits(&Component::staticMetaObject))
+    {
+        qobject_cast<Component*>(item.object)->setFilepath(filepath);
+    }
     if (item.object->metaObject()->inherits(&Project::staticMetaObject))
     {
         item.qstBaseType = "Project";

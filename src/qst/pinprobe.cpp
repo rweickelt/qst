@@ -105,6 +105,15 @@ void PinProbe::cleanupTestFunction()
 
 void PinProbe::initTestCase()
 {
+    for (const auto& probe : testCase()->childrenByType<PinProbe>())
+    {
+        if ((probe->m_ioid == m_ioid) && (probe != this))
+        {
+            qst::error(QString("Conflicting ioid between PinProbe '%1' and '%2' in %3.")
+                       .arg(this->name()).arg(probe->name()).arg(testCase()->filepath()));
+        }
+    }
+
     quint32 config = m_ioid;
     switch (m_type)
     {
