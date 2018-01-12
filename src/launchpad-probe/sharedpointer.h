@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -68,25 +68,26 @@ template<typename T>
 SharedPointer<T>::SharedPointer(T* data)
 {
     m_data = data;
-    this->incrementRefCount();
+    if (m_data)
+    {
+        this->incrementRefCount();
+    }
 }
 
 template<typename T>
 SharedPointer<T>::SharedPointer(const SharedPointer<T>& other)
 {
     m_data = other.m_data;
-    this->incrementRefCount();
+    if (m_data)
+    {
+        this->incrementRefCount();
+    }
 }
 
 template<typename T>
 SharedPointer<T>& SharedPointer<T>::operator=(const SharedPointer<T>& other)
 {
-    if (m_data)
-    {
-        decrementRefCount();
-    }
-    m_data = const_cast<T*>(other.data());
-    incrementRefCount();
+    reset(other.data());
     return *this;
 }
 

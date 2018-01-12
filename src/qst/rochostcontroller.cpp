@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -29,20 +29,15 @@
 #include "rochostcontroller.h"
 #include "qst.h"
 
-class SingleMpiHost : public RocHostController
-{
-public:
-    SingleMpiHost() {}
-};
+namespace {
+    QMap<QString, QPointer<RocHostController> > controllers;
+}
 
-Q_GLOBAL_STATIC(SingleMpiHost, singleHostInstance)
-
-quint32 instances = 0;
-
-RocHostController::RocHostController() : QObject()
+RocHostController::RocHostController(const QString& port) : QObject()
 {
     m_connected = false;
     m_currentObject = NULL;
+    m_port = port;
 
     QObject::connect(
                 &m_socket, &StpSocket::readyRead,
@@ -54,8 +49,11 @@ RocHostController::RocHostController() : QObject()
 RocHostController* RocHostController::instance(const QString& port)
 {
     Q_UNUSED(port);
-    RocHostController* host = singleHostInstance();
-    host->m_port = port;
+    if (!controllers.contains(port))
+    {
+        controllers.insert(port, QPointer<RocHostController>(new RocHostController(port)));
+    }
+    RocHostController* host = controllers.value(port).data();
     return host;
 }
 
@@ -63,7 +61,6 @@ RocHostController* RocHostController::instance(const QString& port)
 void RocHostController::parseMessage(QByteArray message)
 {
     roc::MessageHeader header;
-
     Q_ASSERT(static_cast<quint32>(message.length()) >= sizeof(roc::MessageHeader));
     memcpy(&header, message.data(), sizeof(roc::MessageHeader));
     Q_ASSERT(header.payloadLength == (message.length() - sizeof(roc::MessageHeader)));
@@ -96,7 +93,7 @@ quint32 RocHostController::registerObject(RocHostObject* object)
     if (!m_connected)
     {
         // Try to connect first
-        if (!m_socket.connectToTarget("/dev/ttyACM3"))
+        if (!m_socket.connectToTarget(m_port))
         {
             QST_ERROR_AND_EXIT(m_socket.errorString());
         }

@@ -23,7 +23,7 @@ Project {
 
         cpp.cxxLanguageVersion: "c++14"
 
-        qbs.optimization: "small"
+        qbs.optimization: "none"
 
         files: [
             "arraylist.h",

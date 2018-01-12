@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -71,14 +71,18 @@ enum {
 ArrayList<RocTargetObject*, 32> probes;
 
 extern "C" const Event_Handle applicationEvent;
+extern "C" const Mailbox_Handle rxMailbox;
 extern "C" const Task_Handle mainTask;
 
-Mailbox<SharedPointer<MessageBuffer>, 4> rxMailbox;
+SerialInterface serial;
 
-SerialInterface serial(&rxMailbox);
-
-void constructObject(const roc::MessageHeader& header);
+void constructObject(roc::ClassId classId);
 void processMessage(SharedPointer<MessageBuffer> message);
+
+void __assert_func(const char *, int, const char *, const char *)
+{
+    for (;;);
+}
 
 void breakpoint()
 {
@@ -102,11 +106,14 @@ extern "C" void mainTaskFunction()
 
         if (events & MessageReceived)
         {
-            assert(rxMailbox.pendingMessages() > 0);
-            SharedPointer<MessageBuffer> rxMessageBuffer;
-            rxMailbox.pend(rxMessageBuffer, BIOS_WAIT_FOREVER);
-            processMessage(rxMessageBuffer);
-            rxMessageBuffer.decrementRefCount();
+            while (Mailbox_getNumPendingMsgs(rxMailbox) > 0)
+            {
+                MessageBuffer* data;
+                Mailbox_pend(rxMailbox, &data, BIOS_WAIT_FOREVER);
+                SharedPointer<MessageBuffer> rxMessageBuffer(data);
+                processMessage(rxMessageBuffer);
+                rxMessageBuffer.decrementRefCount();
+            }
         }
     }
 }
@@ -121,16 +128,16 @@ void processMessage(SharedPointer<MessageBuffer> message)
     {
         for (int32_t i = 0; i < probes.length(); i++)
         {
+            assert(probes[i] != NULL);
             delete probes[i];
         }
         probes.clear();
 
-        SharedPointer<MessageBuffer> txMessage =
-                SharedPointer<MessageBuffer>(new MessageBuffer(
-                                                 sizeof(roc::MessageHeader) + sizeof(stp::MessageHeader),
-                                                 sizeof(stp::MessageHeader))
-                                             );
-        roc::MessageHeader* txRocHeader = txMessage->allocateAtBack<roc::MessageHeader>();
+        SharedPointer<MessageBuffer> txMessage(new MessageBuffer(
+                    sizeof(roc::MessageHeader) + sizeof(stp::MessageHeader),
+                    sizeof(roc::MessageHeader) + sizeof(stp::MessageHeader)));
+
+        roc::MessageHeader* txRocHeader = txMessage->allocateAtFront<roc::MessageHeader>();
         txRocHeader->type = roc::Reset;
         txRocHeader->objectId = 47;
         txRocHeader->payloadLength = 0;
@@ -138,12 +145,14 @@ void processMessage(SharedPointer<MessageBuffer> message)
     }
         break;
     case roc::Construct:
-        constructObject(rxRocHeader);
+        constructObject(static_cast<roc::ClassId>(rxRocHeader.classId));
         break;
     case roc::SerializedData:
+        // Todo: Validate object after connection reset
         reinterpret_cast<RocTargetObject*>(rxRocHeader.objectId)->deserialize(message->data());
         break;
     case roc::CallMethod:
+        // Todo: Validate object after connection reset
         reinterpret_cast<RocTargetObject*>(rxRocHeader.objectId)->parseMessage(rxRocHeader.methodId, message->data());
         break;
     default:
@@ -151,7 +160,9 @@ void processMessage(SharedPointer<MessageBuffer> message)
     }
 }
 
-void constructObject(const roc::MessageHeader& header)
+int count = 0;
+
+void constructObject(roc::ClassId classId)
 {
     SharedPointer<MessageBuffer> reply =
             SharedPointer<MessageBuffer>(new MessageBuffer(
@@ -159,9 +170,8 @@ void constructObject(const roc::MessageHeader& header)
                                              sizeof(roc::MessageHeader) + sizeof(stp::MessageHeader))
                                          );
     roc::MessageHeader* txRocHeader = reply->allocateAtFront<roc::MessageHeader>();
-
     RocTargetObject* object;
-    switch (header.classId)
+    switch (classId)
     {
     case roc::PinClass:
         object = new PinTargetObject();
@@ -202,8 +212,6 @@ int main(void)
     /* Call driver init functions. */
     Board_initGeneral();
     UART_init();
-
-    Mailbox_Params params;
 
     BIOS_start();
     return (0);

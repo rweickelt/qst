@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <assert.h>
 
+#include <ti/sysbios/knl/Event.h>
 #include <ti/sysbios/knl/Mailbox.h>
 #include <ti/sysbios/BIOS.h>
 
@@ -38,6 +39,7 @@ template<typename T>
 class Mailbox<T, 0>
 {
 public:
+    int32_t freeMessages() const;
     int32_t pendingMessages() const;
     bool post(const T& item, uint32_t timeout = BIOS_WAIT_FOREVER);
     bool pend(T& item, uint32_t timeout = BIOS_WAIT_FOREVER);
@@ -51,22 +53,34 @@ template<typename T, uint32_t elements>
 class Mailbox : public Mailbox<T,0>
 {
 public:
-    Mailbox();
+    Mailbox(const Event_Handle event = NULL, uint32_t readerEventId = 0);
 
 private:
-    char m_data[sizeof(T)][elements];
+    char m_data[elements][sizeof(T)];
 };
 
 
 template<typename T>
 Mailbox<T,0>::Mailbox(uint32_t elements)
 {
-    Mailbox_construct(&m_mailbox, sizeof(T), elements, NULL, NULL);
 }
 
 template<typename T, uint32_t elements>
-Mailbox<T, elements>::Mailbox() : Mailbox<T,0>(elements)
+Mailbox<T, elements>::Mailbox(const Event_Handle readerEvent, uint32_t readerEventId) : Mailbox<T,0>(elements)
 {
+    Mailbox_Params params;
+    Mailbox_Params_init(&params);
+    params.buf = &m_data[0];
+    params.bufSize = sizeof(m_data);
+    params.readerEvent = readerEvent;
+    params.readerEventId = readerEventId;
+    Mailbox_construct(&this->m_mailbox, sizeof(T), elements, &params, NULL);
+}
+
+template<typename T>
+int32_t Mailbox<T,0>::freeMessages() const
+{
+    return Mailbox_getNumFreeMsgs(Mailbox_handle(const_cast<Mailbox_Struct*>(&m_mailbox)));
 }
 
 template<typename T>
@@ -84,7 +98,7 @@ bool Mailbox<T,0>::post(const T& item, uint32_t timeout)
 template<typename T>
 bool Mailbox<T,0>::pend(T& item, uint32_t timeout)
 {
-    return Mailbox_post(Mailbox_handle(&m_mailbox), &item, timeout);
+    return Mailbox_pend(Mailbox_handle(&m_mailbox), &item, timeout);
 }
 
 #endif // MAILBOX_H

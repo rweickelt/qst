@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -45,7 +45,7 @@ class MessageBuffer;
 class SerialInterface
 {
 public:
-    SerialInterface(Mailbox<SharedPointer<MessageBuffer> >* rxMailbox);
+    SerialInterface();
     ~SerialInterface();
 
     bool open();
@@ -69,8 +69,7 @@ private:
     RxState m_rxState;
     uint32_t m_rxDelimitersReceived;
     UART_Handle m_uart;
-    bool m_txActive;
-    Mailbox<SharedPointer<MessageBuffer> >* m_rxMailbox;
+    volatile bool m_txActive;
     Queue_Struct m_txQueue;
     GateSwi_Struct m_txGate;
     SharedPointer<MessageBuffer> m_rxBuffer;

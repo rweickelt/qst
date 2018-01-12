@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -32,16 +32,17 @@
 #include <ti/drivers/uart/UARTCC26XX.h>
 #include <ti/sysbios/BIOS.h>
 
+extern "C" Mailbox_Handle rxMailbox;
+
 // Message handling
 namespace {
     SerialInterface* instance = NULL;
 }
 
-SerialInterface::SerialInterface(Mailbox<SharedPointer<MessageBuffer> >* rxMailbox)
+SerialInterface::SerialInterface()
 {
     m_uart = NULL;
     m_txActive = false;
-    m_rxMailbox = rxMailbox;
     instance = this;
 
     GateSwi_construct(&m_txGate, NULL);
@@ -76,6 +77,7 @@ bool SerialInterface::open()
 void SerialInterface::startRx()
 {
     m_rxState = RxDelimiter;
+    m_rxDelimitersReceived = 0;
 
     UART_read(m_uart, &m_rxHeader, 1);
 }
@@ -94,7 +96,6 @@ void SerialInterface::onUartBytesReceived(size_t bytes)
         } else {
             m_rxDelimitersReceived++;
         }
-
         if (m_rxDelimitersReceived == stp::MessageHeader::DelimiterLength) {
             m_rxDelimitersReceived = 0;
             nextState = RxHeader;
@@ -127,18 +128,24 @@ void SerialInterface::onUartBytesReceived(size_t bytes)
         }
         break;
     case RxPayload:
-        // Todo: Check data integrity
-        assert(m_rxHeader.checksum == 0x47);
-
-        nextState = RxHeader;
-
-        assert(m_rxMailbox->pendingMessages() > 0);
-        m_rxBuffer.incrementRefCount();
-        m_rxMailbox->post(m_rxBuffer, BIOS_NO_WAIT);
-        m_rxBuffer.reset();
-
+        // Todo: Don't fake data integrity check
+        if (m_rxHeader.checksum != 0x47)
+        {
+            m_rxBuffer.reset();
+            nextState = RxDelimiter;
+            bytesNeeded = 1;
+        }
+        else
+        {
+            assert(Mailbox_getNumFreeMsgs(rxMailbox) > 0);
+            m_rxBuffer.incrementRefCount();
+            MessageBuffer* data = m_rxBuffer.data();
+            Mailbox_post(rxMailbox, &data, BIOS_NO_WAIT);
+            m_rxBuffer.reset();
+            nextState = RxHeader;
+            bytesNeeded = sizeof(stp::MessageHeader);
+        }
         destination = &m_rxHeader;
-        bytesNeeded = sizeof(stp::MessageHeader);
         break;
     case RxInvalidState:
         assert(false);
@@ -151,18 +158,19 @@ void SerialInterface::onUartBytesReceived(size_t bytes)
 
 void SerialInterface::onUartBytesWritten(size_t bytes)
 {
-    if (!Queue_empty(Queue_handle(&m_txQueue)))
+    if (Queue_empty(Queue_handle(&m_txQueue)))
     {
-        m_txBuffer = SharedPointer<MessageBuffer>(static_cast<MessageBuffer*>(static_cast<Queue_Elem*>(Queue_dequeue(Queue_handle(&m_txQueue)))));
-        m_txBuffer.decrementRefCount();
-
-        volatile stp::MessageHeader* stpHeader = reinterpret_cast<stp::MessageHeader*>(m_txBuffer->data());
-        UART_write(m_uart, m_txBuffer->data(), m_txBuffer->size());
-    }
-    else
-    {
+        m_txBuffer = SharedPointer<MessageBuffer>();
         m_txActive = false;
+        return;
     }
+
+    MessageBuffer* data = static_cast<MessageBuffer*>(
+                static_cast<Queue_Elem*>(Queue_dequeue(Queue_handle(&m_txQueue))));
+    m_txBuffer = SharedPointer<MessageBuffer>(data);
+    m_txBuffer.decrementRefCount();
+
+    UART_write(m_uart, m_txBuffer->data(), m_txBuffer->size());
 }
 
 

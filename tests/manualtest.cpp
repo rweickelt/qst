@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -27,8 +27,8 @@
 
 void ManualTest::pinProbe()
 {
-    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("pinprobe/readwrite.qml") });
-    if (qstProcess().exitCode() != 2)
+    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("pinprobe/readwrite.qml") }, 100000);
+    if (qstProcess().exitCode() != 0)
     {
         QFAIL(qstProcess().readAllStandardError());
     }

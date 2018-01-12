@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -38,7 +38,7 @@ class QstTest : public QObject
 protected:
     QString dataPath(const QString& directory) const;
     QString defaultImportPath() const;
-    QstTestResults execQstRun(const QStringList& arguments);
+    QstTestResults execQstRun(const QStringList& arguments, int timeoutMs = 500);
     QProcess& qstProcess();
 
 private:

@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -45,13 +45,13 @@ QString QstTest::dataPath(const QString& directory) const
     return m_dataDirectory.absoluteFilePath(directory);
 }
 
-QstTestResults QstTest::execQstRun(const QStringList& arguments)
+QstTestResults QstTest::execQstRun(const QStringList& arguments, int timeoutMs)
 {
     QStringList cmdLine = { "run", "--import", m_defaultImportPath };
     cmdLine += arguments;
     QDir qstDir(QCoreApplication::applicationDirPath());
     m_qstProcess.start(qstDir.absoluteFilePath("qst"), cmdLine);
-    if (!m_qstProcess.waitForFinished(500))
+    if (!m_qstProcess.waitForFinished(timeoutMs))
     {
         m_qstProcess.kill();
     }

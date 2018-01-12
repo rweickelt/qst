@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -57,7 +57,7 @@ protected:
 
 
 private:
-    RocHostController();
+    RocHostController(const QString& port);
 
     QHash<quint32, RocHostObject*> m_objects;
     QHash<const RocHostObject*, quint32> m_ids;

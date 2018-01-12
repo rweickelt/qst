@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -49,7 +49,7 @@ PinTargetObject::PinTargetObject()
 
 PinTargetObject::~PinTargetObject()
 {
-    instances[m_config[0] & 0x1F] = NULL;
+    instances[ioid()] = NULL;
     PIN_close(m_handle);
 }
 
@@ -104,7 +104,7 @@ void PinTargetObject::onValueChanged()
 void PinTargetObject::setValue(uint32_t value)
 {
     uint32_t config = m_config[0];
-    assert(config & (PIN_BM_GPIO_OUTPUT_EN & PIN_GEN));
-    PIN_setOutputValue(m_handle, config & IOC_IOID_MASK, value);
+    assert(config & PIN_BM_GPIO_OUTPUT_EN);
+    PIN_setOutputValue(m_handle, this->ioid(), value);
 }
 
