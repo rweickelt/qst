@@ -8,6 +8,7 @@ Testcase {
 
     PinProbe {
         id   : green
+        name : "green"
         ioid : 7
         type : PinProbe.Write
         value: button.value
@@ -16,18 +17,19 @@ Testcase {
 
     PinProbe {
         id   : red
+        name : "red"
         ioid : 6
         type : PinProbe.Write
-        value: ! button.value
         port: testCase.port
     }
 
     PinProbe {
         id   : button
+        name : "button"
         ioid : 14
         type : PinProbe.Read
         port: testCase.port
-        value : 1
+        pullMode: PinProbe.PullUp
     }
 
     function run() {

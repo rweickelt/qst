@@ -38,10 +38,10 @@ enum ExitCode {
     ExitTestCaseFailed = 2
 };
 
-void info(const QString& file, int line, const QString& message);
+void info(const QString& message, const QString& file = "", int line = 0);
 void error(const QString& message);
-void verify(bool condition, const QString& file, int line, const QString& message);
-void warning(const QString& file, int line, const QString& message);
+void verify(bool condition, const QString& message = "", const QString& file = "", int line = 0);
+void warning(const QString& message, const QString& file = "", int line = 0);
 
 }
 
@@ -49,13 +49,13 @@ void warning(const QString& file, int line, const QString& message);
     qst::error(message)
 
 #define QST_INFO(message) \
-    qst::info(__FILE__, __LINE__, message)
+    qst::info(message, __FILE__, __LINE__)
 
 #define QST_VERIFY(condition, message) \
-    qst::verify(condition, __FILE__, __LINE__, message)
+    qst::verify(condition, message, __FILE__, __LINE__)
 
 #define QST_WARNING(message) \
-    qst::warning(__FILE__, __LINE__, message)
+    qst::warning(message, __FILE__, __LINE__)
 
 class QstService : public QObject
 {

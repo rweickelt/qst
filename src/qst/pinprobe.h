@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -56,9 +56,19 @@ public:
         Low = 0,
         High = 1
     };
+    Q_ENUMS(Value)
+
+    enum PullMode
+    {
+        PullDisabled = 0,
+        PullUp = 1,
+        PullDown = 2,
+    };
+    Q_ENUMS(PullMode)
 
     Q_PROPERTY(Type type READ type MEMBER m_type)
     Q_PROPERTY(int ioid MEMBER m_ioid)
+    Q_PROPERTY(PullMode pullMode MEMBER m_pullMode)
     Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
     Q_PROPERTY(QString port MEMBER m_port)
 
@@ -81,6 +91,7 @@ private:
     Type m_type;
     int m_value;
     int m_ioid;
+    PullMode m_pullMode;
     QString m_port;
     bool m_active;
 };

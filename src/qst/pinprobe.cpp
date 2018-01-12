@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -22,6 +22,7 @@
  ** $END_LICENSE$
 ****************************************************************************/
 #include "pinprobe.h"
+#include "qst.h"
 #include "testcase.h"
 #include "rochostcontroller.h"
 
@@ -82,6 +83,7 @@ PinProbe::PinProbe(QObject *parent) : Component(parent)
     m_value = Undefined;
     m_type = Read;
     m_active = false;
+    m_pullMode = PullDisabled;
 }
 
 void PinProbe::componentComplete()
@@ -108,12 +110,20 @@ void PinProbe::initTestCase()
     {
     case Read:
         config |= PIN_INPUT_EN | PIN_IRQ_BOTHEDGES;
-        config |= m_value == 1 ? PIN_PULLUP : PIN_PULLDOWN;
         break;
     case Write:
         config |= PIN_GPIO_OUTPUT_EN | PIN_PUSHPULL | PIN_DRVSTR_MAX;
         config |= m_value == 1 ? PIN_GPIO_HIGH : PIN_GPIO_LOW;
         break;
+    }
+
+    if (m_pullMode == PullUp)
+    {
+        config |= PIN_PULLUP;
+    }
+    else if (m_pullMode == PullDown)
+    {
+        config |= PIN_PULLDOWN;
     }
 
     QByteArray serialized(reinterpret_cast<char*>(&config), sizeof(config));
@@ -135,7 +145,7 @@ void PinProbe::setValue(int value)
     } else if (m_type == Write) {
         this->sendToTarget(pin::PinValue, QByteArray(reinterpret_cast<const char*>(&value), 1));
     } else {
-        qDebug() << QString("Error: Cannot set %1 to '%2'' because it is not an output.").arg(m_name).arg(value);
+        qst::warning(QString("Error: Cannot set %1.value to '%2' because it is not an output.").arg(m_name).arg(value));
     }
 }
 

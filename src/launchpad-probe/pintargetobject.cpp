@@ -83,15 +83,8 @@ void PinTargetObject::deserialize(const char* data)
         PIN_Status status = PIN_registerIntCb(m_handle, &onPinEvent);
         assert(status == PIN_SUCCESS);
 
-        // Update the host immediately when the pin value does not reflect
-        // the pullup/pulldown configuration.
-        uint32_t currentValue = PIN_getInputValue(dio);
-        uint32_t pullConfig = config() & (PIN_BM_PULLING | PIN_GEN);
-        if (((currentValue == 0) && (pullConfig == PIN_PULLUP))
-                || ((currentValue == 1) && (pullConfig == PIN_PULLDOWN)))
-        {
-            sendToHost(pin::PinValue, &currentValue, 1);
-        }
+        uint32_t value = PIN_getInputValue(dio);
+        sendToHost(pin::PinValue, &value, 1);
     }
 }
 

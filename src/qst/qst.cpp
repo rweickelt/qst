@@ -38,7 +38,7 @@ void error(const QString& message)
     ::exit(qst::ExitApplicationError);
 }
 
-void info(const QString& file, int line, const QString& message)
+void info(const QString& message, const QString& file, int line)
 {
     LogInfo info {
         .test = Testcase::instance()->name(),
@@ -48,17 +48,33 @@ void info(const QString& file, int line, const QString& message)
         .message = message,
         .type = LogInfo::Info
     };
+    if ((file.isEmpty() && line == 0))
+    {
+        info.file = Testcase::instance()->qmlCallerFile();
+        info.line = Testcase::instance()->qmlCallerLine();
+    }
     ProxyLogger::instance()->print(info);
 }
 
-void verify(bool condition, const QString& file, int line, const QString& message)
+void verify(bool condition, const QString& message, const QString& file, int line)
 {
-    if (!condition) {
-        Testcase::instance()->finishAndExit(Testcase::Fail, file, line, message);
+    if (!condition)
+    {
+        if ((file.isEmpty() && line == 0))
+        {
+            Testcase::instance()->finishAndExit(Testcase::Fail,
+                    Testcase::instance()->qmlCallerFile(),
+                    Testcase::instance()->qmlCallerLine(),
+                    message);
+        }
+        else
+        {
+            Testcase::instance()->finishAndExit(Testcase::Fail, file, line, message);
+        }
     }
 }
 
-void warning(const QString& file, int line, const QString& message)
+void warning(const QString& message, const QString& file, int line)
 {
     LogInfo info {
         .test = Testcase::instance()->name(),
@@ -68,7 +84,13 @@ void warning(const QString& file, int line, const QString& message)
         .message = message,
         .type = LogInfo::Warning
     };
-    ProxyLogger::instance()->print(info);}
+    if ((file.isEmpty() && line == 0))
+    {
+        info.file = Testcase::instance()->qmlCallerFile();
+        info.line = Testcase::instance()->qmlCallerLine();
+    }
+    ProxyLogger::instance()->print(info);
+}
 
 }
 

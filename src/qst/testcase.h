@@ -102,8 +102,6 @@ protected slots:
 protected:
     Q_INVOKABLE void waitMilliseconds(int milliseconds, const QString& file, int line);
     Q_INVOKABLE void waitUntilExpression(QJSValue expression, int milliseconds, const QString& file, int line);
-    Q_INVOKABLE QString qmlCallerFile();
-    Q_INVOKABLE QString qmlCallerLine();
 
     void initTestCase() override;
 
@@ -118,6 +116,9 @@ public:
     Result result() const;
     State state() const;
     QString workingDirectory() const;
+
+    Q_INVOKABLE QString qmlCallerFile();
+    Q_INVOKABLE int qmlCallerLine();
 
     static TestcaseAttached* qmlAttachedProperties(QObject *);
 

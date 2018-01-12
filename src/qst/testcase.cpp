@@ -332,13 +332,13 @@ QString Testcase::qmlCallerFile()
     return frame.source;
 }
 
-QString Testcase::qmlCallerLine()
+int Testcase::qmlCallerLine()
 {
     QV4::ExecutionEngine *engine = QV8Engine::getV4(qmlEngine(this)->handle());
     QV4::StackTrace trace = engine->stackTrace(2);
     QV4::StackFrame& frame = trace.last();
 
-    return QString::number(frame.line);
+    return frame.line;
 }
 
 /*
