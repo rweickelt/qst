@@ -45,4 +45,5 @@ Testcase* Component::testCase()
         }
     }
     Q_ASSERT(false);
+    return nullptr;
 }

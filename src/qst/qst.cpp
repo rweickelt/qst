@@ -108,10 +108,9 @@ QObject* QstService::createObject(const QString& typeName, const QVariantMap& ar
         QString codec = arguments.value("codec", "UTF-8").toString();
         return new TextFile(qmlEngine(this), filePath, openMode, codec);
     }
-    else
-    {
-        Q_ASSERT(false);
-    }
+
+    Q_ASSERT(false);
+    return nullptr;
 }
 
 Testcase* QstService::currentTestcase()
