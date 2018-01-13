@@ -128,6 +128,7 @@ Testcase::State Testcase::unitializedStateFunction()
 Testcase::State Testcase::initingTestCaseStateFunction()
 {
     this->connect(qmlEngine(this), &QQmlEngine::warnings, this, &Testcase::onQmlEngineWarnings);
+    qmlEngine(this)->setOutputWarningsToStandardError(false);
 
     for (auto child : m_children)
     {
@@ -219,6 +220,7 @@ Testcase::State Testcase::cleaningUpTestCaseStateFunction()
     emit destruction();
 
     this->disconnect(qmlEngine(this), &QQmlEngine::warnings, this, &Testcase::onQmlEngineWarnings);
+    qmlEngine(this)->setOutputWarningsToStandardError(true);
 
     return Destroyed;
 }

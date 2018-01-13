@@ -27,6 +27,7 @@
 #include "component.h"
 #include "console.h"
 #include "file.h"
+#include "launchpad.h"
 #include "plaintextlogger.h"
 #include "pinprobe.h"
 #include "processprobe.h"
@@ -76,12 +77,10 @@ int main(int argc, char *argv[])
     }
 }
 
-
 void execRunCommand()
 {
     ApplicationOptions* options = ApplicationOptions::instance();
     QQmlEngine engine;
-    engine.setOutputWarningsToStandardError(false);
     engine.connect(&engine, &QQmlEngine::quit, QCoreApplication::instance(), QCoreApplication::quit);
 
     for (const auto& path : options->importPaths)
@@ -100,6 +99,7 @@ void execRunCommand()
     qRegisterMetaType<Testcase::State>();
 
     qmlRegisterSingletonType<File>("qst", 1,0, "File", &File::createSingleInstance);
+    qmlRegisterSingletonType<Launchpad>("ti", 1, 0, "Launchpad", &Launchpad::createSingleInstance);
 
     PlaintextLogger plaintextLogger;
     ProxyLogger::instance()->registerLogger(&plaintextLogger);
