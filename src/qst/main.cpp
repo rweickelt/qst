@@ -27,7 +27,7 @@
 #include "component.h"
 #include "console.h"
 #include "file.h"
-#include "launchpad.h"
+#include "xds.h"
 #include "plaintextlogger.h"
 #include "pinprobe.h"
 #include "processprobe.h"
@@ -102,7 +102,7 @@ void execRunCommand()
     qRegisterMetaType<Testcase::State>();
 
     qmlRegisterSingletonType<File>("qst", 1,0, "File", &File::createSingleInstance);
-    qmlRegisterSingletonType<Launchpad>("ti", 1, 0, "Launchpad", &Launchpad::createSingleInstance);
+    qmlRegisterSingletonType<Xds>("ti", 1, 0, "Xds", &Xds::createSingleInstance);
 
     PlaintextLogger plaintextLogger;
     ProxyLogger::instance()->registerLogger(&plaintextLogger);

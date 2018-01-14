@@ -25,7 +25,11 @@ QstService {
             if (message === undefined) {
                 message = "verify() failed";
             }
-            currentTestcase.finishAndExit(Testcase.Fail, qmlCallerFile(), qmlCallerLine(), message);
+            if (currentTestcase) {
+                currentTestcase.finishAndExit(Testcase.Fail, qmlCallerFile(), qmlCallerLine(), message);
+            } else {
+                error(message, qmlCallerFile(), qmlCallerLine());
+            }
         }
     }
 
@@ -38,7 +42,10 @@ QstService {
             if (message === undefined) {
                 message = "Compared values are not the same";
             }
-            currentTestcase.finishAndExit(Testcase.Fail, qmlCallerFile(), qmlCallerLine(), message);
-        }
+            if (currentTestcase) {
+                currentTestcase.finishAndExit(Testcase.Fail, qmlCallerFile(), qmlCallerLine(), message);
+            } else {
+                error(message, qmlCallerFile(), qmlCallerLine());
+            }        }
     }
 }

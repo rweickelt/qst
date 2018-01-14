@@ -69,6 +69,8 @@ public:
     QstService(QObject* parent = 0);
     Testcase* currentTestcase();
     QString hostOS() const;
+
+    Q_INVOKABLE void error(const QString& message, QString file = "", int line = 0);
     Q_INVOKABLE QString qmlCallerFile();
     Q_INVOKABLE int qmlCallerLine();
 

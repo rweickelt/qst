@@ -64,6 +64,8 @@ QtApplication {
         "testrunner.h",
         "textfile.cpp",
         "textfile.h",
+        "xds.cpp",
+        "xds.h",
     ]
 
     Group {

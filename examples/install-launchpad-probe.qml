@@ -20,7 +20,13 @@ Testcase {
 
     property string uniflashInstallPath: "/opt/ti/uniflash_4.2"
     property string firmwarePath: "/opt/qst/share/qst/firmware/launchpad-probe-CC1310_LAUNCHXL.elf"
-    property string serial: "L40002WG"
+
+    property string serial: {
+        var serials = Xds.availableSerials();
+        Qst.verify(serials.length > 0, "No boards connected");
+        return serials[0];
+    }
+
     property string device: "cc1310f128"
 
     UniflashProbe {
@@ -34,7 +40,6 @@ Testcase {
     function run() {
         Qst.verify(File.exists(uniflashInstallPath), uniflashInstallPath + " not found. Check 'uniflashInstallPath' property.");
         Qst.verify(File.exists(firmwarePath), firmwarePath + " not found. Check 'firmwarePath' property.");
-
         uniflash.flash();
         uniflash.waitForFinished(10000);
     }

@@ -133,6 +133,18 @@ QString QstService::hostOS() const
 }
 
 
+void QstService::error(const QString& message, QString file, int line)
+{
+    if (file.isEmpty())
+    {
+        file = qmlCallerFile();
+        line = qmlCallerLine();
+    }
+    Console::printError(QString("Error: %1 in %2:%3").arg(message).arg(file).arg(line));
+    ::exit(qst::ExitApplicationError);
+}
+
+
 QString QstService::qmlCallerFile()
 {
     QQmlEngine* engine = QQmlEngine::contextForObject(this)->engine();

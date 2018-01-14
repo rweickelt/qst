@@ -372,7 +372,6 @@ Project* Testcase::project() const
 
 Testcase* Testcase::instance()
 {
-    Q_ASSERT(!m_currentTestCase.isNull());
     return m_currentTestCase.data();
 }
 
