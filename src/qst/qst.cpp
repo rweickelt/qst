@@ -39,6 +39,11 @@
 
 namespace {
     QHash<QQmlEngine*, QstService*> instances;
+
+    QString singleInstanceQmlQuery = "import QtQml 2.0\n"
+                                     "import qst 1.0\n"
+                                     "\n"
+                                     "QtObject { property var instance : Qst; }\n";
 }
 
 namespace qst {
@@ -179,7 +184,10 @@ QstService* QstService::instance(QQmlEngine* engine)
     if (!instances.contains(engine))
     {
         QTemporaryFile tempFile;
-        QQmlComponent component(engine, QUrl::fromLocalFile("/tmp/test.qml"));
+        tempFile.open();
+        tempFile.write(singleInstanceQmlQuery.toLatin1());
+        tempFile.close();
+        QQmlComponent component(engine, QUrl::fromLocalFile(tempFile.fileName()));
         QObject* item = component.create(engine->rootContext());
         QstService* service = qvariant_cast<QstService*>(item->property("instance"));
         instances.insert(engine, service);
