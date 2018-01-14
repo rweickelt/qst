@@ -19,7 +19,7 @@ ProcessProbe {
                 + "-" + device
                 + "-" + serial
                 + ".xml";
-        var configFile = Qst.createObject("TextFile", { filePath : configFilePath });
+        var configFile = new TextFile(configFilePath, TextFile.ReadWrite);
         configFile.truncate();
         configFile.write(xmlconfig);
         configFile.close();

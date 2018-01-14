@@ -66,8 +66,6 @@ class QstService : public QObject
 
 public:
     QstService(QObject* parent = 0);
-
-    Q_INVOKABLE QObject* createObject(const QString& typeName, const QVariantMap& arguments);
     Testcase* currentTestcase();
     QString hostOS() const;
 

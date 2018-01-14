@@ -25,7 +25,6 @@
 #include "proxylogger.h"
 #include "qst.h"
 #include "testcase.h"
-#include "textfile.h"
 
 #include <QtCore/QDebug>
 #include <QtQml/QQmlEngine>
@@ -96,21 +95,6 @@ void warning(const QString& message, const QString& file, int line)
 
 QstService::QstService(QObject *parent) : QObject(parent)
 {
-}
-
-QObject* QstService::createObject(const QString& typeName, const QVariantMap& arguments)
-{
-    if (typeName == "TextFile")
-    {
-        QString filePath = arguments.value("filePath").toString();
-        TextFile::OpenMode openMode =
-                qvariant_cast<TextFile::OpenMode>(arguments.value("openMode", TextFile::ReadWrite));
-        QString codec = arguments.value("codec", "UTF-8").toString();
-        return new TextFile(qmlEngine(this), filePath, openMode, codec);
-    }
-
-    Q_ASSERT(false);
-    return nullptr;
 }
 
 Testcase* QstService::currentTestcase()

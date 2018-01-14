@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -24,7 +24,7 @@
 
 #include "textfile.h"
 
-#include <QDebug>
+#include <QtQml/QQmlEngine>
 
 TextFile::TextFile(QObject* parent, const QString& filePath,
                    OpenMode mode, const QString& codec)
@@ -76,4 +76,21 @@ void TextFile::truncate()
 void TextFile::write(const QString &text)
 {
     (*m_stream) << text;
+}
+
+TextFile* TextFileCreator::createObject(const QVariantMap& arguments)
+{
+    QString filePath = arguments.value("filePath").toString();
+    TextFile::OpenMode openMode =
+            qvariant_cast<TextFile::OpenMode>(arguments.value("openMode", TextFile::ReadWrite));
+    QString codec = arguments.value("codec", "UTF-8").toString();
+
+    return new TextFile(qmlEngine(this), filePath, openMode, codec);
+}
+
+void TextFile::registerJSType(QJSEngine* engine)
+{
+    QJSValue creator = engine->newQObject(new TextFileCreator());
+    engine->globalObject().setProperty("_TextFileCreator", creator);
+    engine->evaluate("function TextFile(path, mode) { return _TextFileCreator.createObject({ filePath: path, openMode : mode}); }");
 }

@@ -38,6 +38,7 @@
 #include "testcase.h"
 #include "testcaseattached.h"
 #include "testrunner.h"
+#include "textfile.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QPointer>
@@ -95,6 +96,8 @@ void execRunCommand()
     qmlRegisterType<ProcessProbe>("qst", 1,0, "ProcessProbe");
     qmlRegisterType<Project>("qst", 1,0, "Project");
     qmlRegisterType<QstService>("qst", 1, 0, "QstService");
+    qmlRegisterUncreatableType<TextFile>("qst", 1, 0, "TextFile", "TextFile can only be created in a JS context");
+    TextFile::registerJSType(&engine);
 
     qRegisterMetaType<Testcase::State>();
 

@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -39,7 +39,7 @@ class TextFile : public QObject
     Q_ENUMS(OpenMode)
 public:
     enum OpenMode { ReadOnly, WriteOnly, ReadWrite };
-    TextFile(QObject* parent, const QString& filePath,
+    TextFile(QObject* parent = nullptr, const QString& filePath = "",
              OpenMode mode = ReadOnly, const QString& codec = QLatin1String("UTF8"));
     ~TextFile();
 
@@ -47,9 +47,18 @@ public:
     Q_INVOKABLE void truncate();
     Q_INVOKABLE void write(const QString &text);
 
+    static void registerJSType(QJSEngine* engine);
+
 private:
     QScopedPointer<QFile> m_file;
     QScopedPointer<QTextStream> m_stream;
+};
+
+class TextFileCreator : public QObject
+{
+    Q_OBJECT
+public:
+    Q_INVOKABLE TextFile* createObject(const QVariantMap& arguments);
 };
 
 Q_DECLARE_METATYPE(TextFile::OpenMode)
