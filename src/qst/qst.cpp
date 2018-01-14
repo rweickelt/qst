@@ -27,7 +27,19 @@
 #include "testcase.h"
 
 #include <QtCore/QDebug>
+#include <QtCore/QHash>
+#include <QtCore/QTemporaryFile>
+#include <QtQml/QQmlContext>
 #include <QtQml/QQmlEngine>
+#include <QtQml/QQmlExpression>
+#include <QtQml/QQmlInfo>
+
+#include <private/qv4engine_p.h>
+#include <private/qv8engine_p.h>
+
+namespace {
+    QHash<QQmlEngine*, QstService*> instances;
+}
 
 namespace qst {
 
@@ -49,8 +61,8 @@ void info(const QString& message, const QString& file, int line)
     };
     if ((file.isEmpty() && line == 0))
     {
-        info.file = Testcase::instance()->qmlCallerFile();
-        info.line = Testcase::instance()->qmlCallerLine();
+        info.file = QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerFile();
+        info.line = QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerLine();
     }
     ProxyLogger::instance()->print(info);
 }
@@ -62,8 +74,8 @@ void verify(bool condition, const QString& message, const QString& file, int lin
         if ((file.isEmpty() && line == 0))
         {
             Testcase::instance()->finishAndExit(Testcase::Fail,
-                    Testcase::instance()->qmlCallerFile(),
-                    Testcase::instance()->qmlCallerLine(),
+                    QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerFile(),
+                    QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerLine(),
                     message);
         }
         else
@@ -85,8 +97,8 @@ void warning(const QString& message, const QString& file, int line)
     };
     if ((file.isEmpty() && line == 0))
     {
-        info.file = Testcase::instance()->qmlCallerFile();
-        info.line = Testcase::instance()->qmlCallerLine();
+        info.file = QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerFile();
+        info.line = QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerLine();
     }
     ProxyLogger::instance()->print(info);
 }
@@ -118,4 +130,48 @@ QString QstService::hostOS() const
     {
         return kernel;
     }
+}
+
+
+QString QstService::qmlCallerFile()
+{
+    QQmlEngine* engine = QQmlEngine::contextForObject(this)->engine();
+    Q_ASSERT(engine != nullptr);
+
+    QV4::ExecutionEngine* executionEngine = QV8Engine::getV4(engine->handle());
+    QV4::StackTrace trace = executionEngine->stackTrace(2);
+    QV4::StackFrame& frame = trace.last();
+    return frame.source;
+}
+
+
+int QstService::qmlCallerLine()
+{
+    QQmlEngine* engine = QQmlEngine::contextForObject(this)->engine();
+    Q_ASSERT(engine != nullptr);
+
+    QV4::ExecutionEngine* executionEngine = QV8Engine::getV4(engine->handle());
+    QV4::StackTrace trace = executionEngine->stackTrace(2);
+    QV4::StackFrame& frame = trace.last();
+    return frame.line;
+}
+
+QstService* QstService::instance(QQmlEngine* engine)
+{
+    Q_ASSERT(engine != nullptr);
+
+    // Singleton objects that were created in QML are tricky.
+    // I couldn't find another way to look the instance up.
+    // See https://stackoverflow.com/questions/48243936/how-to-find-out-the-qqmlengine-instance-of-a-singleton-object
+    //
+    if (!instances.contains(engine))
+    {
+        QTemporaryFile tempFile;
+        QQmlComponent component(engine, QUrl::fromLocalFile("/tmp/test.qml"));
+        QObject* item = component.create(engine->rootContext());
+        QstService* service = qvariant_cast<QstService*>(item->property("instance"));
+        instances.insert(engine, service);
+    }
+
+    return instances.value(engine); // only until we allow multiple engines
 }

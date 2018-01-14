@@ -326,23 +326,6 @@ void Testcase::waitMilliseconds(int milliseconds, const QString& file, int line)
     eventLoop.exec();
 }
 
-QString Testcase::qmlCallerFile()
-{
-    QV4::ExecutionEngine *engine = QV8Engine::getV4(qmlEngine(this)->handle());
-    QV4::StackTrace trace = engine->stackTrace(2);
-    QV4::StackFrame& frame = trace.last();
-    return frame.source;
-}
-
-int Testcase::qmlCallerLine()
-{
-    QV4::ExecutionEngine *engine = QV8Engine::getV4(qmlEngine(this)->handle());
-    QV4::StackTrace trace = engine->stackTrace(2);
-    QV4::StackFrame& frame = trace.last();
-
-    return frame.line;
-}
-
 /*
 This slot is invoked whenever an exception in the QML engine observes
 an exception.

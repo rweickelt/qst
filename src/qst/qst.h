@@ -27,6 +27,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QString>
 
+class QQmlEngine;
 class Testcase;
 
 namespace qst {
@@ -68,8 +69,10 @@ public:
     QstService(QObject* parent = 0);
     Testcase* currentTestcase();
     QString hostOS() const;
+    Q_INVOKABLE QString qmlCallerFile();
+    Q_INVOKABLE int qmlCallerLine();
 
-private:
+    static QstService* instance(QQmlEngine* engine);
 };
 
 

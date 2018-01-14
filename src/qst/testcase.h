@@ -117,9 +117,6 @@ public:
     State state() const;
     QString workingDirectory() const;
 
-    Q_INVOKABLE QString qmlCallerFile();
-    Q_INVOKABLE int qmlCallerLine();
-
     static TestcaseAttached* qmlAttachedProperties(QObject *);
 
 private:
