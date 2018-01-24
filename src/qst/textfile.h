@@ -36,20 +36,31 @@ class QQmlEngine;
 class TextFile : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(OpenMode)
 public:
-    enum OpenMode { ReadOnly, WriteOnly, ReadWrite };
+    enum OpenMode
+    {
+        ReadOnly,
+        WriteOnly,
+        ReadWrite
+    };
+    Q_ENUMS(OpenMode)
+
     TextFile(QObject* parent = nullptr, const QString& filePath = "",
              OpenMode mode = ReadOnly, const QString& codec = QLatin1String("UTF8"));
-    ~TextFile();
 
+    Q_INVOKABLE bool atEndOfFile() const;
     Q_INVOKABLE void close();
     Q_INVOKABLE void truncate();
+    Q_INVOKABLE QString readAll();
+    Q_INVOKABLE QString readLine();
     Q_INVOKABLE void write(const QString &text);
+    Q_INVOKABLE void writeLine(const QString &text);
 
     static void registerJSType(QJSEngine* engine);
 
 private:
+    bool isClosed() const;
+
     QScopedPointer<QFile> m_file;
     QScopedPointer<QTextStream> m_stream;
 };

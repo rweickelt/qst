@@ -23,6 +23,7 @@
 ****************************************************************************/
 
 #include "textfile.h"
+#include "qst.h"
 
 #include <QtQml/QQmlEngine>
 
@@ -47,35 +48,93 @@ TextFile::TextFile(QObject* parent, const QString& filePath,
     }
     if (!m_file->open(m))
     {
-        Q_ASSERT(false);
-
-                //context->throwError(QString("Unable to open file '%1': %2")
-                //            .arg(filePath, m_file->errorString()));
+        qst::error(QString("Unable to open file '%1': %2").arg(filePath, m_file->errorString()));
     }
     m_stream->setCodec(qPrintable(codec));
 }
 
-TextFile::~TextFile()
+bool TextFile::atEndOfFile() const
 {
+    if (isClosed())
+    {
+        return true;
+    }
+    return m_stream->atEnd();
 }
 
 void TextFile::close()
 {
+    if (isClosed())
+    {
+        return;
+    }
     m_stream->flush();
     m_file->close();
     m_stream.reset(0);
     m_file.reset(0);
 }
 
+bool TextFile::isClosed() const
+{
+    if (!m_file)
+    {
+        QstService::instance(qmlEngine(this))->error(QString("File is already closed"));
+        return true;
+    }
+    return false;
+}
+
+QString TextFile::readAll()
+{
+    if (isClosed())
+    {
+        return QString();
+    }
+    return m_stream->readAll();
+}
+
+QString TextFile::readLine()
+{
+    if (isClosed())
+    {
+        return QString();
+    }
+    return m_stream->readLine();
+}
+
 void TextFile::truncate()
 {
+    if (isClosed())
+    {
+        return;
+    }
     m_file->resize(0);
     m_stream->reset();
 }
 
-void TextFile::write(const QString &text)
+void TextFile::write(const QString& text)
 {
+    if (isClosed())
+    {
+        return;
+    }
     (*m_stream) << text;
+}
+
+void TextFile::writeLine(const QString& text)
+{
+    if (isClosed())
+    {
+        return;
+    }
+    (*m_stream) << text << endl;
+}
+
+void TextFile::registerJSType(QJSEngine* engine)
+{
+    QJSValue creator = engine->newQObject(new TextFileCreator());
+    engine->globalObject().setProperty("_TextFileCreator", creator);
+    engine->evaluate("function TextFile(path, mode) { return _TextFileCreator.createObject({ filePath: path, openMode : mode}); }");
 }
 
 TextFile* TextFileCreator::createObject(const QVariantMap& arguments)
@@ -86,11 +145,4 @@ TextFile* TextFileCreator::createObject(const QVariantMap& arguments)
     QString codec = arguments.value("codec", "UTF-8").toString();
 
     return new TextFile(qmlEngine(this), filePath, openMode, codec);
-}
-
-void TextFile::registerJSType(QJSEngine* engine)
-{
-    QJSValue creator = engine->newQObject(new TextFileCreator());
-    engine->globalObject().setProperty("_TextFileCreator", creator);
-    engine->evaluate("function TextFile(path, mode) { return _TextFileCreator.createObject({ filePath: path, openMode : mode}); }");
 }
