@@ -22,40 +22,49 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
-#include "messagebuffer.h"
 #include "serialinterface.h"
 
 #include <Board.h>
 #include <assert.h>
-#include <string.h>
 
-#include <ti/drivers/uart/UARTCC26XX.h>
+#include <ti/drivers/UART.h>
 #include <ti/sysbios/BIOS.h>
+#include <ti/sysbios/gates/GateSwi.h>
+#include <ti/sysbios/knl/Mailbox.h>
+#include <ti/sysbios/knl/Queue.h>
 
 extern "C" Mailbox_Handle rxMailbox;
 
 // Message handling
 namespace {
-    SerialInterface* instance = NULL;
+    enum RxState
+    {
+        RxDelimiter,
+        RxHeader,
+        RxPayload,
+        RxInvalidState
+    };
+
+    RxState rxState;
+    uint32_t delimitersReceived;
+    UART_Handle uart;
+    volatile bool txActive;
+    Queue_Struct txQueue;
+    GateSwi_Struct txGate;
+    SharedPointer<MessageBuffer> rxBuffer;
+    SharedPointer<MessageBuffer> txBuffer;
+    stp::MessageHeader rxHeader;
 }
 
-SerialInterface::SerialInterface()
+void SerialInterface::init()
 {
-    m_uart = NULL;
-    m_txActive = false;
-    instance = this;
+    uart = NULL;
+    txActive = false;
 
-    GateSwi_construct(&m_txGate, NULL);
-    Queue_construct(&m_txQueue, NULL);
-}
+    GateSwi_construct(&txGate, NULL);
+    Queue_construct(&txQueue, NULL);
 
-SerialInterface::~SerialInterface()
-{
-    UART_close(m_uart);
-}
-
-bool SerialInterface::open()
-{
+    UART_init();
     UART_Params uartParams;
     UART_Params_init(&uartParams);
     uartParams.baudRate = 115200;
@@ -69,108 +78,17 @@ bool SerialInterface::open()
     uartParams.writeDataMode = UART_DATA_BINARY;
     uartParams.writeCallback = &::onUartBytesWritten;
 
-    m_uart = UART_open(Board_UART0, &uartParams);
-    return m_uart != NULL;
+    uart = UART_open(Board_UART0, &uartParams);
+    assert(uart != NULL);
 }
 
 
 void SerialInterface::startRx()
 {
-    m_rxState = RxDelimiter;
-    m_rxDelimitersReceived = 0;
+    rxState = RxDelimiter;
+    delimitersReceived = 0;
 
-    UART_read(m_uart, &m_rxHeader, 1);
-}
-
-
-void SerialInterface::onUartBytesReceived(size_t bytes)
-{
-    RxState nextState = RxInvalidState;
-    uint32_t bytesNeeded = 0;
-    void* destination = 0;
-
-    switch(m_rxState) {
-    case RxDelimiter:
-        if (m_rxHeader.delimiterBytes[m_rxDelimitersReceived] != stp::MessageHeader::DelimiterByte) {
-            m_rxDelimitersReceived = 0;
-        } else {
-            m_rxDelimitersReceived++;
-        }
-        if (m_rxDelimitersReceived == stp::MessageHeader::DelimiterLength) {
-            m_rxDelimitersReceived = 0;
-            nextState = RxHeader;
-            destination = &m_rxHeader.payloadLength;
-            bytesNeeded = sizeof(stp::MessageHeader) - stp::MessageHeader::DelimiterLength;
-        } else {
-            nextState = RxDelimiter;
-            destination = &m_rxHeader.delimiterBytes[m_rxDelimitersReceived];
-            bytesNeeded = 1;
-        }
-        break;
-    // Validate header
-    case RxHeader:
-        if (m_rxHeader.delimiterWord != stp::MessageHeader::DelimiterWord) {
-            nextState = RxDelimiter;
-            destination = &m_rxHeader;
-            bytesNeeded = 1;
-        } else if (m_rxHeader.type == stp::RocMessage) {
-            assert(m_rxHeader.payloadLength <= 32);
-            nextState = RxPayload;
-            m_rxBuffer = SharedPointer<MessageBuffer>(new MessageBuffer(m_rxHeader.payloadLength, 0));
-            destination = m_rxBuffer->data();
-            bytesNeeded = m_rxHeader.payloadLength;
-        } else if (m_rxHeader.type == stp::ResetConnection) {
-            nextState = RxHeader;
-            bytesNeeded = sizeof(stp::MessageHeader);
-            destination = &m_rxHeader;
-            SharedPointer<MessageBuffer> resetMessage(new MessageBuffer(sizeof(stp::MessageHeader), sizeof(stp::MessageHeader)));
-            this->write(resetMessage, stp::ResetConnection);
-        }
-        break;
-    case RxPayload:
-        // Todo: Don't fake data integrity check
-        if (m_rxHeader.checksum != 0x47)
-        {
-            m_rxBuffer.reset();
-            nextState = RxDelimiter;
-            bytesNeeded = 1;
-        }
-        else
-        {
-            assert(Mailbox_getNumFreeMsgs(rxMailbox) > 0);
-            m_rxBuffer.incrementRefCount();
-            MessageBuffer* data = m_rxBuffer.data();
-            Mailbox_post(rxMailbox, &data, BIOS_NO_WAIT);
-            m_rxBuffer.reset();
-            nextState = RxHeader;
-            bytesNeeded = sizeof(stp::MessageHeader);
-        }
-        destination = &m_rxHeader;
-        break;
-    case RxInvalidState:
-        assert(false);
-        break;
-    }
-
-    m_rxState = nextState;
-    UART_read(m_uart, destination, bytesNeeded);
-}
-
-void SerialInterface::onUartBytesWritten(size_t bytes)
-{
-    if (Queue_empty(Queue_handle(&m_txQueue)))
-    {
-        m_txBuffer = SharedPointer<MessageBuffer>();
-        m_txActive = false;
-        return;
-    }
-
-    MessageBuffer* data = static_cast<MessageBuffer*>(
-                static_cast<Queue_Elem*>(Queue_dequeue(Queue_handle(&m_txQueue))));
-    m_txBuffer = SharedPointer<MessageBuffer>(data);
-    m_txBuffer.decrementRefCount();
-
-    UART_write(m_uart, m_txBuffer->data(), m_txBuffer->size());
+    UART_read(uart, &rxHeader, 1);
 }
 
 
@@ -180,21 +98,99 @@ extern "C" void onUartBytesReceived(UART_Handle handle, void* rxBuf, size_t size
     (void)rxBuf;
     assert(size > 0);
 
-    instance->onUartBytesReceived(size);
-}
+    RxState nextState = RxInvalidState;
+    uint32_t bytesNeeded = 0;
+    void* destination = 0;
+
+    switch(rxState) {
+    case RxDelimiter:
+        if (rxHeader.delimiterBytes[delimitersReceived] != stp::MessageHeader::DelimiterByte) {
+            delimitersReceived = 0;
+        } else {
+            delimitersReceived++;
+        }
+        if (delimitersReceived == stp::MessageHeader::DelimiterLength) {
+            delimitersReceived = 0;
+            nextState = RxHeader;
+            destination = &rxHeader.payloadLength;
+            bytesNeeded = sizeof(stp::MessageHeader) - stp::MessageHeader::DelimiterLength;
+        } else {
+            nextState = RxDelimiter;
+            destination = &rxHeader.delimiterBytes[delimitersReceived];
+            bytesNeeded = 1;
+        }
+        break;
+    // Validate header
+    case RxHeader:
+        if (rxHeader.delimiterWord != stp::MessageHeader::DelimiterWord) {
+            nextState = RxDelimiter;
+            destination = &rxHeader;
+            bytesNeeded = 1;
+        } else if (rxHeader.type == stp::RocMessage) {
+            assert(rxHeader.payloadLength <= 32);
+            nextState = RxPayload;
+            rxBuffer = SharedPointer<MessageBuffer>(new MessageBuffer(rxHeader.payloadLength, 0));
+            destination = rxBuffer->data();
+            bytesNeeded = rxHeader.payloadLength;
+        } else if (rxHeader.type == stp::ResetConnection) {
+            nextState = RxHeader;
+            bytesNeeded = sizeof(stp::MessageHeader);
+            destination = &rxHeader;
+            SharedPointer<MessageBuffer> resetMessage(new MessageBuffer(sizeof(stp::MessageHeader), sizeof(stp::MessageHeader)));
+            SerialInterface::write(resetMessage, stp::ResetConnection);
+        }
+        break;
+    case RxPayload:
+        // Todo: Don't fake data integrity check
+        if (rxHeader.checksum != 0x47)
+        {
+            rxBuffer.reset();
+            nextState = RxDelimiter;
+            bytesNeeded = 1;
+        }
+        else
+        {
+            assert(Mailbox_getNumFreeMsgs(rxMailbox) > 0);
+            rxBuffer.incrementRefCount();
+            MessageBuffer* data = rxBuffer.data();
+            Mailbox_post(rxMailbox, &data, BIOS_NO_WAIT);
+            rxBuffer.reset();
+            nextState = RxHeader;
+            bytesNeeded = sizeof(stp::MessageHeader);
+        }
+        destination = &rxHeader;
+        break;
+    case RxInvalidState:
+        assert(false);
+        break;
+    }
+
+    rxState = nextState;
+    UART_read(uart, destination, bytesNeeded);}
 
 extern "C" void onUartBytesWritten(UART_Handle handle, void* txBuf, size_t size)
 {
     (void)handle;
     (void)txBuf;
-    assert(size > 0);
 
-    instance->onUartBytesWritten(size);
+    if (Queue_empty(Queue_handle(&txQueue)))
+    {
+        txBuffer = SharedPointer<MessageBuffer>();
+        txActive = false;
+        return;
+    }
+
+    MessageBuffer* data = static_cast<MessageBuffer*>(
+                static_cast<Queue_Elem*>(Queue_dequeue(Queue_handle(&txQueue))));
+    txBuffer = SharedPointer<MessageBuffer>(data);
+    txBuffer.decrementRefCount();
+
+    UART_write(uart, txBuffer->data(), txBuffer->size());
 }
 
 void SerialInterface::write(const SharedPointer<MessageBuffer>& buffer)
 {
-    this->write(buffer, stp::RocMessage);
+    write(buffer, stp::RocMessage);
 }
 
 void SerialInterface::write(const SharedPointer<MessageBuffer>&buffer, stp::MessageType type)
@@ -208,17 +204,17 @@ void SerialInterface::write(const SharedPointer<MessageBuffer>&buffer, stp::Mess
     stpHeader->payloadLength = payloadLength;
     stpHeader->type = type;
 
-    uint32_t key = GateSwi_enter(GateSwi_handle(&m_txGate));
+    uint32_t key = GateSwi_enter(GateSwi_handle(&txGate));
 
     txBuffer.incrementRefCount();
-    Queue_enqueue(Queue_handle(&m_txQueue), txBuffer.data());
+    Queue_enqueue(Queue_handle(&txQueue), txBuffer.data());
 
-    if (!m_txActive)
+    if (!txActive)
     {
-        m_txActive = true;
-        this->onUartBytesWritten(0);
+        txActive = true;
+        onUartBytesWritten(uart, nullptr, 0);
     }
-    GateSwi_leave(GateSwi_handle(&m_txGate), key);
+    GateSwi_leave(GateSwi_handle(&txGate), key);
 }
 
 

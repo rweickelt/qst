@@ -8,16 +8,16 @@ Testcase {
     PinProbe {
         id   : green
         name : "green"
-        ioid : 7
+        ioid : 6
         type : PinProbe.Write
-        value: PinProbe.High
+        value: button1.value
         port: Xds.portFromSerial(project.serial)
     }
 
     PinProbe {
         id   : red
         name : "red"
-        ioid : 6
+        ioid : 9
         type : PinProbe.Write
         value: button1.value
         port: Xds.portFromSerial(project.serial)

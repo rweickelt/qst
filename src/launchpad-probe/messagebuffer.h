@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -28,7 +28,6 @@
 
 #include <stdint.h>
 #include <string>
-
 #include <ti/sysbios/knl/Queue.h>
 
 /*
@@ -38,7 +37,8 @@ the whole application.
 class MessageBuffer final : public SharedData, public Queue_Elem
 {
 public:
-    explicit MessageBuffer(uint32_t maxSize, uint32_t offset = 0);
+    MessageBuffer(uint32_t maxSize, uint32_t offset);
+    explicit MessageBuffer(uint32_t maxSize) : MessageBuffer(maxSize, maxSize) {}
     ~MessageBuffer();
 
     uint32_t size() const;

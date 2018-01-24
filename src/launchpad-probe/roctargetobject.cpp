@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -23,6 +23,7 @@
 ****************************************************************************/
 
 #include "roctargetobject.h"
+#include "roctargetcontroller.h"
 
 extern void sendToHost(uint32_t id, uint32_t method, const void* data, uint32_t length);
 
@@ -39,5 +40,5 @@ RocTargetObject::~RocTargetObject()
 
 void RocTargetObject::sendToHost(uint32_t messageId, const void* data, uint32_t length)
 {
-    ::sendToHost(this->id(), messageId, data, length);
+    RocTargetController::sendToHost(this->id(), messageId, data, length);
 }

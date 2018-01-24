@@ -26,7 +26,7 @@
 
 #include <assert.h>
 #include <string.h>
-#include <ti/drivers/pin/PINCC26XX.h>
+#include <ti/drivers/PIN.h>
 
 #include <protocols/pin.h>
 #include <protocols/roc.h>
@@ -35,6 +35,7 @@ PinTargetObject* PinTargetObject::instances[32];
 
 extern "C" void onPinEvent(PIN_Handle handle, PIN_Id pin)
 {
+    (void)handle;
     PinTargetObject* instance = PinTargetObject::instances[pin];
     assert(instance != NULL);
     instance->onValueChanged();
@@ -49,8 +50,8 @@ PinTargetObject::PinTargetObject()
 
 PinTargetObject::~PinTargetObject()
 {
-    instances[ioid()] = NULL;
     PIN_close(m_handle);
+    instances[ioid()] = NULL;
 }
 
 void PinTargetObject::parseMessage(uint8_t methodId, const char* data)
@@ -64,8 +65,6 @@ void PinTargetObject::parseMessage(uint8_t methodId, const char* data)
         assert(false);
     }
 }
-
-
 
 void PinTargetObject::deserialize(const char* data)
 {

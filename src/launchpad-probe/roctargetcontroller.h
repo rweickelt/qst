@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -25,13 +25,19 @@
 #ifndef ROCTARGETCONTROLLER_H
 #define ROCTARGETCONTROLLER_H
 
+#include "messagebuffer.h"
+#include "sharedpointer.h"
 
 class RocTargetController
 {
 public:
+    static void init();
+    static void checkForConnectionTimeout();
+    static void processMessage(const SharedPointer<MessageBuffer>& message);
+    static void sendToHost(uint32_t id, uint32_t method, const void* data, uint32_t length);
+
+private:
     RocTargetController();
-
-
 };
 
 #endif // ROCTARGETCONTROLLER_H

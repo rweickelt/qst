@@ -53,10 +53,21 @@ public slots:
 
 
 protected:
-    void parseMessage(QByteArray message);
+    bool waitForReply(int milliseconds);
+    bool isConnected() const;
+    void setConnected(bool connected);
+
+protected slots:
+    void onPingTimerTick();
 
 
 private:
+    enum ConnectionState {
+        Disconnected,
+        WaitingForInfo,
+        Connected
+    };
+
     RocHostController(const QString& port);
 
     QHash<quint32, RocHostObject*> m_objects;
@@ -68,6 +79,9 @@ private:
     //quint32 m_registedObjectCount;
     bool m_connected;
     QString m_port;
+    QEventLoop m_loop;
+    QTimer m_pingTimer;
+    int m_unansweredPings;
 };
 
 #endif // RPCHOST_H

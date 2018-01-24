@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -33,15 +33,23 @@ enum ClassId
     PinClass = 0
 };
 
+enum State {
+    Ready = 1,
+    Occupied = 2,
+};
+
 enum MessageType : uint8_t
 {
+    StateMessage = 0,
     Reset = 1,
     Error = 2,
     Construct = 3,
-    Destruct = 4,
-    CallMethod = 5,
-    ObjectId = 6,
-    SerializedData = 7,
+    ObjectId = 4,
+    SerializedData = 5,
+    Destruct = 6,
+    CallMethod = 7,
+    Ping = 8,
+    Pong = 9
 };
 
 struct MessageHeader
@@ -51,6 +59,7 @@ struct MessageHeader
     union  {
         uint8_t classId;
         uint8_t methodId;
+        uint8_t state;
     };
     uint32_t objectId;
 } __attribute__((packed));

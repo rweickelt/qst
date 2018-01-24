@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -53,9 +53,9 @@ private:
     PIN_State m_state;
     PIN_Config m_config[2];
 
-    static PinTargetObject* instances[32];
+    static PinTargetObject* instances[];
 
-    friend void onPinEvent(PIN_Handle, PIN_Id);
+    friend void ::onPinEvent(PIN_Handle, PIN_Id);
 };
 
 inline uint32_t PinTargetObject::ioid() const

@@ -25,57 +25,29 @@
 #ifndef SERIALINTERFACE_H_
 #define SERIALINTERFACE_H_
 
-#include "mailbox.h"
 #include "sharedpointer.h"
+#include "messagebuffer.h"
 
 #include <protocols/stp.h>
-
 #include <ti/drivers/UART.h>
-#include <ti/sysbios/gates/GateSwi.h>
-#include <ti/sysbios/knl/Mailbox.h>
-#include <ti/sysbios/knl/Queue.h>
 
 extern "C" {
     void onUartBytesReceived(UART_Handle, void*, size_t);
     void onUartBytesWritten(UART_Handle, void*, size_t);
 }
 
-class MessageBuffer;
-
 class SerialInterface
 {
 public:
-    SerialInterface();
-    ~SerialInterface();
-
-    bool open();
-    void startRx();
-    void write(const SharedPointer<MessageBuffer>& message);
+    static void init();
+    static void startRx();
+    static void write(const SharedPointer<MessageBuffer>& message);
 
 protected:
-    void onUartBytesReceived(size_t bytes);
-    void onUartBytesWritten(size_t bytes);
-    void write(const SharedPointer<MessageBuffer>& message, stp::MessageType type);
+    static void write(const SharedPointer<MessageBuffer>& message, stp::MessageType type);
 
 private:
-    enum RxState
-    {
-        RxDelimiter,
-        RxHeader,
-        RxPayload,
-        RxInvalidState
-    };
-
-    RxState m_rxState;
-    uint32_t m_rxDelimitersReceived;
-    UART_Handle m_uart;
-    volatile bool m_txActive;
-    Queue_Struct m_txQueue;
-    GateSwi_Struct m_txGate;
-    SharedPointer<MessageBuffer> m_rxBuffer;
-    SharedPointer<MessageBuffer> m_txBuffer;
-
-    stp::MessageHeader m_rxHeader;
+    SerialInterface();
 
     friend void ::onUartBytesReceived(UART_Handle, void*, size_t);
     friend void ::onUartBytesWritten(UART_Handle, void*, size_t);

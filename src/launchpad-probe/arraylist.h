@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -25,6 +25,7 @@
 #define ARRAYLIST_
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 template<typename T, int32_t maxLength>

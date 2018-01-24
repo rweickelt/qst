@@ -46,7 +46,7 @@ public:
     T* operator->();
     T* operator->() const;
 
-    void reset(T* data = NULL);
+    void reset(T* data = nullptr);
 
     void decrementRefCount();
     void incrementRefCount();
@@ -94,8 +94,6 @@ SharedPointer<T>& SharedPointer<T>::operator=(const SharedPointer<T>& other)
 template<typename T>
 SharedPointer<T>::~SharedPointer()
 {
-    InterruptLock lock;
-
     if (m_data)
     {
         this->decrementRefCount();
@@ -123,7 +121,7 @@ SharedData* SharedPointer<T>::intData()
 template<typename T>
 void SharedPointer<T>::reset(T* data)
 {
-    if (m_data != NULL)
+    if (m_data != nullptr)
     {
         decrementRefCount();
     }
@@ -137,21 +135,23 @@ void SharedPointer<T>::reset(T* data)
 template<typename T>
 void SharedPointer<T>::decrementRefCount()
 {
-    assert(m_data != NULL);
+    InterruptLock lock;
+
+    assert(m_data != nullptr);
     assert(intData()->m_refCount > 0);
 
     intData()->m_refCount--;
     if (intData()->m_refCount == 0)
     {
         delete m_data;
-        m_data = NULL;
+        m_data = nullptr;
     }
 }
 
 template<typename T>
 void SharedPointer<T>::incrementRefCount()
 {
-    assert(m_data != NULL);
+    assert(m_data != nullptr);
     m_data->m_refCount++;
 }
 
