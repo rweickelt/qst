@@ -15,6 +15,7 @@ Properties:
 Methods:
 
 - :cpp:func:`compare()`
+- :cpp:func:`error()`
 - :cpp:func:`verify()`
 - :cpp:func:`wait()`
 
@@ -23,7 +24,7 @@ Methods:
 Detailed Description
 --------------------
 
-..  cpp:namespace:: Testcase
+..  cpp:namespace:: Qst
 
 The ``Qst`` service is an integral part of Qst. It contains methods for test
 evaluation evaluation and provides information about test case execution and the
@@ -65,6 +66,14 @@ Methods
     case. When failing before the first test case starts, for instance in a
     :cpp:class:`Project` item, Qst exits and no test case will be executed at
     all.
+
+
+..  cpp:function:: void error(string message, string file, int line)
+
+    Throws an error with `message` and aborts the current test case.
+
+    The parameters `file` and `line` are optional. If omitted, Qst
+    takes those from the top of the caller stack.
 
 
 ..  cpp:function:: void verify(bool condition, string message)
