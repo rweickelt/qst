@@ -3,7 +3,7 @@ FROM rweickelt/qbs as downloader
 ENV SDK=simplelink_cc13x0_sdk_1_50_00_08 \
     XDC=xdctools_3_50_03_33_core
 
-RUN apt-get install -y bzip2 zip wget
+RUN apt-get update && apt-get install -y bzip2 zip wget
 
 RUN wget -nv --continue --tries=20 --waitretry=10 --retry-connrefused \
        --no-dns-cache --timeout 300 \
@@ -38,7 +38,7 @@ ENV SDK=simplelink_cc13x0_sdk_1_50_00_08 \
     XDC=xdctools_3_50_03_33_core \
     TOOLCHAIN=gcc-arm-none-eabi-6-2017-q2-update
 
-RUN apt-get install -y gcc-multilib
+RUN apt-get update && apt-get install -y gcc-multilib
 
 COPY qbs /usr/share/
 COPY --from=downloader /opt/ti /opt/ti
