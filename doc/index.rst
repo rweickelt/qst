@@ -1,4 +1,4 @@
-Qts Documentation
+Qst Documentation
 =================
 
 Qst is a firmware test automation suite for embedded devices.
