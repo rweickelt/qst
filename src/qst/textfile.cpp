@@ -34,18 +34,7 @@ TextFile::TextFile(QObject* parent, const QString& filePath,
     m_file.reset(new QFile(filePath));
     m_stream.reset(new QTextStream(m_file.data()));
 
-    QIODevice::OpenMode m;
-    switch (mode) {
-    case ReadWrite:
-        m = QIODevice::ReadWrite;
-        break;
-    case ReadOnly:
-        m = QIODevice::ReadOnly;
-        break;
-    case WriteOnly:
-        m = QIODevice::WriteOnly;
-        break;
-    }
+    QIODevice::OpenMode m = static_cast<QIODevice::OpenMode>(mode);
     if (!m_file->open(m))
     {
         qst::error(QString("Unable to open file '%1': %2").arg(filePath, m_file->errorString()));

@@ -39,9 +39,10 @@ class TextFile : public QObject
 public:
     enum OpenMode
     {
-        ReadOnly,
-        WriteOnly,
-        ReadWrite
+        Append = QIODevice::Append,
+        ReadOnly = QIODevice::ReadOnly,
+        ReadWrite = QIODevice::ReadWrite,
+        WriteOnly = QIODevice::WriteOnly
     };
     Q_ENUMS(OpenMode)
 
