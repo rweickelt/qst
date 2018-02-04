@@ -13,12 +13,13 @@ Items
 
 Generic Items, available through ``import qst 1.0``
 
-================================== ===========
-Name                               Description
-================================== ===========
-:doc:`Project <project-item>`      A container item for multiple :cpp:class:`Testcase` items.
-:doc:`Testcase <testcase-item>`    Implements a test action.
-================================== ===========
+======================================= ===========
+Name                                    Description
+======================================= ===========
+:doc:`ProcessProbe <processprobe-item>` Starts and watches processes.
+:doc:`Project <project-item>`           A container item for multiple :cpp:class:`Testcase` items.
+:doc:`Testcase <testcase-item>`         Implements a test action.
+======================================= ===========
 
 
 TI-specific Items,  available through ``import ti 1.0``
