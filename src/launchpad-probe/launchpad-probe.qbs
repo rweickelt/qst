@@ -7,19 +7,13 @@ Project {
     Product {
         name: "launchpad-probe"
         type: "application"
-
-        simplelink.board.type: "CC1310_LAUNCHXL"
-
         targetName: "launchpad-probe-" + simplelink.board.type + ".elf"
 
-        Depends { name: "cpp" }
         Depends { name: "simplelink"; submodules: [ "core", "drivers", "tirtos", "board" ] }
         Depends { name: "shared-types" }
 
-        cpp.driverFlags: [
-            "-mcpu=cortex-m3",
-            "-mthumb",
-        ]
+        simplelink.core.device: "cc1310f128"
+        simplelink.board.type: "CC1310_LAUNCHXL"
 
         cpp.cxxLanguageVersion: "c++14"
 

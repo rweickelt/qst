@@ -3,7 +3,7 @@ import "../device.js" as Device
 
 Module {
     property string installPath
-    property string deviceFamily
+    property string deviceFamily : Device.deviceFamilyDir(product.simplelink.core.device)
     property string device
 
 
@@ -63,16 +63,10 @@ Module {
         ]
     }
 
-    property var knownDevices: [
-        "cc1310f128",
-        "cc1350f128",
-        "cc1352r1f3"
-    ]
-
     validate: {
-        if (!knownDevices.contains(simplelink.core.device))
+        if (Device.deviceFamily(simplelink.core.device) === "unknown")
         {
-            console.error("simplelink.core.device " + simplelink.core.device + " is not supported. Available options: " + simplelink.core.knownDevices);
+            console.error("simplelink.core.device " + simplelink.core.device + " is not supported.");
         }
     }
 

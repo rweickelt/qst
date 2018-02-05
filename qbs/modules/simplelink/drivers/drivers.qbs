@@ -16,8 +16,7 @@ SimpleLinkModule {
         product.simplelink.drivers.installPath + "/source/ti/mw/lcd/lib"
     ]
 
-    Group {
-        name: "prebuilt-drivers"
+    Properties {
         condition: product.simplelink.drivers.usePrebuilt === true
 
         cpp.staticLibraries: [
@@ -27,16 +26,6 @@ SimpleLinkModule {
             ":drivers_" + simplelink.core.deviceFamily + ".am3g",
             ":driverlib.lib"
         ]
-    }
 
-//    Group {
-//        name: "drivers-cc13x2"
-//        condition: (simplelink.core.deviceFamily === "cc13x2")
-//                   && (product.simplelink.drivers.usePrebuilt === false)
-//        prefix: product.simplelink.drivers.installPath + "/source/ti/drivers/"
-//        files : [
-//            "power/PowerCC26X2.c",
-//            "power/PowerCC26X2_calibrateRCOSC.c"
-//        ]
-//    }
+    }
 }
