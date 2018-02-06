@@ -5,6 +5,7 @@ import qbs.ModUtils
 import qbs.Utilities
 import qbs.TextFile
 import "../SimpleLinkModule.qbs" as SimpleLinkModule
+import "../device.js" as Device
 
 SimpleLinkModule {
     name : "tirtos"
@@ -63,19 +64,28 @@ SimpleLinkModule {
             var defines = product.moduleProperty("cpp", "defines");
             var compilerOptions = Array();
             compilerOptions = compilerOptions.concat(defines.map( function(item) { return "-D" + item; } ));
+            var device = product.moduleProperty("simplelink.core", "device").toUpperCase();
+            var deviceFamily = product.moduleProperty("simplelink.core", "deviceFamily");
+            var mcuType;
+            if (deviceFamily === "cc13x0")
+                mcuType = "M3";
+            else if (deviceFamily === "cc13x2")
+                mcuType = "M4F";
+            else
+                console.error("Could not deduce adequate mcu type from " + device);
 
             var args = [
                 "--xdcpath="
                         + product.moduleProperty("simplelink.core", "installPath") + "/source;"
                         + product.moduleProperty("simplelink.core", "installPath") + "/kernel/tirtos/packages;"
-                        + "/opt/ti/ccsv7/ccs_base",
+                        + "C:/ti/ccsv7/ccs_base",
                 "xdc.tools.configuro",
                 "-o",
                 product.moduleProperty("simplelink.tirtos", "buildDirectoryName"),
                 "-t",
-                "gnu.targets.arm.M3",
+                "gnu.targets.arm." + mcuType,
                 "-p",
-                "ti.platforms.simplelink:" + "CC1310F128",
+                "ti.platforms.simplelink:" + device,
                 "-r",
                 "release",
                 "-c",

@@ -1,8 +1,11 @@
 import qbs 1.0
+import "../device.js" as Device
 
 Module {
     property string installPath
-    property string deviceFamily
+    property string deviceFamily : Device.deviceFamilyDir(product.simplelink.core.device)
+    property string device
+
 
     Depends { name : "cpp" }
 
@@ -17,7 +20,7 @@ Module {
     cpp.enableRtti : false
     cpp.positionIndependentCode: false
 
-    cpp.machineType: "armv7-m"
+    cpp.machineType: Device.machineType(deviceFamily)
 
     cpp.defines : [
         "DeviceFamily_" + deviceFamily.toUpperCase()
@@ -36,10 +39,12 @@ Module {
     ]
 
     cpp.libraryPaths: [
-        simplelink.core.installPath + "/source/ti/devices/" + simplelink.core.deviceFamily + "/driverlib/bin/gcc",
+        installPath + "/source/ti/devices/" + Device.deviceFamilyDir(deviceFamily) + "/driverlib/bin/gcc",
     ]
 
     cpp.driverFlags: [
+        "-mtune=" + Device.mcuType(deviceFamily),
+        "-mthumb",
         "--specs=nano.specs",
         "-nostartfiles",
         "-static",
@@ -51,13 +56,18 @@ Module {
 
     Group {
         name : "startup-files"
-        prefix: product.moduleProperty("simplelink.core", "installPath")
-                    + "/source/ti/devices/"
-                    + product.moduleProperty("simplelink.core", "deviceFamily") + "/startup_files/"
+        prefix: simplelink.core.installPath + "/source/ti/devices/" + Device.deviceFamilyDir(simplelink.core.deviceFamily) + "/startup_files/"
 
         files : [
             "ccfg.c"
         ]
+    }
+
+    validate: {
+        if (Device.deviceFamily(simplelink.core.device) === "unknown")
+        {
+            console.error("simplelink.core.device " + simplelink.core.device + " is not supported.");
+        }
     }
 
 }

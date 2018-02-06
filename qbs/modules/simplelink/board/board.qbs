@@ -4,28 +4,31 @@ import "../SimpleLinkModule.qbs" as SimpleLinkModule
 SimpleLinkModule {
     name : "board"
     property string type
+    property string installPath : product.simplelink.core.installPath + "/source/ti/boards"
 
     Depends { name : "cpp" }
+    Depends { name : "simplelink.core" }
 
     cpp.includePaths : [
-        simplelink.core.installPath + "/source/ti/boards/" + type + "/"
+        product.simplelink.board.installPath + "/../../",
+        product.simplelink.board.installPath + "/" + type + "/"
     ]
 
     Group {
-        name : "CC1310_LAUNCHXL"
-        prefix: simplelink.core.installPath + "/source/ti/boards/CC1310_LAUNCHXL/"
+        name : "board"
+        prefix: product.simplelink.board.installPath + "/" + product.simplelink.board.type + "/"
         files : [
-            "CC1310_LAUNCHXL.h",
-            "CC1310_LAUNCHXL.c",
-            "Board.h",
+            "*.h",
+            product.simplelink.board.type + ".c",
+            // do not include ccfg.c file
         ]
      }
 
     Group {
-        name : "linker-scripts"
-        prefix : simplelink.core.installPath + "/source/ti/boards/CC1310_LAUNCHXL/"
+        name : "board-linker-scripts"
+        prefix: product.simplelink.board.installPath + "/" + product.simplelink.board.type + "/"
         files : [
-            "CC1310_LAUNCHXL_TIRTOS.lds"
+            product.simplelink.board.type + "_TIRTOS.lds"
         ]
         fileTags: "board_linkerscript"
     }
