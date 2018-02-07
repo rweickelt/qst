@@ -67,6 +67,9 @@ void Testcase::componentComplete()
 
 Testcase::Result Testcase::exec()
 {
+    this->connect(qmlEngine(this), &QQmlEngine::warnings, this, &Testcase::onQmlEngineWarnings);
+    qmlEngine(this)->setOutputWarningsToStandardError(false);
+
     for (m_state = Uninitialized; m_state != Destroyed; m_state = m_nextState)
     {
         m_transitionPending = false;
@@ -96,6 +99,9 @@ Testcase::Result Testcase::exec()
             break;
         }
     }
+
+    qmlEngine(this)->setOutputWarningsToStandardError(true);
+    this->disconnect(qmlEngine(this), &QQmlEngine::warnings, this, &Testcase::onQmlEngineWarnings);
 
     return m_result;
 }
@@ -127,9 +133,6 @@ Testcase::State Testcase::unitializedStateFunction()
 
 Testcase::State Testcase::initingTestCaseStateFunction()
 {
-    this->connect(qmlEngine(this), &QQmlEngine::warnings, this, &Testcase::onQmlEngineWarnings);
-    qmlEngine(this)->setOutputWarningsToStandardError(false);
-
     for (auto child : m_children)
     {
         child->initTestCase();
@@ -218,10 +221,6 @@ Testcase::State Testcase::cleaningUpTestCaseStateFunction()
         QMetaObject::invokeMethod(attached, "destruction");
     }
     emit destruction();
-
-    this->disconnect(qmlEngine(this), &QQmlEngine::warnings, this, &Testcase::onQmlEngineWarnings);
-    qmlEngine(this)->setOutputWarningsToStandardError(true);
-
     return Destroyed;
 }
 

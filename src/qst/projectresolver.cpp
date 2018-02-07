@@ -35,7 +35,27 @@
 #include <QtQml/QQmlComponent>
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlEngine>
-#include <QtQml/private/qqmlcontext_p.h>
+
+class QmlEngineWarningScopeGuard
+{
+public:
+    inline QmlEngineWarningScopeGuard(ProjectResolver* resolver, QQmlEngine* engine) {
+        m_resolver = resolver;
+        m_engine = engine;
+        m_engine->connect(m_engine, &QQmlEngine::warnings, m_resolver, &ProjectResolver::onQmlEngineWarnings);
+        m_engine->setOutputWarningsToStandardError(false);
+    }
+
+    inline ~QmlEngineWarningScopeGuard()
+    {
+        m_engine->setOutputWarningsToStandardError(true);
+        m_engine->disconnect(m_engine, &QQmlEngine::warnings, m_resolver, &ProjectResolver::onQmlEngineWarnings);
+    }
+
+private:
+    ProjectResolver* m_resolver;
+    QQmlEngine* m_engine;
+};
 
 ProjectResolver::ProjectResolver(QQmlEngine* engine, const QString& rootfilepath)
 {
@@ -46,6 +66,10 @@ ProjectResolver::ProjectResolver(QQmlEngine* engine, const QString& rootfilepath
 
 void ProjectResolver::loadRootFile()
 {
+    // Re-route QML error handling only in the scope of this method.
+    // Cope with multiple exit points.
+    QmlEngineWarningScopeGuard guard(this, m_engine.data());
+
     // 1. Create a root object with all const properties.
     Item rootItem = this->beginCreate(m_rootFilepath);
     if (rootItem.state == Item::Invalid)
@@ -241,4 +265,22 @@ QStringList ProjectResolver::makeAbsolute(const QStringList& paths, const QStrin
         }
     }
     return sanitized;
+}
+
+/*
+This slot is invoked whenever an exception in the QML engine observes
+an exception.
+*/
+void ProjectResolver::onQmlEngineWarnings(const QList<QQmlError> &warnings)
+{
+    Q_ASSERT(warnings.size() == 1);
+    const QQmlError& error = warnings.first();
+
+    // Exception caused by QML code. This includes syntax and reference errors.
+    QString message = QString("In %1:%2 %3")
+            .arg(error.url().toString())
+            .arg(error.line())
+            .arg(error.description());
+    QST_ERROR_AND_EXIT(message);
+
 }

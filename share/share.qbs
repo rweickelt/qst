@@ -19,8 +19,8 @@ Product {
             "DurationConstraint.qml",
             "PropertyValueSequence.qml",
             "Qst.qml",
+            "SignalProbe.qml",
             "qmldir",
-            "SignalTrigger.qml",
             "qst_internal.js",
         ]
 

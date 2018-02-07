@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017-2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -42,6 +42,7 @@ private slots:
     void processProbe();
     void workingDirectory_data();
     void workingDirectory();
+    void signalProbe();
 };
 
 #endif // AUTOTEST_H

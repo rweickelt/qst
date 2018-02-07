@@ -78,6 +78,8 @@ private:
     Item beginCreate(const QString& filepath);
     void completeCreate(Item* item);
     Item createDefaultProjectComponent();
+    Q_INVOKABLE void onQmlEngineWarnings(const QList<QQmlError> &warnings);
+
 
     static QStringList makeAbsolute(const QStringList& paths, const QString& basePath);
 
@@ -88,6 +90,8 @@ private:
     QPointer<Project> m_project;
     QString m_rootFilepath;
     QList<QPointer<Testcase> > m_testCases;
+
+    friend class QmlEngineWarningScopeGuard;
 };
 
 inline QStringList ProjectResolver::errors() const

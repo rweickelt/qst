@@ -40,7 +40,7 @@ Project {
 
         files : [
             "autotest.cpp",
-            "autotest.h"
+            "autotest.h",
         ]
 
         Group {

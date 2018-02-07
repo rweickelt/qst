@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017-2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -155,6 +155,17 @@ void AutoTest::workingDirectory()
     VERIFY_PASS(results, "testcase");
     QVERIFY(tempDir.exists());
     QVERIFY(tempDir.exists("testcase"));
+}
+
+void AutoTest::signalProbe()
+{
+    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("signalprobe/project.qml")} );
+    if (qstProcess().exitCode() != 2)
+    {
+        QFAIL(qstProcess().readAllStandardError());
+    }
+    VERIFY_PASS(results, "verify-triggered");
+    VERIFY_FAIL(results, "nonexisting-signal", "SignalProbe.qml:26");
 }
 
 

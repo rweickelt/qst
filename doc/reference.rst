@@ -18,6 +18,7 @@ Name                                    Description
 ======================================= ===========
 :doc:`ProcessProbe <processprobe-item>` Starts and watches processes.
 :doc:`Project <project-item>`           A container item for multiple :cpp:class:`Testcase` items.
+:doc:`SignalProbe <signalprobe-item>`   Watches signals from other items.
 :doc:`Testcase <testcase-item>`         Implements a test action.
 ======================================= ===========
 
