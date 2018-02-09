@@ -1,4 +1,4 @@
-ProcessProbe Item
+SignalProbe Item
 =================
 
 ..  cpp:class:: SignalProbe
