@@ -15,6 +15,10 @@ QstService {
 
     // Waits a given time
     function wait(milliseconds) {
+        if (typeof(currentTestcase) === 'Undefined') {
+            error("Calling Qst.wait() is only allowed in Testcase.run()", qmlCallerFile(), qmlCallerLine());
+        }
+
         currentTestcase.waitMilliseconds(milliseconds, qmlCallerFile(), qmlCallerLine());
     }
 

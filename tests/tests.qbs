@@ -7,6 +7,7 @@ Project {
         name: "qsttestlib"
 
         Depends { name: "Qt.core" }
+        Depends { name: "qst-application" }
 
         files: [
             "qsttest.cpp",
@@ -20,6 +21,7 @@ Project {
         ])
 
         Export {
+            Depends { name: "qst-application" }
             Depends { name: "cpp" }
             cpp.includePaths: path
         }

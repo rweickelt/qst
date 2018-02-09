@@ -221,6 +221,7 @@ Testcase::State Testcase::cleaningUpTestCaseStateFunction()
         QMetaObject::invokeMethod(attached, "destruction");
     }
     emit destruction();
+    m_currentTestCase.clear();
     return Destroyed;
 }
 

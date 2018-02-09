@@ -29,16 +29,27 @@
 #include <QtCore/QDir>
 #include <QtCore/QRegularExpression>
 #include <qtest.h>
+#include <qst.h>
 
 void AutoTest::project()
 {
-    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("project/project.qml") });
+    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("project/project-no-errors.qml") });
     if (qstProcess().exitCode() != 0)
     {
         QFAIL(qstProcess().readAllStandardError());
     }
     VERIFY_PASS(results, "test1");
     VERIFY_PASS(results, "test2");
+    results = execQstRun(QStringList{ "-f", dataPath("project/project-verify-fail.qml") });
+    if (qstProcess().exitCode() != qst::ExitApplicationError)
+    {
+        QFAIL(qstProcess().readAllStandardOutput());
+    }
+    results = execQstRun(QStringList{ "-f", dataPath("project/project-compare-fail.qml") });
+    if (qstProcess().exitCode() != qst::ExitApplicationError)
+    {
+        QFAIL(qstProcess().readAllStandardOutput());
+    }
 }
 
 void AutoTest::testCase()
