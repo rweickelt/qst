@@ -8,9 +8,7 @@ Reference
 
    *-*
 
-
 ..  rubric:: Language Items
-
 
 ======================================= ===========
 Name                                    Description
@@ -22,13 +20,14 @@ Name                                    Description
 
 ..  rubric:: Convenience Items
 
-======================================= ===========
-Name                                    Description
-======================================= ===========
-:doc:`PinProbe <pinprobe-item>`         Represents a digital IO pin on the launchpad probe board.
-:doc:`ProcessProbe <processprobe-item>` Starts and watches processes.
-:doc:`SignalProbe <signalprobe-item>`   Watches signals from other items.
-======================================= ===========
+========================================= ===========
+Name                                      Description
+========================================= ===========
+:doc:`PinProbe <pinprobe-item>`           Represents a digital IO pin on the launchpad probe board.
+:doc:`ProcessProbe <processprobe-item>`   Starts and watches processes.
+:doc:`SignalProbe <signalprobe-item>`     Watches signals from other items.
+:doc:`UniflashProbe <uniflashprobe-item>` Flash programmer for Texas Instruments MCUs.
+========================================= ===========
 
 
 ..  rubric:: Services
