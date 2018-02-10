@@ -8,19 +8,19 @@ SignalProbe Item
 
 ..  cpp:namespace:: SignalProbe
 
-Properties:
+..  rubric:: Properties
 
 - :cpp:member:`condition`
 - :cpp:member:`count`
 - :cpp:member:`signal`
 
 
-Methods:
+..  rubric:: Methods:
 
 - :cpp:func:`clear()`
 
 
-Signals:
+..  rubric:: Signals:
 
 - :cpp:func:`triggered()`
 

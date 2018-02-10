@@ -8,11 +8,9 @@ Reference
 
    *-*
 
-Language Items
---------------
 
-.. toctree::
-   :hidden:
+..  rubric:: Language Items
+
 
 ======================================= ===========
 Name                                    Description
@@ -21,11 +19,8 @@ Name                                    Description
 :doc:`Testcase <testcase-item>`         Implements a test action.
 ======================================= ===========
 
-Convenience Items
------------------
 
-.. toctree::
-   :hidden:
+..  rubric:: Convenience Items
 
 ======================================= ===========
 Name                                    Description
@@ -35,11 +30,8 @@ Name                                    Description
 :doc:`SignalProbe <signalprobe-item>`   Watches signals from other items.
 ======================================= ===========
 
-Services
---------
 
-.. toctree::
-   :hidden:
+..  rubric:: Services
 
 ================================== ===========
 Name                               Description

@@ -7,15 +7,18 @@ Testcase Item
 
 ..  cpp:namespace:: Testcase
 
-Properties:
+..  rubric:: Enumerations
+
+- :cpp:enum:`Result`
+
+..  rubric:: Properties
 
 - :cpp:member:`elapsedTime`
 - :cpp:member:`name`
 - :cpp:member:`result`
 - :cpp:member:`workingDirectory`
 
-
-Methods:
+..  rubric:: Methods
 
 - :cpp:func:`run()`
 

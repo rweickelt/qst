@@ -7,7 +7,7 @@ Project Item
 
 ..  cpp:namespace:: Testcase
 
-Properties:
+..  rubric:: Properties
 
 - :cpp:member:`name`
 - :cpp:member:`references`

@@ -7,7 +7,11 @@ TextFile Service
 
 ..  cpp:namespace:: TextFile
 
-Methods:
+..  rubric:: Enumerations
+
+- :cpp:enum:`OpenMode`
+
+..  rubric:: Methods
 
 - :cpp:func:`TextFile::TextFile()`
 - :cpp:func:`atEndOfFile()`

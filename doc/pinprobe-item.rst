@@ -7,7 +7,13 @@ PinProbe Item
 
 ..  cpp:namespace:: PinProbe
 
-Properties:
+..  rubric:: Enumerations
+
+- :cpp:enum:`PullMode`
+- :cpp:enum:`Type`
+- :cpp:enum:`Value`
+
+..  rubric:: Properties
 
 - :cpp:member:`ioid`
 - :cpp:member:`port`
@@ -15,7 +21,7 @@ Properties:
 - :cpp:member:`type`
 - :cpp:member:`value`
 
-Signals:
+..  rubric:: Signals
 
 - :cpp:func:`valueChanged()`
 
@@ -93,7 +99,7 @@ Enumerations
 
 ..  cpp:enum:: PullMode
 
-    The pull
+    Whether internal pull resistors should be enabled or not.
 
     ..  cpp:enumerator:: PullDisabled
 

@@ -7,8 +7,7 @@ Xds Service
 
 ..  cpp:namespace:: Xds
 
-
-Methods:
+..  rubric:: Methods
 
 - :cpp:func:`availableSerials()`
 - :cpp:func:`portFromSerial()`

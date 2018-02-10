@@ -7,7 +7,12 @@ ProcessProbe Item
 
 ..  cpp:namespace:: ProcessProbe
 
-Properties:
+..  rubric:: Enumerations
+
+- :cpp:enum:`ProcessError`
+- :cpp:enum:`State`
+
+..  rubric:: Properties
 
 - :cpp:member:`arguments`
 - :cpp:member:`exitCode`
@@ -15,8 +20,7 @@ Properties:
 - :cpp:member:`state`
 - :cpp:member:`workingDirectory`
 
-
-Methods:
+..  rubric:: Methods
 
 - :cpp:func:`readAllStandardError()`
 - :cpp:func:`readAllStandardOutput()`
@@ -25,13 +29,11 @@ Methods:
 - :cpp:func:`waitForFinished()`
 - :cpp:func:`waitForStarted()`
 
-
-Signals:
+..  rubric:: Signals
 
 - :cpp:func:`errorOccurred()`
 - :cpp:func:`started()`
 - :cpp:func:`finished()`
-
 
 Detailed Description
 --------------------
