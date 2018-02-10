@@ -35,7 +35,7 @@ Name                                    Description
 
 ================================== ===========
 Name                               Description
----------------------------------- -----------
+================================== ===========
 :doc:`Qst <qst-service>`           Helper functions for test execution.
 :doc:`TextFile <textfile-service>` Reads from and writes into text files.
 :doc:`Xds <xds-service>`           Represents XDS-based debugging interfaces.
