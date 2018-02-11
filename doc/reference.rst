@@ -8,14 +8,17 @@ Reference
 
    *-*
 
-..  rubric:: Language Items
+..  rubric:: Core Items
 
-======================================= ===========
-Name                                    Description
-======================================= ===========
-:doc:`Project <project-item>`           A container item for multiple :cpp:class:`Testcase` items.
-:doc:`Testcase <testcase-item>`         Implements a test action.
-======================================= ===========
+========================================= ===========
+Name                                      Description
+========================================= ===========
+:doc:`PinProbe <pinprobe-item>`           Represents a digital IO pin on the launchpad probe board.
+:doc:`ProcessProbe <processprobe-item>`   Starts and watches processes.
+:doc:`Project <project-item>`             A container item for multiple :cpp:class:`Testcase` items.
+:doc:`SignalProbe <signalprobe-item>`     Watches signals from other items.
+:doc:`Testcase <testcase-item>`           Implements a test action.
+========================================= ===========
 
 
 ..  rubric:: Convenience Items
@@ -23,9 +26,6 @@ Name                                    Description
 ========================================= ===========
 Name                                      Description
 ========================================= ===========
-:doc:`PinProbe <pinprobe-item>`           Represents a digital IO pin on the launchpad probe board.
-:doc:`ProcessProbe <processprobe-item>`   Starts and watches processes.
-:doc:`SignalProbe <signalprobe-item>`     Watches signals from other items.
 :doc:`UniflashProbe <uniflashprobe-item>` Flash programmer for Texas Instruments MCUs.
 ========================================= ===========
 
