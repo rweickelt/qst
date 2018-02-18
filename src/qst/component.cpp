@@ -47,3 +47,12 @@ Testcase* Component::testCase()
     Q_ASSERT(false);
     return nullptr;
 }
+
+void Component::setName(const QString& name)
+{
+    if (name != m_name)
+    {
+        m_name = name;
+        emit nameChanged();
+    }
+}

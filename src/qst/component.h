@@ -44,7 +44,10 @@ class Component : public QObject, public QQmlParserStatus
     friend class Testcase;
 
     Q_PROPERTY(QQmlListProperty<QObject> children READ children CONSTANT)
-    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+
+signals:
+    void nameChanged();
 
 public:
     explicit Component(QObject* parent = 0);
@@ -94,6 +97,5 @@ inline QString Component::filepath() const { return m_filepath; }
 inline QString Component::name() const { return m_name; }
 
 inline void Component::setFilepath(const QString& filepath) { m_filepath = filepath; }
-inline void Component::setName(const QString& name) { m_name = name; }
 
 #endif // TESTCASEITEM_H
