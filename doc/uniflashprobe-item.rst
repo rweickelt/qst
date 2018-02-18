@@ -1,11 +1,9 @@
 UniflashProbe Item
 ==================
 
-..  cpp:class:: UniflashProbe : ProcessProbe
+..  cpp:class:: UniflashProbe
 
     Flash programmer interface for Texas Instruments MCUs.
-
-    Inherits :cpp:class:`ProcessProbe`.
 
 ..  cpp:namespace:: UniflashProbe
 
@@ -20,6 +18,11 @@ UniflashProbe Item
 ..  rubric:: Methods
 
 - :cpp:func:`flash()`
+- :cpp:func:`waitForFinished()`
+
+..  rubric:: Signals
+
+- :cpp:func:`finished()`
 
 
 Detailed Description
@@ -96,7 +99,30 @@ Methods
 ..  cpp:function:: void flash()
 
     Writes :cpp:member:`file` to a :cpp:member:`device` connected via
-    :cpp:member:`programmer`. The method returns immediately and the programming
-    process executes in background.
+    :cpp:member:`programmer`. Performs a board reset afterwards.
 
-    When done, the :cpp:func:`ProcessProbe::finished()` signal is raised.
+    The method returns immediately and the programming process executes in
+    background. When done, the :cpp:func:`finished()` signal is raised.
+
+
+..  cpp:function:: bool waitForFinished(int milliseconds)
+
+    Blocks until the current operation has finished and the
+    :cpp:func:`finished()` signal has been emitted, or until `milliseconds` have
+    passed.
+
+    Returns ``true`` if the process finished; otherwise returns ``false`` (if
+    the operation timed out, if an error occurred, or if this process is
+    already finished).
+
+    If `milliseconds` is -1, this function will not time out.
+
+
+Signals
+-------
+
+..  cpp:function:: void finished()
+
+    This signal is emitted when an operation has finished.
+
+    See also :cpp:func:`flash()`.
