@@ -113,7 +113,7 @@ void execRunCommand()
     {
         for (const QString& error : resolver.errors())
         {
-            Console::printError(error);
+            Console::printError("Error: " + error);
         }
         ::exit(qst::ExitApplicationError);
     }

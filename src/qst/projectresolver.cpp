@@ -112,12 +112,18 @@ void ProjectResolver::loadRootFile()
         return;
     }
 
-    // 2. Browse and resolve references.
+    // 2. Browse and resolve references in root project item.
     QStringList absoluteReferences = makeAbsolute(m_project->references(),
             rootItem.context->contextProperty("path").toString());
     for (QStringList unresolved = absoluteReferences; !unresolved.isEmpty();
          unresolved.removeFirst())
     {
+        if (!QFile::exists(unresolved.first()))
+        {
+            m_errors.append(QString("File '%1' referenced by project '%2' does not exist.")
+                            .arg(unresolved.first()).arg(rootItem.filepath));
+            return;
+        }
         Item item = beginCreate(unresolved.first());
         if (item.state == Item::Invalid)
         {
