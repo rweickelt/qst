@@ -67,6 +67,14 @@ QStringList Xds::availableSerials() const
 
 QString Xds::portFromSerial(const QString& serial)
 {
+    if (serial.isEmpty())
+    {
+        qst::error(QString("serial '%1' is not a valid serial in %2:%3.")
+                   .arg(serial)
+                   .arg(QstService::instance(m_engine)->qmlCallerFile())
+                   .arg(QstService::instance(m_engine)->qmlCallerLine()));
+    }
+
     for (const auto& info : QSerialPortInfo::availablePorts())
     {
         // We will usually get 2 ports in ascending order. The first
