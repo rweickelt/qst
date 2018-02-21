@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017-2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -39,10 +39,13 @@ ProcessProbe::ProcessProbe(QObject *parent) : Component(parent)
 
 void ProcessProbe::classBegin()
 {
+    Component::classBegin();
 }
 
 void ProcessProbe::componentComplete()
 {
+    Component::componentComplete();
+
     if (m_workingDirectory.isEmpty())
     {
         m_workingDirectory = testCase()->workingDirectory();

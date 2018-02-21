@@ -88,8 +88,7 @@ PinProbe::PinProbe(QObject *parent) : Component(parent)
 
 void PinProbe::componentComplete()
 {
-    Q_ASSERT(!m_port.isEmpty());
-    registerWithHost(RocHostController::instance(m_port));
+    Component::componentComplete();
 }
 
 

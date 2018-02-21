@@ -216,6 +216,11 @@ Testcase::State Testcase::cleaningUpTestCaseStateFunction()
         m_result = Success;
     }
 
+    for (auto child : m_children)
+    {
+        child->cleanupTestCase();
+    }
+
     for (auto attached : m_attachedObjects)
     {
         QMetaObject::invokeMethod(attached, "destruction");

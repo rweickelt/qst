@@ -39,11 +39,13 @@ class Component : public QObject, public QQmlParserStatus
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
     Q_DISABLE_COPY(Component)
-    Q_CLASSINFO("DefaultProperty", "children")
+    // We need a default property that can hold objects, but we won't actually use it.
+    // Instead, we let component items register manually as testcase children.
+    Q_CLASSINFO("DefaultProperty", "__defaultProperty")
 
     friend class Testcase;
 
-    Q_PROPERTY(QQmlListProperty<QObject> children READ children CONSTANT)
+    Q_PROPERTY(QQmlListProperty<QObject> __defaultProperty READ defaultProperty CONSTANT)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 
 signals:
@@ -51,11 +53,9 @@ signals:
 
 public:
     explicit Component(QObject* parent = 0);
-    QQmlListProperty<QObject> children();
+    QQmlListProperty<QObject> defaultProperty();
     Testcase* testCase();
 
-    template <typename T>
-    QList<T*> childrenByType() const;
     QString name() const;
     QString filepath() const;
     void setName(const QString& name);
@@ -68,30 +68,12 @@ protected:
     virtual void cleanupTestCase() {}
     virtual void cleanupTestFunction() {}
     virtual void classBegin() {}
-    virtual void componentComplete() {}
+    virtual void componentComplete();
 
-    QList<QObject *> m_children;
+    QList<QObject *> m_defaultProperty;
     QString m_name;
     QString m_filepath;
 };
-
-template <typename T>
-QList<T*> Component::childrenByType() const
-{
-    QList<T*> result;
-    for (auto child : m_children)
-    {
-        if (child->metaObject()->inherits(&T::staticMetaObject))
-        {
-            result << qobject_cast<T*>(child);
-            if (m_children.size() > 0)
-            {
-                result << qobject_cast<T*>(child)->childrenByType<T>();
-            }
-        }
-    }
-    return result;
-}
 
 inline QString Component::filepath() const { return m_filepath; }
 inline QString Component::name() const { return m_name; }

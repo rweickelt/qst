@@ -23,15 +23,15 @@
 ****************************************************************************/
 #include "component.h"
 #include "testcase.h"
+#include <QtDebug>
 
 Component::Component(QObject *parent) : QObject(parent)
 {
-
 }
 
-QQmlListProperty<QObject> Component::children()
+QQmlListProperty<QObject> Component::defaultProperty()
 {
-    return QQmlListProperty<QObject>(this, m_children);
+    return QQmlListProperty<QObject>(this, m_defaultProperty);
 }
 
 Testcase* Component::testCase()
@@ -55,4 +55,9 @@ void Component::setName(const QString& name)
         m_name = name;
         emit nameChanged();
     }
+}
+
+void Component::componentComplete()
+{
+    testCase()->registerChild(this);
 }

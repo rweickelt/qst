@@ -81,7 +81,6 @@ public:
 
 protected:
     void onDriverValueChanged(int value);
-    void classBegin() {}
     void componentComplete();
 
     quint32 classId() const override;

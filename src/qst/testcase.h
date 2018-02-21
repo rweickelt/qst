@@ -76,6 +76,11 @@ public:
 
     void componentComplete() override;
 
+    template <typename T>
+    QList<T*> childrenByType() const;
+
+    void registerChild(Component* component);
+
     static Testcase* instance();
 
 signals:
@@ -104,8 +109,6 @@ protected:
     Q_INVOKABLE void waitUntilExpression(QJSValue expression, int milliseconds, const QString& file, int line);
 
     void initTestCase() override;
-
-
     Project* project() const;
 
 public:
@@ -152,6 +155,20 @@ inline QString Testcase::errorString() const { return m_errorString; }
 inline bool Testcase::hasErrors() const { return !m_errorString.isEmpty(); }
 inline Testcase::Result Testcase::result() const { return m_result; }
 inline Testcase::State Testcase::state() const { return m_state; }
+inline void Testcase::registerChild(Component* component) { m_children.append(component); }
 
+template <typename T>
+QList<T*> Testcase::childrenByType() const
+{
+    QList<T*> result;
+    for (auto child : m_children)
+    {
+        if (child->metaObject()->inherits(&T::staticMetaObject))
+        {
+            result << qobject_cast<T*>(child);
+        }
+    }
+    return result;
+}
 
 #endif // TESTCASE_H
