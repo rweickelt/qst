@@ -60,7 +60,8 @@ enum {
 
 PIN_Config pinTable[] =
 {
-    Board_PIN_LED1 | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
+    Board_PIN_GLED | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
+    Board_PIN_RLED | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
     PIN_TERMINATE
 };
 PIN_State pinState;
@@ -75,7 +76,7 @@ extern "C" const Clock_Handle watchdogClock;
 
 PIN_Handle pins;
 
-void __assert_func(const char *, int, const char *, const char *)
+void __assert_func(const char * function, int line , const char * file, const char * expression )
 {
     for (;;);
 }

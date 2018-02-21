@@ -35,7 +35,7 @@ namespace {
 
 RocHostController::RocHostController(const QString& port) : QObject()
 {
-    m_connected = false;
+    m_state = Disconnected;
     m_currentObject = NULL;
     m_port = port;
     m_unansweredPings = 0;
@@ -67,25 +67,36 @@ quint32 RocHostController::registerObject(RocHostObject* object)
 {
     Q_ASSERT(object != NULL);
 
-    if (!isConnected() && !m_socket.connectToTarget(m_port))
+    if (m_state == Disconnected)
     {
-        QST_ERROR_AND_EXIT(m_socket.errorString());
-    }
-
-    for(int retries = 2; (!isConnected() && (retries > 0)); retries--)
-    {
-        roc::MessageHeader resetMessage;
-        resetMessage.type = roc::Reset;
-        resetMessage.payloadLength = 0;
-        m_socket.sendMessage(QByteArray(reinterpret_cast<char*>(&resetMessage), sizeof(roc::MessageHeader)));
-        if (waitForReply(900))
+        if (m_socket.connectToTarget(m_port))
         {
-            setConnected(true);
+            m_state = Standby;
+        }
+        else
+        {
+            QST_ERROR_AND_EXIT(m_socket.errorString());
         }
     }
-    if (!isConnected())
+
+    if (m_state == Standby)
     {
-        QST_ERROR_AND_EXIT("Target does not respond.");
+        for(int retries = 2; ((m_state != Connected) && (retries > 0)); retries--)
+        {
+            roc::MessageHeader resetMessage;
+            resetMessage.type = roc::Connect;
+            resetMessage.payloadLength = 0;
+            m_socket.sendMessage(QByteArray(reinterpret_cast<char*>(&resetMessage), sizeof(roc::MessageHeader)));
+            if (waitForReply(900))
+            {
+                m_state = Connected;
+                m_pingTimer.start(517);
+            }
+        }
+        if (m_state != Connected)
+        {
+            QST_ERROR_AND_EXIT("Target does not respond.");
+        }
     }
 
     m_currentObject = object;
@@ -108,26 +119,34 @@ quint32 RocHostController::registerObject(RocHostObject* object)
 
 void RocHostController::unregisterObject(const RocHostObject* object)
 {
+    Q_ASSERT(m_objects.contains(object->targetId()));
+
     roc::MessageHeader request;
     request.type = roc::Destruct;
-    request.classId = object->classId();
+    request.objectId = object->targetId();
     request.payloadLength = 0;
 
     m_socket.sendMessage(QByteArray(reinterpret_cast<char*>(&request), sizeof(roc::MessageHeader)));
 
     m_objects.remove(object->targetId());
     m_ids.remove(object);
+
+    if (m_objects.size() == 0)
+    {
+        m_pingTimer.stop();
+        m_state = Standby;
+    }
 }
 
 void RocHostController::sendMessage(const QByteArray &message)
 {
-    Q_ASSERT(isConnected());
+    Q_ASSERT((m_state == Standby) || (m_state == Connected));
     m_socket.sendMessage(message);
 }
 
 void RocHostController::sendMessage(RocHostObject* object, quint8 methodId, const QByteArray& data, roc::MessageType type)
 {
-    Q_ASSERT(isConnected());
+    Q_ASSERT((m_state == Standby) || (m_state == Connected));
     Q_ASSERT(m_ids.contains(object));
 
     roc::MessageHeader rocHeader;
@@ -147,6 +166,12 @@ void RocHostController::onReadyRead()
     while (m_socket.messagesAvailable())
     {
         QByteArray message = m_socket.readNextMessage();
+        if (message.length() == 0)
+        {
+            // Ignore stp-only messages that should not be passed through
+            // from stpsocket.
+            continue;
+        }
         roc::MessageHeader header;
         memcpy(&header, message.data(), sizeof(roc::MessageHeader));
         Q_ASSERT(header.payloadLength == (message.length() - sizeof(roc::MessageHeader)));
@@ -191,28 +216,9 @@ bool RocHostController::waitForReply(int milliseconds)
     return (m_loop.exec() == 0);
 }
 
-void RocHostController::setConnected(bool connected)
-{
-    Q_ASSERT(connected != m_connected);
-    if (connected)
-    {
-        m_pingTimer.start(517);
-    }
-    else
-    {
-        m_pingTimer.stop();
-    }
-    m_connected = true;
-}
-
-bool RocHostController::isConnected() const
-{
-    return m_connected;
-}
-
 void RocHostController::onPingTimerTick()
 {
-    Q_ASSERT(isConnected());
+    Q_ASSERT(m_state == Connected);
 
     if (m_unansweredPings > 2)
     {
@@ -229,5 +235,4 @@ void RocHostController::onPingTimerTick()
     m_unansweredPings++;
     m_socket.sendMessage(message);
 }
-
 

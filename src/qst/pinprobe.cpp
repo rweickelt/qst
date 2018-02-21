@@ -104,9 +104,12 @@ void PinProbe::cleanupTestFunction()
 
 void PinProbe::initTestCase()
 {
+    Q_ASSERT(!m_port.isEmpty());
+    registerWithHost(RocHostController::instance(m_port));
+
     for (const auto& probe : testCase()->childrenByType<PinProbe>())
     {
-        if ((probe->m_ioid == m_ioid) && (probe != this))
+        if (((probe->m_ioid == m_ioid) && (probe != this) && (this->m_port == probe->m_port)))
         {
             qst::error(QString("Conflicting ioid between PinProbe '%1' and '%2' in %3.")
                        .arg(this->name()).arg(probe->name()).arg(testCase()->filepath()));

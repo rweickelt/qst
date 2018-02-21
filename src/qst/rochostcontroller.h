@@ -54,19 +54,20 @@ public slots:
 
 protected:
     bool waitForReply(int milliseconds);
-    bool isConnected() const;
-    void setConnected(bool connected);
 
 protected slots:
     void onPingTimerTick();
 
 
 private:
-    enum ConnectionState {
-        Disconnected,
-        WaitingForInfo,
-        Connected
+    enum State {
+        Disconnected, // Not connected to any probe
+        Standby,      // Connected, but no probes active
+        Connected,    // Connected and probes active
     };
+
+    void setNextState(State newState);
+    bool waitForState(int milliseconds);
 
     RocHostController(const QString& port);
 
@@ -76,8 +77,7 @@ private:
     StpSocket m_socket;
     RocHostObject* m_currentObject;
     quint32 m_currentObjectId;
-    //quint32 m_registedObjectCount;
-    bool m_connected;
+    State m_state;
     QString m_port;
     QEventLoop m_loop;
     QTimer m_pingTimer;

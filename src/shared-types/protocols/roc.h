@@ -41,7 +41,7 @@ enum State {
 enum MessageType : uint8_t
 {
     StateMessage = 0,
-    Reset = 1,
+    Connect = 1,
     Error = 2,
     Construct = 3,
     ObjectId = 4,

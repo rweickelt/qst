@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017-2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -46,7 +46,7 @@ public:
     ~StpSocket();
 
     bool connectToTarget(const QString& port);
-    void disconnect();
+    void disconnectFromTarget();
 
     bool messagesAvailable();
     QByteArray readNextMessage();

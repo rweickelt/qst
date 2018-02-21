@@ -27,6 +27,7 @@
 #include <Board.h>
 #include <assert.h>
 
+#include <ti/drivers/PIN.h>
 #include <ti/drivers/UART.h>
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/gates/GateSwi.h>
@@ -34,6 +35,7 @@
 #include <ti/sysbios/knl/Queue.h>
 
 extern "C" Mailbox_Handle rxMailbox;
+extern PIN_Handle pins;
 
 // Message handling
 namespace {
@@ -54,6 +56,9 @@ namespace {
     SharedPointer<MessageBuffer> rxBuffer;
     SharedPointer<MessageBuffer> txBuffer;
     stp::MessageHeader rxHeader;
+
+    void setActivityLedEnabled(bool enabled);
+
 }
 
 void SerialInterface::init()
@@ -97,6 +102,8 @@ extern "C" void onUartBytesReceived(UART_Handle handle, void* rxBuf, size_t size
     (void)handle;
     (void)rxBuf;
     assert(size > 0);
+
+    setActivityLedEnabled(true);
 
     RxState nextState = RxInvalidState;
     uint32_t bytesNeeded = 0;
@@ -166,6 +173,10 @@ extern "C" void onUartBytesReceived(UART_Handle handle, void* rxBuf, size_t size
     }
 
     rxState = nextState;
+    if (!txActive)
+    {
+        setActivityLedEnabled(false);
+    }
     UART_read(uart, destination, bytesNeeded);}
 
 extern "C" void onUartBytesWritten(UART_Handle handle, void* txBuf, size_t size)
@@ -177,6 +188,7 @@ extern "C" void onUartBytesWritten(UART_Handle handle, void* txBuf, size_t size)
     {
         txBuffer = SharedPointer<MessageBuffer>();
         txActive = false;
+        setActivityLedEnabled(false);
         return;
     }
 
@@ -212,9 +224,23 @@ void SerialInterface::write(const SharedPointer<MessageBuffer>&buffer, stp::Mess
     if (!txActive)
     {
         txActive = true;
+        setActivityLedEnabled(true);
         onUartBytesWritten(uart, nullptr, 0);
     }
     GateSwi_leave(GateSwi_handle(&txGate), key);
 }
 
+namespace {
+void setActivityLedEnabled(bool enabled)
+{
+    if (enabled)
+    {
+        PIN_setOutputValue(pins, Board_PIN_RLED, 1);
+    }
+    else
+    {
+        PIN_setOutputValue(pins, Board_PIN_RLED, 0);
+    }
+}
+}
 

@@ -44,6 +44,7 @@ enum {
 
 namespace {
     ArrayList<RocTargetObject*, 32> probes;
+    uint32_t probeCount = 0;
     int watchdogCounter = WatchdogReloadValue;
     bool connected = false;
 
@@ -74,20 +75,22 @@ void RocTargetController::processMessage(const SharedPointer<MessageBuffer>& mes
 {
     roc::MessageHeader rxRocHeader = message->takeAtFront<roc::MessageHeader>();
     // Must always start connection with a reset message.
-    if (!connected && (rxRocHeader.type != roc::Reset))
+    if (!connected && (rxRocHeader.type != roc::Connect))
     {
         for (;;);
     }
     switch (rxRocHeader.type)
     {
-    case roc::Reset:
+    case roc::Connect:
         for (int32_t i = 0; i < probes.length(); i++)
         {
-            assert(probes[i] != NULL);
-            delete probes[i];
+            if (probes[i] != nullptr)
+            {
+                delete probes[i];
+            }
         }
         probes.clear();
-
+        probeCount = 0;
     {
         SharedPointer<MessageBuffer> txMessage(new MessageBuffer(
                     sizeof(stp::MessageHeader) + sizeof(roc::MessageHeader)));
@@ -100,9 +103,27 @@ void RocTargetController::processMessage(const SharedPointer<MessageBuffer>& mes
     }
         watchdogCounter = WatchdogReloadValue;
         connected = true;
+        PIN_setOutputValue(pins, Board_PIN_GLED, 1);
         break;
     case roc::Construct:
         constructObject(static_cast<roc::ClassId>(rxRocHeader.classId));
+        break;
+    case roc::Destruct:
+        for (int32_t i = 0; i < probes.length(); i++)
+        {
+            if (probes[i] == reinterpret_cast<RocTargetObject*>(rxRocHeader.objectId))
+            {
+                delete probes[i];
+                probes[i] = nullptr;
+                probeCount--;
+            }
+        }
+        if (probeCount == 0)
+        {
+            probes.clear();
+            connected = false;
+            PIN_setOutputValue(pins, Board_PIN_GLED, 0);
+        }
         break;
     case roc::SerializedData:
         // Todo: Validate object after connection reset
@@ -115,8 +136,6 @@ void RocTargetController::processMessage(const SharedPointer<MessageBuffer>& mes
     case roc::Ping:
     {
         watchdogCounter = WatchdogReloadValue;
-        PIN_setOutputValue(pins, Board_PIN_LED1, !PIN_getOutputValue(Board_PIN_LED1));
-
         SharedPointer<MessageBuffer> txMessage(new MessageBuffer(
                     sizeof(roc::MessageHeader) + sizeof(stp::MessageHeader)));
         roc::MessageHeader* txRocHeader = txMessage->allocateAtFront<roc::MessageHeader>();
@@ -162,7 +181,6 @@ void constructObject(roc::ClassId classId)
     case roc::PinClass:
         object = new PinTargetObject();
         assert(object != NULL);
-        probes.append(object);
 
         // Send message back with object id
         txRocHeader->type = roc::ObjectId;
@@ -173,6 +191,8 @@ void constructObject(roc::ClassId classId)
     default:
         assert(false);
     }
+    probes.append(object);
+    probeCount++;
 }
 
 }

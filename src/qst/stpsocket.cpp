@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017-2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -86,7 +86,7 @@ bool StpSocket::connectToTarget(const QString& port)
     return true;
 }
 
-void StpSocket::disconnect()
+void StpSocket::disconnectFromTarget()
 {
     QObject::disconnect(&m_port, &QSerialPort::readyRead, this, &StpSocket::onUartReadyRead);
     m_connected = false;
@@ -128,13 +128,12 @@ void StpSocket::onUartReadyRead()
         case RxPayload:
             m_rxBuffer.append(m_port.read(m_rxBytesNeeded));
             // Todo: Check data integrity
-            QByteArray payload();
             m_rxMessageQueue.append(QByteArray(m_rxBuffer.constData() + sizeof(stp::MessageHeader),
                     header->payloadLength));
             m_rxBuffer.clear();
-            m_rxBuffer.reserve(sizeof(roc::MessageHeader));
+            m_rxBuffer.reserve(sizeof(stp::MessageHeader));
             nextState = RxHeader;
-            m_rxBytesNeeded = sizeof(roc::MessageHeader);
+            m_rxBytesNeeded = sizeof(stp::MessageHeader);
             if (m_connected == true)
             {
                 emit readyRead();
