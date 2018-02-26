@@ -44,7 +44,7 @@ QstService {
 
         if (success === false) {
             if (message === undefined) {
-                message = "Compared values are not the same";
+                message = "Compared values are not the same. Expected: " + exp + " Actual: " + act;
             }
             if (currentTestcase) {
                 currentTestcase.finishAndExit(Testcase.Fail, qmlCallerFile(), qmlCallerLine(), message);
