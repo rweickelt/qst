@@ -38,7 +38,7 @@ RocTargetObject::~RocTargetObject()
     // TODO Auto-generated destructor stub
 }
 
-void RocTargetObject::sendToHost(uint32_t messageId, const void* data, uint32_t length)
+void RocTargetObject::sendToHost(uint8_t messageId, roc::BlockingMode blockingMode, const void* data, uint32_t length)
 {
-    RocTargetController::sendToHost(this->id(), messageId, data, length);
+    RocTargetController::sendToHost(messageId, blockingMode, this->id(), data, length);
 }

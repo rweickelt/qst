@@ -69,11 +69,11 @@ Example::
 
         function run() {
             Qst.wait(50);
-            Qst.compare(led.value, PinProbe.High, "LED is already on");
+            Qst.compare(led.value, PinProbe.Low, "LED should be off but is on");
             // Stimulate button press
             button.value = PinProbe.Low;
             Qst.wait(5);
-            Qst.compare(led.value, PinProbe.Low, "LED is not on");
+            Qst.compare(led.value, PinProbe.High, "LED should be on but is off");
         }
     }
 

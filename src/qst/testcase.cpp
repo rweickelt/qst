@@ -204,6 +204,11 @@ Testcase::State Testcase::cleaningUpTestFunctionStateFunction()
         break;
     }
 
+    for (auto child : m_children)
+    {
+        child->cleanupTestFunction();
+    }
+
     return CleaningUpTestCase;
 }
 

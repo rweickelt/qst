@@ -1,17 +1,16 @@
 import qst 1.0
 import ti 1.0
 
+// This test suite requires 3 launchpads.
 Project {
-    property string serial: {
-        var serials = Xds.availableSerials();
-        console.log(serials);
-        Qst.verify(serials.length > 0, "No boards connected");
-        return serials[0];
-    }
-
-    property string platform: Qst.hostOS;
+    property string dutSerial: "L400028Q" // left board
+    property string probeSerial: "L20002HM" // central board
+    property string uniflashInstallDir: "/opt/ti/uniflash_4.2"
 
     references: [
-        "readwrite.qml",
+//        "flash.qml",
+//        "reset.qml",
+//        "verify-connection.qml",
+        "pin-pair.qml"
     ]
 }

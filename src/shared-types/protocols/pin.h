@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017-2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -25,17 +25,55 @@
 #define PINDATA_H
 
 #include <stdint.h>
+#include "roc.h"
 
 namespace pin {
 
-enum MessageId
+enum MessageType
 {
-    PinValue = 0
+    Init = roc::UserMessage,
+    ChangeIoid,
+    ChangeValue,
+    ChangePullMode,
+    ChangeType,
 };
 
-struct PinData {
-    uint32_t config;
+enum Type: uint8_t
+{
+    Read = 0,
+    Write = 1,
+};
+
+enum Value: int8_t
+{
+    Undefined = -1,
+    Low = 0,
+    High = 1
+};
+
+enum PullMode: uint8_t
+{
+    PullDisabled = 0,
+    PullUp = 1,
+    PullDown = 2,
+};
+
+struct PinInitMessage {
+    uint8_t ioid;
+    PullMode pullMode;
+    Type type;
+    Value value;
 } __attribute__((packed));
+
+struct PinChangeMessage {
+    union {
+        Type type;
+        PullMode pullMode;
+        Value value;
+        uint8_t ioid;
+    };
+} __attribute__((packed));
+
 
 }
 

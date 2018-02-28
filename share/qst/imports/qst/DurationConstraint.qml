@@ -9,8 +9,8 @@ AbstractConstraint {
     property double duration : 0
     property double maxDeviation : 0
 
-    property SignalTrigger from
-    property SignalTrigger to
+    property var from
+    property var to
 
     id : constraint
 
@@ -43,9 +43,9 @@ AbstractConstraint {
                     console.assert(from, "property 'from' is not defined");
                     console.assert(to, "property 'to' is not defined");
                     if (from)
-                        from.onFired.connect(sm.startMeasurement);
+                        from.connect(sm.startMeasurement);
                     if (to)
-                        to.onFired.connect(sm.stopMeasurement);
+                        to.connect(sm.stopMeasurement);
 
                     console.assert((duration >= 0),
                                    "Error: duration must be greater or equal 0");

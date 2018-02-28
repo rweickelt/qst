@@ -25,6 +25,7 @@
 #define PINPROBE_H
 
 #include <QtCore/QString>
+#include <protocols/pin.h>
 #include "component.h"
 #include "rochostobject.h"
 
@@ -40,17 +41,20 @@ protected:
     void initTestFunction();
 
 signals:
+    void ioidChanged();
+    void pullModeChanged();
+    void typeChanged();
     void valueChanged();
 
 public:
-    enum Type
+    enum Type: uint8_t
     {
         Read = 0,
         Write = 1,
     };
     Q_ENUMS(Type)
 
-    enum Value
+    enum Value: int8_t
     {
         Undefined = -1,
         Low = 0,
@@ -58,7 +62,7 @@ public:
     };
     Q_ENUMS(Value)
 
-    enum PullMode
+    enum PullMode: uint8_t
     {
         PullDisabled = 0,
         PullUp = 1,
@@ -66,17 +70,23 @@ public:
     };
     Q_ENUMS(PullMode)
 
-    Q_PROPERTY(Type type READ type MEMBER m_type)
-    Q_PROPERTY(int ioid MEMBER m_ioid)
-    Q_PROPERTY(PullMode pullMode MEMBER m_pullMode)
+    Q_PROPERTY(Type type READ type WRITE setType NOTIFY typeChanged)
+    Q_PROPERTY(int ioid READ ioid WRITE setIoid NOTIFY ioidChanged)
+    Q_PROPERTY(PullMode pullMode READ pullMode WRITE setPullMode NOTIFY pullModeChanged)
     Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
     Q_PROPERTY(QString port MEMBER m_port)
 
     PinProbe(QObject *parent = 0);
+
+    int ioid() const;
     QString name() const;
+    PullMode pullMode() const;
     Type type() const;
     int value() const;
 
+    void setIoid(int ioid);
+    void setPullMode(PullMode mode);
+    void setType(Type type);
     void setValue(int value);
 
 protected:
@@ -88,13 +98,15 @@ protected:
 
 private:
     Type m_type;
-    int m_value;
+    Value m_value;
     int m_ioid;
     PullMode m_pullMode;
     QString m_port;
     bool m_active;
 };
 
+inline int PinProbe::ioid() const { return m_ioid; }
+inline PinProbe::PullMode PinProbe::pullMode() const { return m_pullMode; }
 inline int PinProbe::value() const { return m_value; }
 inline QString PinProbe::name() const { return m_name; }
 inline PinProbe::Type PinProbe::type() const { return m_type; }

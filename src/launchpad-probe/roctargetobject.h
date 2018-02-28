@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017-2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -26,16 +26,17 @@
 #define PROBES_ABSTRACTPROBE_H_
 
 #include <stdint.h>
+#include <protocols/roc.h>
 
 class RocTargetObject
 {
 public:
     RocTargetObject();
     virtual ~RocTargetObject();
-    virtual void parseMessage(uint8_t methodId, const char* rawData) = 0;
-    virtual void deserialize(const char* rawData) = 0;
+    virtual void parseMessage(uint8_t messageId, const char* rawData) = 0;
     uint32_t id() const;
-    void sendToHost(uint32_t messageId, const void* data, uint32_t length);
+    void sendToHost(uint8_t messageId, roc::BlockingMode blockingMode,
+                    const void* data = nullptr, uint32_t length = 0);
 };
 
 inline uint32_t RocTargetObject::id() const

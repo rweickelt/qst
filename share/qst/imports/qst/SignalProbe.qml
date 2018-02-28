@@ -20,6 +20,13 @@ Component {
         }
     }
 
+    function connect(handler) {
+        Qst.verify(typeof handler !== "undefined", "handler is undefined")
+        Qst.verify("connect" in handler, "handler does not have connect method")
+        Qst.compare(typeof handler.connect, "function")
+        triggered.connect(handler)
+    }
+
     Testcase.onCreated: {
         Qst.verify(typeof(trigger.signal) !== 'undefined', "Property 'signal' in SignalProbe '"
                    + trigger.name + "' is undefined.");

@@ -83,11 +83,12 @@ quint32 RocHostController::registerObject(RocHostObject* object)
     {
         for(int retries = 2; ((m_state != Connected) && (retries > 0)); retries--)
         {
-            roc::MessageHeader resetMessage;
-            resetMessage.type = roc::Connect;
-            resetMessage.payloadLength = 0;
-            m_socket.sendMessage(QByteArray(reinterpret_cast<char*>(&resetMessage), sizeof(roc::MessageHeader)));
-            if (waitForReply(900))
+            if (retries > 2)
+            {
+                qDebug() << "Retry connect " << m_port;
+            }
+            bool success = sendMessageBlocking(roc::Connect, (uint32_t)0, QByteArray(), 900);
+            if (success)
             {
                 m_state = Connected;
                 m_pingTimer.start(517);
@@ -100,15 +101,8 @@ quint32 RocHostController::registerObject(RocHostObject* object)
     }
 
     m_currentObject = object;
-    QByteArray payloadBuffer(reinterpret_cast<char*>(object), sizeof(object));
-    QByteArray headerBuffer(sizeof(roc::MessageHeader), Qt::Uninitialized);
-    roc::MessageHeader* request = reinterpret_cast<roc::MessageHeader*>(headerBuffer.data());
-    request->type = roc::Construct;
-    request->classId = object->classId();
-    request->payloadLength = payloadBuffer.length();
-    m_socket.sendMessage(headerBuffer + payloadBuffer);
-
-    if (!waitForReply(900))
+    bool success = sendMessageBlocking(roc::Construct, object->classId(), QByteArray(), 900);
+    if (!success)
     {
         QST_ERROR_AND_EXIT("Target does not respond.");
     }
@@ -121,12 +115,11 @@ void RocHostController::unregisterObject(const RocHostObject* object)
 {
     Q_ASSERT(m_objects.contains(object->targetId()));
 
-    roc::MessageHeader request;
-    request.type = roc::Destruct;
-    request.objectId = object->targetId();
-    request.payloadLength = 0;
-
-    m_socket.sendMessage(QByteArray(reinterpret_cast<char*>(&request), sizeof(roc::MessageHeader)));
+    bool success = sendMessageBlocking(roc::Destruct, object->targetId(), QByteArray(), 500);
+    if (!success)
+    {
+        QST_ERROR_AND_EXIT("Target does not respond.");
+    }
 
     m_objects.remove(object->targetId());
     m_ids.remove(object);
@@ -138,27 +131,55 @@ void RocHostController::unregisterObject(const RocHostObject* object)
     }
 }
 
-void RocHostController::sendMessage(const QByteArray &message)
+
+bool RocHostController::sendMessageBlocking(
+        uint8_t messageType, RocHostObject* object, const QByteArray& data, int milliseconds)
 {
-    Q_ASSERT((m_state == Standby) || (m_state == Connected));
-    m_socket.sendMessage(message);
+    Q_ASSERT(m_ids.contains(object));
+    return sendMessageBlocking(messageType, object->targetId(), data, milliseconds);
 }
 
-void RocHostController::sendMessage(RocHostObject* object, quint8 methodId, const QByteArray& data, roc::MessageType type)
+bool RocHostController::sendMessageBlocking(
+        uint8_t messageType, uint32_t objectId, const QByteArray& data, int milliseconds)
 {
     Q_ASSERT((m_state == Standby) || (m_state == Connected));
-    Q_ASSERT(m_ids.contains(object));
+    Q_ASSERT(data.length() <= UINT16_MAX);
 
-    roc::MessageHeader rocHeader;
-    rocHeader.objectId = m_ids.value(object);
-    rocHeader.methodId = methodId;
-    rocHeader.payloadLength = data.length();
-    rocHeader.type = type;
+//    qDebug() << "Send blocking " << messageType << " port " << m_port;
+    roc::MessageHeader header;
+    header.type = messageType;
+    header.objectId = objectId;
+    header.payloadLength = data.length();
+    header.transactionId = roc::Blocking;
 
-    QByteArray rocMessage(reinterpret_cast<char*>(&rocHeader), sizeof(roc::MessageHeader));
-    rocMessage.append(data);
+    QByteArray message(reinterpret_cast<const char*>(&header), sizeof(roc::MessageHeader));
+    message.append(data);
+    m_socket.sendMessage(message, stp::RocMessage);
 
-    m_socket.sendMessage(rocMessage);
+    QTimer timer;
+    timer.connect(&timer, &QTimer::timeout,
+                  [=]() { m_loop.exit(1); });
+    timer.setSingleShot(true);
+    timer.start(milliseconds);
+    return (m_loop.exec() == 0);
+}
+
+void RocHostController::sendMessageNonBlocking(uint8_t messageType, uint32_t objectId, const QByteArray& data)
+{
+    Q_ASSERT((m_state == Standby) || (m_state == Connected));
+    Q_ASSERT(data.length() <= UINT16_MAX);
+
+//    qDebug() << "Send non-blocking " << messageType << " port " << m_port;
+
+    roc::MessageHeader header;
+    header.type = messageType;
+    header.objectId = objectId;
+    header.payloadLength = data.length();
+    header.transactionId = roc::NonBlocking;
+
+    QByteArray message(reinterpret_cast<const char*>(&header), sizeof(roc::MessageHeader));
+    message.append(data);
+    m_socket.sendMessage(message, stp::RocMessage);
 }
 
 void RocHostController::onReadyRead()
@@ -169,51 +190,51 @@ void RocHostController::onReadyRead()
         if (message.length() == 0)
         {
             // Ignore stp-only messages that should not be passed through
-            // from stpsocket.
+            // from stpsocket. This nifty error should be fixed one day in
+            // StpSocket.
             continue;
         }
         roc::MessageHeader header;
-        memcpy(&header, message.data(), sizeof(roc::MessageHeader));
+        memcpy(&header, message.constData(), sizeof(roc::MessageHeader));
         Q_ASSERT(header.payloadLength == (message.length() - sizeof(roc::MessageHeader)));
-        message.remove(0, sizeof(roc::MessageHeader));
-        if (header.type == roc::CallMethod)
-        {
-            QByteArray& data = message;
-            RocHostObject* object = m_objects.value(header.objectId, NULL);
-            Q_ASSERT_X(object != NULL, "MpiHost", qPrintable(QString("No object found for %1").arg(header.objectId)));
-            object->processFromTarget(header.methodId, data);
+
+        if (header.type != roc::Pong) {
+//        qDebug() << "Receiving " << header.type << " port " << m_port;
         }
-        else if (header.type == roc::ObjectId)
+
+        // There might be a blocking request
+        if (m_loop.isRunning() && (header.transactionId == roc::Blocking))
+        {
+            m_loop.exit(0);
+        }
+
+        if (header.type == roc::ObjectId)
         {
             m_objects.insert(header.objectId, m_currentObject);
             m_ids.insert(m_currentObject, header.objectId);
             m_currentObject->m_targetId = header.objectId;
             m_currentObject = NULL;
-            m_loop.exit(0);
         }
-        else if (header.type == roc::StateMessage)
+        else if (header.type == roc::StatusOk)
         {
-            if (header.state == roc::Ready)
-            {
-                m_loop.exit(0);
-            }
+        }
+        else if (header.type == roc::StatusError)
+        {
+            QST_ERROR_AND_EXIT("Unexpected error happened on target.");
         }
         else if (header.type == roc::Pong)
         {
             Q_ASSERT(m_unansweredPings > 0);
             m_unansweredPings--;
         }
+        else
+        {
+            RocHostObject* object = m_objects.value(header.objectId, nullptr);
+            Q_ASSERT_X(object != nullptr, "RocHostController", qPrintable(QString("No object found for %1").arg(header.objectId)));
+            QByteArray& data = message.remove(0, sizeof(roc::MessageHeader));
+            object->processFromTarget(header.type, data);
+        }
     }
-}
-
-bool RocHostController::waitForReply(int milliseconds)
-{
-    QTimer timer;
-    timer.connect(&timer, &QTimer::timeout,
-                  [=]() { m_loop.exit(1); });
-    timer.setSingleShot(true);
-    timer.start(milliseconds);
-    return (m_loop.exec() == 0);
 }
 
 void RocHostController::onPingTimerTick()
@@ -225,14 +246,7 @@ void RocHostController::onPingTimerTick()
         QST_ERROR_AND_EXIT("Connection to probe lost");
     }
 
-    roc::MessageHeader header;
-    header.objectId = 0;
-    header.methodId = 0;
-    header.payloadLength = 0;
-    header.type = roc::Ping;
-
-    QByteArray message(reinterpret_cast<char*>(&header), sizeof(roc::MessageHeader));
     m_unansweredPings++;
-    m_socket.sendMessage(message);
+    sendMessageNonBlocking(roc::Ping);
 }
 

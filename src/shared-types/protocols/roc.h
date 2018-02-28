@@ -38,6 +38,11 @@ enum State {
     Occupied = 2,
 };
 
+enum BlockingMode {
+    NonBlocking = 0,
+    Blocking = 1
+};
+
 enum MessageType : uint8_t
 {
     StateMessage = 0,
@@ -45,22 +50,19 @@ enum MessageType : uint8_t
     Error = 2,
     Construct = 3,
     ObjectId = 4,
-    SerializedData = 5,
-    Destruct = 6,
-    CallMethod = 7,
-    Ping = 8,
-    Pong = 9
+    Destruct = 5,
+    Ping = 6,
+    Pong = 7,
+    StatusOk = 8,
+    StatusError = 9,
+    UserMessage = 20
 };
 
 struct MessageHeader
 {
     uint16_t payloadLength;
     uint8_t type;
-    union  {
-        uint8_t classId;
-        uint8_t methodId;
-        uint8_t state;
-    };
+    uint8_t transactionId;
     uint32_t objectId;
 } __attribute__((packed));
 

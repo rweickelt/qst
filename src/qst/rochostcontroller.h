@@ -39,9 +39,17 @@ class RocHostController : public QObject
     friend class SingleMpiHost;
     friend class RocHostObject;
 
+    typedef uint8_t TransactionId;
+
 public:
-    void sendMessage(const QByteArray& message);
-    void sendMessage(RocHostObject* object, quint8 methodId, const QByteArray& data, roc::MessageType type = roc::CallMethod);
+    bool sendMessageBlocking(uint8_t messageType,  RocHostObject* object = nullptr,
+                              const QByteArray& data = QByteArray(), int timeout = INT32_MAX);
+
+    bool sendMessageBlocking(uint8_t messageType,  uint32_t objectId,
+                              const QByteArray& data = QByteArray(), int timeout = INT32_MAX);
+
+    void sendMessageNonBlocking(uint8_t messageType,  uint32_t objectId = 0,
+                                const QByteArray& data = QByteArray());
 
     static RocHostController* instance(const QString& port);
 
@@ -50,10 +58,6 @@ public:
 
 public slots:
     void onReadyRead();
-
-
-protected:
-    bool waitForReply(int milliseconds);
 
 protected slots:
     void onPingTimerTick();

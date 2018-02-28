@@ -12,8 +12,8 @@ Testcase {
         "probe1Triggered",
         "waitCompleted",
         "timerTriggered",
-        "probe1Triggered",
         "probe2Triggered",
+        "probe1Triggered",
         "waitCompleted"
     ]
 

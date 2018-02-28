@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017-2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -52,11 +52,11 @@ void RocHostObject::unregisterFromHost()
     m_host->unregisterObject(this);
 }
 
-void RocHostObject::sendToTarget(quint32 methodId, const QByteArray data, roc::MessageType type)
+void RocHostObject::sendToTarget(uint8_t messageType, const QByteArray& data)
 {
     Q_ASSERT(m_targetId != 0);
     Q_ASSERT(!m_host.isNull());
-    m_host->sendMessage(this, methodId, data, type);
+    m_host->sendMessageBlocking(messageType, this, data);
 }
 
 RocHostController* RocHostObject::host()

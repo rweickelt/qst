@@ -47,8 +47,6 @@ namespace {
     uint32_t probeCount = 0;
     int watchdogCounter = WatchdogReloadValue;
     bool connected = false;
-
-    void constructObject(roc::ClassId classId);
 }
 
 void RocTargetController::init()
@@ -79,6 +77,7 @@ void RocTargetController::processMessage(const SharedPointer<MessageBuffer>& mes
     {
         for (;;);
     }
+
     switch (rxRocHeader.type)
     {
     case roc::Connect:
@@ -91,22 +90,13 @@ void RocTargetController::processMessage(const SharedPointer<MessageBuffer>& mes
         }
         probes.clear();
         probeCount = 0;
-    {
-        SharedPointer<MessageBuffer> txMessage(new MessageBuffer(
-                    sizeof(stp::MessageHeader) + sizeof(roc::MessageHeader)));
-
-        roc::MessageHeader* txRocHeader = txMessage->allocateAtFront<roc::MessageHeader>();
-        txRocHeader->type = roc::StateMessage;
-        txRocHeader->state = roc::Ready;
-        txRocHeader->payloadLength = 0;
-        SerialInterface::write(txMessage);
-    }
+        sendToHost(roc::StatusOk, roc::Blocking);
         watchdogCounter = WatchdogReloadValue;
         connected = true;
         PIN_setOutputValue(pins, Board_PIN_GLED, 1);
         break;
     case roc::Construct:
-        constructObject(static_cast<roc::ClassId>(rxRocHeader.classId));
+        constructObject(static_cast<roc::ClassId>(rxRocHeader.objectId));
         break;
     case roc::Destruct:
         for (int32_t i = 0; i < probes.length(); i++)
@@ -124,75 +114,48 @@ void RocTargetController::processMessage(const SharedPointer<MessageBuffer>& mes
             connected = false;
             PIN_setOutputValue(pins, Board_PIN_GLED, 0);
         }
-        break;
-    case roc::SerializedData:
-        // Todo: Validate object after connection reset
-        reinterpret_cast<RocTargetObject*>(rxRocHeader.objectId)->deserialize(message->data());
-        break;
-    case roc::CallMethod:
-        // Todo: Validate object after connection reset
-        reinterpret_cast<RocTargetObject*>(rxRocHeader.objectId)->parseMessage(rxRocHeader.methodId, message->data());
+        sendToHost(roc::StatusOk, roc::Blocking);
         break;
     case roc::Ping:
-    {
         watchdogCounter = WatchdogReloadValue;
-        SharedPointer<MessageBuffer> txMessage(new MessageBuffer(
-                    sizeof(roc::MessageHeader) + sizeof(stp::MessageHeader)));
-        roc::MessageHeader* txRocHeader = txMessage->allocateAtFront<roc::MessageHeader>();
-        txRocHeader->type = roc::Pong;
-        txRocHeader->classId = rxRocHeader.classId;
-        txRocHeader->objectId = rxRocHeader.objectId;
-        txRocHeader->payloadLength = 0;
-        SerialInterface::write(txMessage);
-    }
+        sendToHost(roc::Pong, roc::NonBlocking);
         break;
     default:
-        assert(false);
+        assert(rxRocHeader.type >= roc::UserMessage);
+        assert(rxRocHeader.objectId != 0);
+        reinterpret_cast<RocTargetObject*>(rxRocHeader.objectId)->parseMessage(rxRocHeader.type, message->data());
+        break;
     }
+
 }
 
-void RocTargetController::sendToHost(uint32_t id, uint32_t method, const void* data, uint32_t length)
+void RocTargetController::sendToHost(uint8_t messageId, roc::BlockingMode blockingMode, uint32_t objectId, const void* data, uint32_t length)
 {
     uint32_t totalSize = length + sizeof(stp::MessageHeader) + sizeof(roc::MessageHeader);
     SharedPointer<MessageBuffer> txMessage(new MessageBuffer(totalSize, sizeof(stp::MessageHeader) + sizeof(roc::MessageHeader)));
     void* destination = txMessage->allocateAtBack(length);
     memcpy(destination, data, length);
     roc::MessageHeader* header = txMessage->allocateAtFront<roc::MessageHeader>();
-    header->type = roc::CallMethod;
-    header->objectId = id;
-    header->methodId = method;
+    header->type = messageId;
+    header->objectId = objectId;
     header->payloadLength = length;
+    header->transactionId = blockingMode;
     SerialInterface::write(txMessage);
 }
 
-namespace {
-
-void constructObject(roc::ClassId classId)
+void RocTargetController::constructObject(roc::ClassId classId)
 {
-    SharedPointer<MessageBuffer> reply =
-            SharedPointer<MessageBuffer>(new MessageBuffer(
-                                             sizeof(roc::MessageHeader) + sizeof(stp::MessageHeader),
-                                             sizeof(roc::MessageHeader) + sizeof(stp::MessageHeader))
-                                         );
-    roc::MessageHeader* txRocHeader = reply->allocateAtFront<roc::MessageHeader>();
     RocTargetObject* object;
     switch (classId)
     {
     case roc::PinClass:
         object = new PinTargetObject();
-        assert(object != NULL);
-
-        // Send message back with object id
-        txRocHeader->type = roc::ObjectId;
-        txRocHeader->objectId = reinterpret_cast<uint32_t>(object);
-        txRocHeader->payloadLength = 0;
-        SerialInterface::write(reply);
+        assert(object != nullptr);
+        sendToHost(roc::ObjectId, roc::Blocking, reinterpret_cast<uint32_t>(object));
         break;
     default:
         assert(false);
     }
     probes.append(object);
     probeCount++;
-}
-
 }

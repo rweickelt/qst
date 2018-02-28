@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017-2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -51,7 +51,7 @@ public:
 
     quint32 targetId() const;
     RocHostController* host();
-    void sendToTarget(quint32 methodId, const QByteArray data, roc::MessageType type = roc::CallMethod);
+    void sendToTarget(uint8_t messageType, const QByteArray& data = QByteArray());
 
 protected:
     void registerWithHost(RocHostController* host);
