@@ -176,7 +176,7 @@ void AutoTest::signalProbe()
         QFAIL(qstProcess().readAllStandardError());
     }
     VERIFY_PASS(results, "verify-triggered");
-    VERIFY_FAIL(results, "nonexisting-signal", "SignalProbe.qml:26");
+    VERIFY_FAIL(results, "nonexisting-signal", "SignalProbe.qml:33");
 }
 
 

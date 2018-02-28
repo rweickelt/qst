@@ -9,11 +9,11 @@ Testcase {
     property var expectedExecutionPath : [
         "runStarted",
         "timerTriggered",
-        "probe1Triggered",
+        "probeTriggered",
         "waitCompleted",
         "timerTriggered",
-        "probe2Triggered",
-        "probe1Triggered",
+        "probeTriggered",
+        "probeTriggered",
         "waitCompleted"
     ]
 
@@ -31,7 +31,7 @@ Testcase {
         signal: timer.triggered
 
         onTriggered: {
-            observedExecutionPath = observedExecutionPath.concat("probe1Triggered")
+            observedExecutionPath = observedExecutionPath.concat("probeTriggered")
         }
     }
 
@@ -43,7 +43,7 @@ Testcase {
 
         condition: probe2Enabled === true
         onTriggered: {
-            observedExecutionPath = observedExecutionPath.concat("probe2Triggered")
+            observedExecutionPath = observedExecutionPath.concat("probeTriggered")
         }
     }
 
