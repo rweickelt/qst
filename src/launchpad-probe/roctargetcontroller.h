@@ -34,7 +34,6 @@ class RocTargetController
 {
 public:
     static void init();
-    static void checkForConnectionTimeout();
     static void processMessage(const SharedPointer<MessageBuffer>& message);
     static void sendToHost(uint8_t messageId, roc::BlockingMode blockingMode, uint32_t objectId = 0, const void* data = nullptr,
                            uint32_t length = 0);

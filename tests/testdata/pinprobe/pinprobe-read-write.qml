@@ -13,7 +13,7 @@ Test description:
 
 */
 Testcase {
-    name : "readwrite"
+    name : "pinprobe-read-write"
     property int maxResponseTimeMs: 120 /* Maximum time from changing the value on the writer probe until the
                                           valueChanged signal is populated on the reader probe.
                                           The duration is huge. The average value is 4 ms, but I observed
@@ -23,21 +23,21 @@ Testcase {
     PinProbe {
         id: reader
         name: "reader"
-        ioid: 23
+        ioid: project.probe.ioid
         type: PinProbe.Read
         value: PinProbe.Undefined
         pullMode: PinProbe.PullDisabled
-        port: Xds.portFromSerial(project.probeSerial)
+        port: project.probe.ttyPort
     }
 
     PinProbe {
         id: writer
         name: "writer"
-        ioid: 13
+        ioid: project.dut.ioid
         type: PinProbe.Write
         value: PinProbe.Low
         pullMode: PinProbe.PullDisabled
-        port: Xds.portFromSerial(project.dutSerial)
+        port: project.dut.ttyPort
     }
 
     SignalProbe { id: readerTypeChanged;     signal: reader.typeChanged }

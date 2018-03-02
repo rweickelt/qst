@@ -5,6 +5,7 @@ SimpleLinkModule {
     name : "board"
     property string type
     property string installPath : product.simplelink.core.installPath + "/source/ti/boards"
+    property bool useDefaultConfig: true
 
     Depends { name : "cpp" }
     Depends { name : "simplelink.core" }
@@ -15,12 +16,12 @@ SimpleLinkModule {
     ]
 
     Group {
-        name : "board"
+        name : "board-config"
+        condition: simplelink.board.useDefaultConfig === true
         prefix: product.simplelink.board.installPath + "/" + product.simplelink.board.type + "/"
         files : [
             "*.h",
             product.simplelink.board.type + ".c",
-            // do not include ccfg.c file
         ]
      }
 

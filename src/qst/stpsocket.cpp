@@ -90,7 +90,7 @@ void StpSocket::disconnectFromTarget()
 {
     QObject::disconnect(&m_port, &QSerialPort::readyRead, this, &StpSocket::onUartReadyRead);
     m_connected = false;
-    m_port.disconnect();
+    m_port.close();
 }
 
 void StpSocket::onUartReadyRead()

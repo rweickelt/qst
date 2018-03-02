@@ -54,7 +54,7 @@ enum ApplicationEvent {
 };
 
 enum {
-    WatchdogTimeoutMs = 1039 // Reset happens after 2*value. Value has to be a little bit
+    WatchdogTimeoutMs = 527  // Reset happens after 2*value. Value has to be a little bit
                              // larger than the kick period to avoid false triggers.
 };
 
@@ -125,7 +125,6 @@ extern "C" void mainTaskFunction()
         else if (events & KickWatchdog)
         {
             Watchdog_clear(watchdog);
-            RocTargetController::checkForConnectionTimeout();
         }
     }
 }
@@ -133,7 +132,8 @@ extern "C" void mainTaskFunction()
 int main(void)
 {
     /* Call driver init functions. */
-    Board_initGeneral();
+    Power_init();
+    PIN_init(BoardGpioInitTable);
     Watchdog_init();
 
     BIOS_start();

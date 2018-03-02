@@ -16,6 +16,7 @@ Product {
 
         files : [
             "AbstractConstraint.qml",
+            "CounterConstraint.qml",
             "DurationConstraint.qml",
             "PropertyValueSequence.qml",
             "Qst.qml",

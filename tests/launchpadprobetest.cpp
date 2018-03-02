@@ -27,12 +27,13 @@
 
 void LaunchpadProbeTest::pinProbe()
 {
-    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("pinprobe/readwrite.qml") }, 100000);
+    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("pinprobe/project.qml") }, 12000);
     if (qstProcess().exitCode() != 0)
     {
         QFAIL(qstProcess().readAllStandardError());
     }
-    VERIFY_PASS(results, "readwrite");
+    VERIFY_PASS(results, "flash-firmware");
+    VERIFY_PASS(results, "pinprobe-read-write");
 }
 
 QTEST_GUILESS_MAIN(LaunchpadProbeTest)

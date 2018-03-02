@@ -29,6 +29,8 @@
 #include "rochostcontroller.h"
 #include "qst.h"
 
+#include <unistd.h>
+
 namespace {
     QMap<QString, QPointer<RocHostController> > controllers;
 }
@@ -91,7 +93,7 @@ quint32 RocHostController::registerObject(RocHostObject* object)
             if (success)
             {
                 m_state = Connected;
-                m_pingTimer.start(517);
+                m_pingTimer.start(ConnectionTimeoutIntervalMs);
             }
         }
         if (m_state != Connected)
@@ -127,7 +129,8 @@ void RocHostController::unregisterObject(const RocHostObject* object)
     if (m_objects.size() == 0)
     {
         m_pingTimer.stop();
-        m_state = Standby;
+        m_socket.disconnectFromTarget();
+        m_state = Disconnected;
     }
 }
 

@@ -1,6 +1,7 @@
 module qst
 
 AbstractConstraint      1.0 AbstractConstraint.qml
+CounterConstraint       1.0 CounterConstraint.qml
 DurationConstraint      1.0 DurationConstraint.qml
 SignalProbe             1.0 SignalProbe.qml
 PropertyValueSequence   1.0 PropertyValueSequence.qml

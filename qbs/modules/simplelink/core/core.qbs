@@ -5,6 +5,7 @@ Module {
     property string installPath
     property string deviceFamily : Device.deviceFamilyDir(product.simplelink.core.device)
     property string device
+    property bool useDefaultCcfg: true
 
 
     Depends { name : "cpp" }
@@ -57,7 +58,7 @@ Module {
     Group {
         name : "startup-files"
         prefix: simplelink.core.installPath + "/source/ti/devices/" + Device.deviceFamilyDir(simplelink.core.deviceFamily) + "/startup_files/"
-
+        condition: simplelink.core.useDefaultCcfg === true
         files : [
             "ccfg.c"
         ]

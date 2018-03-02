@@ -41,6 +41,10 @@ class RocHostController : public QObject
 
     typedef uint8_t TransactionId;
 
+    enum {
+        ConnectionTimeoutIntervalMs = 517
+    };
+
 public:
     bool sendMessageBlocking(uint8_t messageType,  RocHostObject* object = nullptr,
                               const QByteArray& data = QByteArray(), int timeout = INT32_MAX);

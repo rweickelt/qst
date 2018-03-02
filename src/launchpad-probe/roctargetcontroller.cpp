@@ -35,38 +35,28 @@
 #include <Board.h>
 #include <ti/devices/cc13x0/driverlib/sys_ctrl.h>
 #include <ti/drivers/PIN.h>
+#include <ti/sysbios/knl/Clock.h>
 
 extern PIN_Handle pins;
-
-enum {
-    WatchdogReloadValue = 2
-};
+extern const Clock_Handle checkConnectionClock;
 
 namespace {
     ArrayList<RocTargetObject*, 32> probes;
     uint32_t probeCount = 0;
-    int watchdogCounter = WatchdogReloadValue;
     bool connected = false;
+}
+
+extern "C" void checkConnectionCallback(UArg arg)
+{
+    (void)arg;
+    if (connected)
+    {
+        SysCtrlSystemReset();
+    }
 }
 
 void RocTargetController::init()
 {
-}
-
-void RocTargetController::checkForConnectionTimeout()
-{
-    if (!connected)
-    {
-        return;
-    }
-    if (watchdogCounter > 0)
-    {
-        watchdogCounter--;
-    }
-    else
-    {
-        SysCtrlSystemReset();
-    }
 }
 
 void RocTargetController::processMessage(const SharedPointer<MessageBuffer>& message)
@@ -91,9 +81,10 @@ void RocTargetController::processMessage(const SharedPointer<MessageBuffer>& mes
         probes.clear();
         probeCount = 0;
         sendToHost(roc::StatusOk, roc::Blocking);
-        watchdogCounter = WatchdogReloadValue;
         connected = true;
+        Clock_start(checkConnectionClock);
         PIN_setOutputValue(pins, Board_PIN_GLED, 1);
+
         break;
     case roc::Construct:
         constructObject(static_cast<roc::ClassId>(rxRocHeader.objectId));
@@ -117,7 +108,8 @@ void RocTargetController::processMessage(const SharedPointer<MessageBuffer>& mes
         sendToHost(roc::StatusOk, roc::Blocking);
         break;
     case roc::Ping:
-        watchdogCounter = WatchdogReloadValue;
+        Clock_stop(checkConnectionClock);
+        Clock_start(checkConnectionClock);
         sendToHost(roc::Pong, roc::NonBlocking);
         break;
     default:

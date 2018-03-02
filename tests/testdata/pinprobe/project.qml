@@ -3,14 +3,26 @@ import ti 1.0
 
 // This test suite requires 3 launchpads.
 Project {
-    property string dutSerial: "L400028Q" // left board
-    property string probeSerial: "L20002HM" // central board
     property string uniflashInstallDir: "/opt/ti/uniflash_4.2"
+    property string qstExecutable: "/opt/qst/bin/qst"
+
+    property var dut: BoardConfig {
+        serial: "L400028Q" // left board
+        device: "cc1310f128"
+        firmwarePath: "/opt/qst/share/qst/firmware/launchpad-probe-CC1310_LAUNCHXL.elf"
+        ioid: 13
+    }
+
+    property var probe: BoardConfig {
+        serial: "L20002HM" // central board
+        device: "cc1310f128"
+        firmwarePath: "/opt/qst/share/qst/firmware/launchpad-probe-CC1310_LAUNCHXL.elf"
+        ioid: 23
+    }
 
     references: [
-//        "flash.qml",
-//        "reset.qml",
-//        "verify-connection.qml",
-        "pin-pair.qml"
+        "flash-firmware.qml",
+        "pinprobe-read-write.qml",
+        "watchdog.qml"
     ]
 }

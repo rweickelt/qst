@@ -14,6 +14,7 @@ Project {
 
         simplelink.core.device: "cc1310f128"
         simplelink.board.type: "CC1310_LAUNCHXL"
+        simplelink.board.useDefaultConfig: false
 
         cpp.cxxLanguageVersion: "c++14"
 
@@ -21,6 +22,7 @@ Project {
 
         files: [
             "arraylist.h",
+            "cc13xx-cc26xx-driver-config.c",
             "interruptlock.h",
             "mailbox.h",
             "main.cpp",

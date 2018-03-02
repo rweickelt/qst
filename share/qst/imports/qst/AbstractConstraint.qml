@@ -1,10 +1,10 @@
-import QtQuick 2.0
+import qst 1.0
 
 /*
 Base class for all constraints.
 
 */
-QtObject {
+Component {
 
     // Treshold value for validCount before valid is set true
     property int maxValidCount : 0
