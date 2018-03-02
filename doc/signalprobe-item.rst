@@ -18,6 +18,7 @@ SignalProbe Item
 ..  rubric:: Methods:
 
 - :cpp:func:`clear()`
+- :cpp:func:`connect()`
 
 
 ..  rubric:: Signals:
@@ -114,6 +115,23 @@ Methods
 
     Resets :cpp:member:`count` to 0 but leaves the signal connection and the
     condition untouched.
+
+
+..  cpp:function:: void connect(signalHandler)
+
+    Connects the :cpp:func:`triggered()` signal to a `signalHandler` of another
+    item. This makes ``SignalProbe`` look like a QML signal for the other item.
+
+    Example::
+
+        DurationConstraint {
+            from: SignalProbe { signal: someItem.someSignal }
+            to: someOtherSignal
+        }
+
+    In this example, ``DurationConstraint`` tries to connect ``SignalProbe`` to
+    itself by calling :cpp:func:`connect()`. It doesn't know that
+    ``SignalProbe`` is an item and not a plain QML signal.
 
 
 Signals
