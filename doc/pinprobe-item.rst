@@ -21,10 +21,6 @@ PinProbe Item
 - :cpp:member:`type`
 - :cpp:member:`value`
 
-..  rubric:: Signals
-
-- :cpp:func:`valueChanged()`
-
 
 Detailed Description
 --------------------
@@ -178,15 +174,3 @@ Properties
     A write has no effect when the pin is configured as
     :cpp:enumerator:`Type::Read`. Although defined as an enumerator, values are
     implicitly converted to integers and booleans.
-
-    This property emits the :cpp:func:`valueChanged()` signal.
-
-
-Signals
--------
-
-..  cpp:function:: void valueChanged()
-
-    Propagates pin value changes.
-
-    Whenever the pin value changes, this signal is emitted.
