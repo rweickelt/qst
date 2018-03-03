@@ -100,6 +100,7 @@ void execRunCommand()
     TextFile::registerJSType(&engine);
 
     qRegisterMetaType<Testcase::State>();
+    qRegisterMetaType<QmlContext>();
 
     qmlRegisterSingletonType<File>("qst", 1,0, "File", &File::createSingleInstance);
     qmlRegisterSingletonType<Xds>("ti", 1, 0, "Xds", &Xds::createSingleInstance);

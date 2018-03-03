@@ -34,6 +34,8 @@
 #include <QtQml/QQmlExpression>
 #include <QtQml/QQmlInfo>
 
+#include <private/qqmlcontext_p.h>
+#include <private/qqmldata_p.h>
 #include <private/qv4engine_p.h>
 #include <private/qv8engine_p.h>
 
@@ -64,10 +66,11 @@ void info(const QString& message, const QString& file, int line)
         .message = message,
         .type = LogInfo::Info
     };
-    if ((file.isEmpty() && line == 0))
+    if (file.isEmpty())
     {
-        info.file = QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerFile();
-        info.line = QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerLine();
+        QmlContext context = QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerContext();
+        info.file = context.file();
+        info.line = context.line();
     }
     ProxyLogger::instance()->print(info);
 }
@@ -78,10 +81,8 @@ void verify(bool condition, const QString& message, const QString& file, int lin
     {
         if ((file.isEmpty() && line == 0))
         {
-            Testcase::instance()->finishAndExit(Testcase::Fail,
-                    QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerFile(),
-                    QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerLine(),
-                    message);
+            QmlContext context = QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerContext();
+            Testcase::instance()->finishAndExit(Testcase::Fail, context.file(), context.line(), message);
         }
         else
         {
@@ -100,10 +101,11 @@ void warning(const QString& message, const QString& file, int line)
         .message = message,
         .type = LogInfo::Warning
     };
-    if ((file.isEmpty() && line == 0))
+    if (file.isEmpty())
     {
-        info.file = QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerFile();
-        info.line = QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerLine();
+        QmlContext context = QstService::instance(qmlEngine(Testcase::instance()))->qmlCallerContext();
+        info.file = context.file();
+        info.line = context.line();
     }
     ProxyLogger::instance()->print(info);
 }
@@ -142,36 +144,51 @@ void QstService::error(const QString& message, QString file, int line)
 {
     if (file.isEmpty())
     {
-        file = qmlCallerFile();
-        line = qmlCallerLine();
+        QmlContext context = qmlCallerContext();
+        file = context.file();
+        line = context.line();
     }
     Console::printError(QString("Error: %1 in %2:%3").arg(message).arg(file).arg(line));
     ::exit(qst::ExitApplicationError);
 }
 
 
-QString QstService::qmlCallerFile()
+QmlContext QstService::qmlCallerContext()
 {
-    QQmlEngine* engine = QQmlEngine::contextForObject(this)->engine();
+    QQmlEngine* engine = qmlEngine(this);
     Q_ASSERT(engine != nullptr);
 
     QV4::ExecutionEngine* executionEngine = QV8Engine::getV4(engine->handle());
+    Q_ASSERT(executionEngine != nullptr);
+
     QV4::StackTrace trace = executionEngine->stackTrace(2);
     QV4::StackFrame& frame = trace.last();
-    return frame.source;
+    QmlContext result;
+    result["file"] = frame.source;
+    result["line"] = frame.line;
+    result["column"] = frame.column;
+
+    return result;
 }
 
-
-int QstService::qmlCallerLine()
+QmlContext QstService::qmlDefinitionContext(QObject* object)
 {
-    QQmlEngine* engine = QQmlEngine::contextForObject(this)->engine();
-    Q_ASSERT(engine != nullptr);
+    QmlContext result;
 
-    QV4::ExecutionEngine* executionEngine = QV8Engine::getV4(engine->handle());
-    QV4::StackTrace trace = executionEngine->stackTrace(2);
-    QV4::StackFrame& frame = trace.last();
-    return frame.line;
+    if (object)
+    {
+        QQmlData* data = QQmlData::get(object);
+        if (data && data->outerContext)
+        {
+            result["file"] = data->outerContext->url().path();
+            result["line"] = data->lineNumber;
+            result["column"] = data->columnNumber;
+        }
+    }
+
+    return result;
 }
+
 
 QstService* QstService::instance(QQmlEngine* engine)
 {

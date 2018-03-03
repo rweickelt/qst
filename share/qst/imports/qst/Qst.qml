@@ -5,21 +5,24 @@ pragma Singleton
 QstService {
 
     function waitUntil(expression, milliseconds) {
+        var context = qmlCallerContext();
+
         if (typeof(expression) !== "function") {
-            var message = "expression must be a function";
-            currentTestcase.finishAndExit(Testcase.Fail, qmlCallerFile(), qmlCallerLine(), message);
+            error("Expression must be a function", context.file, context.line);
         }
 
-        currentTestcase.waitUntilExpression(Qt.binding(expression), milliseconds, qmlCallerFile(), qmlCallerLine());
+        currentTestcase.waitUntilExpression(Qt.binding(expression), milliseconds, context.file, context.line);
     }
 
     // Waits a given time
     function wait(milliseconds) {
+        var context = qmlCallerContext();
+
         if (typeof(currentTestcase) === 'Undefined') {
-            error("Calling Qst.wait() is only allowed in Testcase.run()", qmlCallerFile(), qmlCallerLine());
+            error("Calling Qst.wait() is only allowed in Testcase.run()", context.file, context.line);
         }
 
-        currentTestcase.waitMilliseconds(milliseconds, qmlCallerFile(), qmlCallerLine());
+        currentTestcase.waitMilliseconds(milliseconds, context.file, context.line);
     }
 
     // Verifies that 'condition' is true. Otherwise the
@@ -29,10 +32,11 @@ QstService {
             if (message === undefined) {
                 message = "verify() failed";
             }
+            var context = qmlCallerContext();
             if (currentTestcase) {
-                currentTestcase.finishAndExit(Testcase.Fail, qmlCallerFile(), qmlCallerLine(), message);
+                currentTestcase.finishAndExit(Testcase.Fail, context.file, context.line, message);
             } else {
-                error(message, qmlCallerFile(), qmlCallerLine());
+                error(message, context.file, context.line);
             }
         }
     }
@@ -46,10 +50,12 @@ QstService {
             if (message === undefined) {
                 message = "Compared values are not the same. Expected: " + exp + " Actual: " + act;
             }
+            var context = qmlCallerContext();
             if (currentTestcase) {
-                currentTestcase.finishAndExit(Testcase.Fail, qmlCallerFile(), qmlCallerLine(), message);
+                currentTestcase.finishAndExit(Testcase.Fail, context.file, context.line, message);
             } else {
-                error(message, qmlCallerFile(), qmlCallerLine());
-            }        }
+                error(message, context.file, context.line);
+            }
+        }
     }
 }

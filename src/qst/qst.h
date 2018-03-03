@@ -26,6 +26,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
+#include <QtCore/QVariantMap>
 
 class QQmlEngine;
 class Testcase;
@@ -58,6 +59,19 @@ void warning(const QString& message, const QString& file = "", int line = 0);
 #define QST_WARNING(message) \
     qst::warning(message, __FILE__, __LINE__)
 
+struct QmlContext : public QVariantMap
+{
+    Q_GADGET
+    Q_PROPERTY(int column READ column CONSTANT)
+    Q_PROPERTY(QString file READ file CONSTANT)
+    Q_PROPERTY(int line READ line CONSTANT)
+
+public:
+    inline int column() const { return this->value("column").toInt(); }
+    inline QString file() const { return this->value("file").toString(); }
+    inline int line() const { return this->value("line").toInt(); }
+};
+
 class QstService : public QObject
 {
     Q_OBJECT
@@ -71,8 +85,8 @@ public:
     QString hostOS() const;
 
     Q_INVOKABLE void error(const QString& message, QString file = "", int line = 0);
-    Q_INVOKABLE QString qmlCallerFile();
-    Q_INVOKABLE int qmlCallerLine();
+    Q_INVOKABLE QmlContext qmlCallerContext();
+    Q_INVOKABLE QmlContext qmlDefinitionContext(QObject* object);
 
     static QstService* instance(QQmlEngine* engine);
 };

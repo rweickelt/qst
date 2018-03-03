@@ -69,10 +69,11 @@ QString Xds::portFromSerial(const QString& serial)
 {
     if (serial.isEmpty())
     {
+        QmlContext context = QstService::instance(m_engine)->qmlCallerContext();
         qst::error(QString("serial '%1' is not a valid serial in %2:%3.")
                    .arg(serial)
-                   .arg(QstService::instance(m_engine)->qmlCallerFile())
-                   .arg(QstService::instance(m_engine)->qmlCallerLine()));
+                   .arg(context.file())
+                   .arg(context.line()));
     }
 
     for (const auto& info : QSerialPortInfo::availablePorts())
@@ -85,10 +86,11 @@ QString Xds::portFromSerial(const QString& serial)
             return info.portName();
         }
     }
+    QmlContext context = QstService::instance(m_engine)->qmlCallerContext();
     qst::error(QString("No launchpad with serial '%1' found in %2:%3.")
                .arg(serial)
-               .arg(QstService::instance(m_engine)->qmlCallerFile())
-               .arg(QstService::instance(m_engine)->qmlCallerLine()));
+               .arg(context.file())
+               .arg(context.line()));
     return "";
 }
 
