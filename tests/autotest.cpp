@@ -179,5 +179,31 @@ void AutoTest::signalProbe()
     VERIFY_FAIL(results, "nonexisting-signal", "SignalProbe.qml:33");
 }
 
+void AutoTest::counterConstraint()
+{
+    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("counterconstraint/project.qml")} );
+    if (qstProcess().exitCode() != 2)
+    {
+        QFAIL(qstProcess().readAllStandardError());
+    }
+    VERIFY_FAIL(results, "counting-on-signal-fail-on-overcount", "CounterConstraint.qml:67");
+    VERIFY_PASS(results, "counting-on-property");
+    VERIFY_PASS(results, "not-counting-when-not-enabled");
+    VERIFY_FAIL(results, "no-validate-immediately", "CounterConstraint.qml:67");
+    QVERIFY(results.output("no-validate-immediately").message.contains("Property 'count' (2) in CounterConstraint"));
+
+    results = execQstRun(QStringList{ "-f", dataPath("counterconstraint/fail-on-non-existing-property.qml")} );
+    if (qstProcess().exitCode() != 1)
+    {
+        QFAIL(qstProcess().readAllStandardError());
+    }
+
+    results = execQstRun(QStringList{ "-f", dataPath("counterconstraint/fail-on-non-existing-signal.qml")} );
+    if (qstProcess().exitCode() != 1)
+    {
+        QFAIL(qstProcess().readAllStandardError());
+    }
+}
+
 
 QTEST_GUILESS_MAIN(AutoTest)
