@@ -26,6 +26,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
+#include <QtCore/QVariantList>
 #include <QtCore/QVariantMap>
 
 class QQmlEngine;
@@ -86,10 +87,14 @@ public:
 
     Q_INVOKABLE void error(const QString& message, QString file = "", int line = 0);
     Q_INVOKABLE QmlContext qmlCallerContext();
+    Q_INVOKABLE QVariantList qmlCallerTrace();
     Q_INVOKABLE QmlContext qmlDefinitionContext(QObject* object);
 
     static QstService* instance(QQmlEngine* engine);
 };
+
+Q_DECLARE_METATYPE(QmlContext)
+Q_DECLARE_METATYPE(QList<QmlContext>)
 
 
 #endif // QST_H

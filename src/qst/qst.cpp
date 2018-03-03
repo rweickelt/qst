@@ -164,10 +164,32 @@ QmlContext QstService::qmlCallerContext()
     QV4::StackTrace trace = executionEngine->stackTrace(2);
     QV4::StackFrame& frame = trace.last();
     QmlContext result;
-    result["file"] = frame.source;
+    result["file"] = QUrl(frame.source).path();
     result["line"] = frame.line;
     result["column"] = frame.column;
 
+    return result;
+}
+
+QVariantList QstService::qmlCallerTrace()
+{
+    QQmlEngine* engine = qmlEngine(this);
+    Q_ASSERT(engine != nullptr);
+
+    QV4::ExecutionEngine* executionEngine = QV8Engine::getV4(engine->handle());
+    Q_ASSERT(executionEngine != nullptr);
+
+    QVariantList result;
+    QV4::StackTrace trace = executionEngine->stackTrace();
+    for (int i = 0; i < trace.length(); i++)
+    {
+        const QV4::StackFrame& frame = trace.at(i);
+        QmlContext context;
+        context.insert("file", QUrl(frame.source).path());
+        context.insert("line", frame.line);
+        context.insert("column", frame.column);
+        result.append(context);
+    }
     return result;
 }
 
