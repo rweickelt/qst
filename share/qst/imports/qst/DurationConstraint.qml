@@ -1,129 +1,180 @@
 import QtQml.StateMachine 1.0
 import qst 1.0
 
-AbstractConstraint {
+Component {
+    property var beginOn
+    property var endOn
 
-    property string name : "undefined"
+    readonly property alias duration : impl.duration
     property double minDuration : 0
     property double maxDuration : 0
-    property double duration : 0
-    property double maxDeviation : 0
 
-    property var from
-    property var to
+    property bool enabled: true
+    property bool evaluateOnValidation: true
+    property bool evaluateOnFinished: false
+    readonly property alias timedOut: impl.timedOut
+    readonly property alias valid: impl.valid
 
-    id : constraint
+    function begin() { impl.handleBeginSignal() }
+    function end() { impl.handleEndSignal() }
 
-    property StateMachine stateMachine :
-        StateMachine {
+    id: root
+    onBeginOnChanged: impl.setBeginSignal(beginOn)
+    onEndOnChanged: impl.setEndSignal(endOn)
+    Testcase.onFinished: if ((enabled === true) && (evaluateOnFinished === true)) impl.evaluate()
 
-            id : sm
+    StateMachine {
+        id: impl
+        property double duration : 0
+        property bool started: false
+        property bool timedOut: false
+        property bool valid: false
 
-            /* Internal values */
-            property double beginTime : 0
-            property double endTime : 0
-            property double measuredDuration : 0
+        property var beginSignal
+        property var endSignal
+        property var backupBeginSignal
+        property var backupEndSignal
 
-            // Helper signals
-            signal measurementStarted()
-            signal measurementStopped()
+        signal measurementFinished()
+        signal measurementStarted()
 
-            // Connectors for 'from' and 'to' in the constraint
-            function startMeasurement() { sm.measurementStarted(); }
-            function stopMeasurement() { sm.measurementStopped(); }
+        running: root.enabled
+        initialState: idleState
 
-            initialState : init
-            running : constraint.enabled
 
-            State {
-                id : init
-
-                // setup
-                onEntered: {
-                    console.assert(from, "property 'from' is not defined");
-                    console.assert(to, "property 'to' is not defined");
-                    if (from)
-                        from.connect(sm.startMeasurement);
-                    if (to)
-                        to.connect(sm.stopMeasurement);
-
-                    console.assert((duration >= 0),
-                                   "Error: duration must be greater or equal 0");
-                    console.assert((maxDeviation >= 0),
-                                   "Error: deviation must be greater or equal 0");
-                    console.assert((minDuration >= 0),
-                                   "Error: minDuration must be greater or equal 0");
-                    console.assert((maxDuration >= 0),
-                                   "Error: maxDuration must be greater or equal 0");
-
-                    console.assert(!((duration != 0) && (minDuration != 0)),
-                                   "Error: duration and minDuration must not be set at the same time.");
-                    console.assert(!((duration != 0) && (maxDuration != 0)),
-                                   "Error: duration and maxDuration must not be set at the same time.");
-                    console.assert((minDuration <= maxDuration),
-                                   "Error: minDuration must be less or equal maxDuration");
-
-                    if (duration != 0)
-                    {
-                        minDuration = duration - maxDeviation;
-                        maxDuration = duration + maxDeviation;
-                    }
-                }
-
-                TimeoutTransition {
-                    targetState: idle
-                    timeout: 0
-                }
+        function setBeginSignal(newSignal) {
+            if (typeof(backupBeginSignal) !== "undefined") {
+                backupBeginSignal.disconnect(handleBeginSignal)
             }
 
-            State {
-                id : idle
+            Qst.verify(typeof(newSignal) !== "undefined", "Property 'beginOn' in DurationConstraint '"
+                       + name + "' is undefined.")
+            Qst.verify(typeof(newSignal.connect) === "function", "Property 'beginOn' in DurationConstraint '"
+                       + name + "' is not a signal.")
 
-                SignalTransition {
-                    targetState : measuring
-                    signal : sm.measurementStarted
-                }
+            newSignal.connect(handleBeginSignal)
+            backupBeginSignal = newSignal
+        }
 
-//                SignalTransition {
-//                    targetState : measuring
-//                    signal : constraint.froms
-//                    guard : constraint.froms === true
-//                }
+        function setEndSignal(newSignal) {
+            if (typeof(backupEndSignal) !== "undefined") {
+                backupEndSignal.disconnect(handleEndSignal)
             }
 
-            State {
-                id : measuring
+            Qst.verify(typeof(newSignal) !== "undefined", "Property 'endOn' in DurationConstraint '"
+                       + name + "' is undefined.")
+            Qst.verify(typeof(newSignal.connect) === "function", "Property 'endOn' in DurationConstraint '"
+                       + name + "' is not a signal.")
 
-                onEntered : {
-                    sm.beginTime = Date.now();
-                }
+            newSignal.connect(handleEndSignal)
+            backupEndSignal = newSignal
+        }
 
-                onExited: {
-                    sm.endTime = Date.now();
-                    sm.measuredDuration = sm.endTime - sm.beginTime;
+        function handleBeginSignal() {
+            measurementStarted()
+        }
 
-                    if (sm.measuredDuration < minDuration) {
-                        console.log(constraint.name
-                                    + ": fail (duration: " + sm.measuredDuration
-                                    + ", minDuration: " + minDuration);
-                        notifyValidEvent(false);
+        function handleEndSignal() {
+            measurementFinished()
+        }
 
-                    } else if (sm.measuredDuration > maxDuration) {
-                        console.log(constraint.name
-                                    + ": fail (duration: " + sm.measuredDuration
-                                    + ", maxDuration: " + maxDuration);
-                        notifyValidEvent(false);
+        function evaluate() {
+            Qst.compare(valid, true,
+                        "DurationConstraint '"
+                        + root.name
+                        + "' violated. minDuration: "
+                        + root.minDuration
+                        + "ms; maxDuration: "
+                        + root.maxDuration
+                        + "ms; duration: "
+                        + root.duration
+                        + "ms; timedOut: "
+                        + impl.timedOut
+                        + ".")
+        }
 
-                    } else {
-                        notifyValidEvent(true);
-                    }
+        function validate() {
+            Qst.verify(root.minDuration <= root.maxDuration,
+                       "DurationConstraint '"
+                       + root.name
+                       + "' cannot have minDuration ("
+                       + root.minDuration
+                       + "ms) larger than maxDuration ("
+                       + root.maxDuration
+                       + "ms).")
+            return (root.duration >= root.minDuration) && (root.duration <= root.maxDuration)
+        }
 
-                }
+        State {
+            id: idleState
 
-                SignalTransition {
-                    targetState : idle
-                    signal : sm.measurementStopped
-                }
+            SignalTransition {
+                targetState : measuringState
+                signal : impl.measurementStarted
             }
         }
+
+        State {
+            id: measuringState
+            property double beginTime: 0
+
+            onEntered: {
+                impl.timedOut = false
+                beginTime = test.elapsedTime
+            }
+
+            onExited: {
+                impl.duration = test.elapsedTime - beginTime
+            }
+
+            SignalTransition {
+                targetState: measuringState
+                signal: impl.measurementStarted
+            }
+
+            SignalTransition {
+                targetState: validatingState
+                signal: impl.measurementFinished
+            }
+
+            TimeoutTransition {
+                targetState: timeoutState
+                timeout: root.maxDuration + 1
+            }
+        }
+
+        State {
+            id: validatingState
+
+            onEntered: {
+                impl.valid = impl.validate()
+                if (root.evaluateOnValidation === true) {
+                    impl.evaluate()
+                }
+            }
+
+            TimeoutTransition {
+                targetState: idleState
+                timeout: 0
+            }
+        }
+
+        State {
+            id: timeoutState
+
+            onEntered: {
+                impl.duration = root.maxDuration + 1
+                impl.timedOut = true
+                impl.valid = impl.validate()
+                if (root.evaluateOnValidation === true) {
+                    impl.evaluate()
+                }
+            }
+
+            TimeoutTransition {
+                targetState: idleState
+                timeout: 0
+            }
+        }
+    }
 }

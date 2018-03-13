@@ -43,7 +43,8 @@ private slots:
     void workingDirectory_data();
     void workingDirectory();
     void signalProbe();
-    void counterConstraint();
+    void durationConstraint();
+    void valueRangeConstraint();
 };
 
 #endif // AUTOTEST_H

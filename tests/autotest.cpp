@@ -179,31 +179,42 @@ void AutoTest::signalProbe()
     VERIFY_FAIL(results, "nonexisting-signal", "SignalProbe.qml:33");
 }
 
-void AutoTest::counterConstraint()
+void AutoTest::durationConstraint()
 {
-    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("counterconstraint/project.qml")} );
+    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("durationconstraint/project.qml")} );
     if (qstProcess().exitCode() != 2)
     {
         QFAIL(qstProcess().readAllStandardError());
     }
-    VERIFY_FAIL(results, "counting-on-signal-fail-on-overcount", "CounterConstraint.qml:67");
-    VERIFY_PASS(results, "counting-on-property");
-    VERIFY_PASS(results, "not-counting-when-not-enabled");
-    VERIFY_FAIL(results, "no-validate-immediately", "CounterConstraint.qml:67");
-    QVERIFY(results.output("no-validate-immediately").message.contains("Property 'count' (2) in CounterConstraint"));
+    VERIFY_PASS(results, "duration-inside-range");
+    VERIFY_FAIL(results, "duration-above-max", "DurationConstraint.qml:82");
+    VERIFY_FAIL(results, "duration-below-min", "DurationConstraint.qml:82");
+    VERIFY_FAIL(results, "evaluate-on-finished", "DurationConstraint.qml:82");
+    QVERIFY(qstProcess().readAllStandardError().contains("checkpoint passed"));
 
-    results = execQstRun(QStringList{ "-f", dataPath("counterconstraint/fail-on-non-existing-property.qml")} );
+    results = execQstRun(QStringList{ "-f", dataPath("durationconstraint/fail-on-non-existing-begin-signal.qml")} );
     if (qstProcess().exitCode() != 1)
     {
         QFAIL(qstProcess().readAllStandardError());
     }
 
-    results = execQstRun(QStringList{ "-f", dataPath("counterconstraint/fail-on-non-existing-signal.qml")} );
+    results = execQstRun(QStringList{ "-f", dataPath("durationconstraint/fail-on-non-existing-end-signal.qml")} );
     if (qstProcess().exitCode() != 1)
     {
         QFAIL(qstProcess().readAllStandardError());
     }
 }
 
+void AutoTest::valueRangeConstraint()
+{
+    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("valuerangeconstraint/project.qml")} );
+    if (qstProcess().exitCode() != 2)
+    {
+        QFAIL(qstProcess().readAllStandardError());
+    }
+    VERIFY_FAIL(results, "range", "ValueRangeConstraint.qml:24");
+    VERIFY_FAIL(results, "evaluate-on-finished", "ValueRangeConstraint.qml:24");
+    QVERIFY(qstProcess().readAllStandardError().contains("checkpoint passed"));
+}
 
 QTEST_GUILESS_MAIN(AutoTest)

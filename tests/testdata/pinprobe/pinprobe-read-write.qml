@@ -52,8 +52,8 @@ Testcase {
     DurationConstraint {
         id: responseTimeConstraint
         name: "responeTimeConstraint"
-        from: SignalProbe { signal: writer.valueChanged }
-        to:   SignalProbe { signal: reader.valueChanged }
+        beginOn: SignalProbe { signal: writer.valueChanged }
+        endOn:   SignalProbe { signal: reader.valueChanged }
         enabled: false
         minDuration: 0
         maxDuration: maxResponseTimeMs

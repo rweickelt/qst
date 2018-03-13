@@ -113,6 +113,7 @@ Testcase::State Testcase::unitializedStateFunction()
     m_children = childrenByType<Component>();
     m_children << this;
 
+    Q_ASSERT(this != nullptr);
     m_currentTestCase = this;
 
     // created() is a signal that even QML children can subscribe.
@@ -162,6 +163,8 @@ Testcase::State Testcase::runningStateFunction()
     {
         return CleaningUpTestFunction;
     }
+
+    QCoreApplication::processEvents();
 
     m_timer.start();
 

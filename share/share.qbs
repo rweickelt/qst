@@ -15,12 +15,11 @@ Product {
         prefix : "qst/imports/qst/"
 
         files : [
-            "AbstractConstraint.qml",
-            "CounterConstraint.qml",
             "DurationConstraint.qml",
             "PropertyValueSequence.qml",
             "Qst.qml",
             "SignalProbe.qml",
+            "ValueRangeConstraint.qml",
             "qmldir",
             "qst_internal.js",
         ]

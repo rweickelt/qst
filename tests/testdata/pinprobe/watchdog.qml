@@ -48,26 +48,24 @@ Testcase {
 
         // Process termination in run() must provoke a crash.
         // This overrides default error handling of ProcessProbe
-        // which causes immediate test fail.
+        // which would cause an immediate test fail instead.
         onErrorOccured: Qst.compare(error, ProcessProbe.Crashed)
-    }
-
-    // Ensures that the LED goes only on and off once
-    CounterConstraint {
-        signal: connectedLed.valueChanged
-        maxCount: 2
     }
 
     SignalProbe {
         id: dutConnected
         signal: connectedLed.valueChanged
         condition: connectedLed.value === PinProbe.High
+
+        onCountChanged: Qst.compare(count, 1)
     }
 
     SignalProbe {
         id: dutDisconnected
         signal: connectedLed.valueChanged
         condition: connectedLed.value === PinProbe.Low
+
+        onCountChanged: Qst.compare(count, 1)
     }
 
     signal dutKilled()
@@ -75,8 +73,8 @@ Testcase {
     DurationConstraint {
         id: connectionTimeoutConstraint
         name: "activity-led-duration-constraint"
-        from: dutKilled
-        to:   dutDisconnected
+        beginOn: dutKilled
+        endOn:   dutDisconnected
 
         minDuration: (connectionTimeoutMs - pingIntervalMs)
         maxDuration: connectionTimeoutMs
