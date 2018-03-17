@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017-2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -27,16 +27,21 @@
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
+#include <QtQml/QQmlListProperty>
 #include <QtQml/QQmlParserStatus>
 
 class Project : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
+    // We need a default property that can hold objects, but we won't actually use it.
+    // Instead, we let component items register manually as testcase children.
+    Q_CLASSINFO("DefaultProperty", "__defaultProperty")
 
 public:
     explicit Project(QObject *parent = 0);
 
+    Q_PROPERTY(QQmlListProperty<QObject> __defaultProperty READ defaultProperty CONSTANT)
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QStringList references READ references WRITE setReferences)
     Q_PROPERTY(QString workingDirectory READ workingDirectory CONSTANT)
@@ -44,6 +49,7 @@ public:
     void classBegin();
     void componentComplete();
 
+    QQmlListProperty<QObject> defaultProperty();
     QString name() const;
     QStringList references() const;
     QString workingDirectory() const;
@@ -52,10 +58,13 @@ public:
     void setReferences(const QStringList& references);
 
 private:
+    QList<QObject *> m_defaultProperty;
     QString m_name;
     QStringList m_references;
     QString m_workingDirectory;
 };
+
+inline QQmlListProperty<QObject> Project::defaultProperty() { return QQmlListProperty<QObject>(this, m_defaultProperty); }
 
 inline QString Project::name() const { return m_name; }
 

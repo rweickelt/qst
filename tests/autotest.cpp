@@ -50,6 +50,18 @@ void AutoTest::project()
     {
         QFAIL(qstProcess().readAllStandardOutput());
     }
+    results = execQstRun(QStringList{ "-f", dataPath("project/project-inline-testcases.qml") });
+    if (qstProcess().exitCode() != 0)
+    {
+        QFAIL(qstProcess().readAllStandardError());
+    }
+    VERIFY_PASS(results, "inline-1");
+    VERIFY_PASS(results, "inline-2");
+    VERIFY_PASS(results, "test1");
+    VERIFY_PASS(results, "test2");
+    QByteArray stdError = qstProcess().readAllStandardError();
+    QVERIFY(stdError.contains("inline-1 run"));
+    QVERIFY(stdError.contains("inline-2 run"));
 }
 
 void AutoTest::testCase()
@@ -78,10 +90,13 @@ void AutoTest::testCase()
 void AutoTest::testCaseName()
 {
     QstTestResults results = execQstRun(QStringList{ "-f", dataPath("testcase-name/project-missing-name.qml") });
-    if (qstProcess().exitCode() != 1)
+    if (qstProcess().exitCode() != 0)
     {
         QFAIL(qstProcess().readAllStandardError());
     }
+    VERIFY_PASS(results, "name");
+    VERIFY_PASS(results, "testcase-0");
+
     results = execQstRun(QStringList{ "-f", dataPath("testcase-name/project-duplicate-name.qml") });
     if (qstProcess().exitCode() != 1)
     {

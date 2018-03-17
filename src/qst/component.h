@@ -32,6 +32,7 @@
 #include <QtQml/QQmlListProperty>
 #include <QtQml/QQmlParserStatus>
 
+class ProjectResolver;
 class Testcase;
 
 class Component : public QObject, public QQmlParserStatus
@@ -43,6 +44,7 @@ class Component : public QObject, public QQmlParserStatus
     // Instead, we let component items register manually as testcase children.
     Q_CLASSINFO("DefaultProperty", "__defaultProperty")
 
+    friend class ProjectResolver;
     friend class Testcase;
 
     Q_PROPERTY(QQmlListProperty<QObject> __defaultProperty READ defaultProperty CONSTANT)
@@ -60,6 +62,7 @@ public:
     QString filepath() const;
     void setName(const QString& name);
     void setFilepath(const QString& filepath);
+    QString typeName() const;
 
 
 protected:
@@ -67,16 +70,28 @@ protected:
     virtual void initTestFunction() {}
     virtual void cleanupTestCase() {}
     virtual void cleanupTestFunction() {}
-    virtual void classBegin() {}
+
+    enum ParserEvent {
+        AfterClassBegin,
+        AfterComponentComplete
+    };
+
+    // Called by QmlEngine during creation
+    virtual void classBegin();
     virtual void componentComplete();
+
+    virtual void handleParserEvent(ParserEvent event);
 
     QList<QObject *> m_defaultProperty;
     QString m_name;
     QString m_filepath;
+    QString m_typeName;
 };
 
+inline QQmlListProperty<QObject> Component::defaultProperty() { return QQmlListProperty<QObject>(this, m_defaultProperty); }
 inline QString Component::filepath() const { return m_filepath; }
 inline QString Component::name() const { return m_name; }
+inline QString Component::typeName() const { return m_typeName; }
 
 inline void Component::setFilepath(const QString& filepath) { m_filepath = filepath; }
 

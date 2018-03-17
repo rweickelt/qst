@@ -17,21 +17,60 @@ Project Item
 Detailed Description
 --------------------
 
-..  cpp:namespace:: Testcase
+..  cpp:namespace:: Project
 
-A ``Project`` item represents a collection of of test cases.
-In a non-trivial project, these test cases are typically defined in their
-own files and referenced in the main project file::
+A ``Project`` item represents a collection of of test cases. Test cases can be
+defined in two ways:
 
-    Project {
-        references: [
-            "testcase1.qml",
-            "testcase2.qml"
-        ]
-    }
+ 1. **in-line**
 
-Any property ``prop`` attached to this item is available in sub-items as
-``project.prop``.
+    Usually used for a bunch of trivial test cases with only few lines or
+    if complex test cases are instantiated multiple times with slightly
+    different configuration.
+
+    The test cases are executed in undefined order.
+
+    Example in-line project::
+
+        Project {
+            name: "inline-project"
+
+            Testcase {
+                name: "trivial-1"
+                function run() {
+                    // Qst.verify(...)
+                }
+            }
+
+            // Assuming that ComplexTestcase.qml exists in the current
+            // directory
+            ComplexTestcase { name: "complex-1"; config: "something" }
+            ComplexTestcase { name: "complex-2"; config: "something-else" }
+
+        }
+
+ 2. **as references**
+
+    Usually used in non-trivial projects. Test cases are defined in their own
+    files and then referenced by the main project file. Any property ``prop``
+    attached to the project item is available in sub-items as ``project.prop``.
+
+    The execution order is defined by their occurrence order in the
+    :cpp:member:`references` item.
+
+    Example references project::
+
+        Project {
+            name: "referencing-project"
+            property string someProperty: "sometext"
+
+            // someProperty is available in all test cases as
+            // project.someProperty
+            references: [
+                "testcase1.qml",
+                "testcase2.qml"
+            ]
+        }
 
 
 Properties

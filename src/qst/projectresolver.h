@@ -63,16 +63,20 @@ class ProjectResolver : public QObject
         QPointer<QObject> object;
         QString qstBaseType;
         State state;
+        QList<Component*> children;
     };
 
 public:
     ProjectResolver(QQmlEngine* engine, const QString& rootfilepath);
 
+    ProjectResolver::Item* currentItem();
     QStringList errors() const;
     bool hasErrors() const;
 
     void loadRootFile();
     QList<QPointer<Testcase> > testcases() const;
+
+    static ProjectResolver* instance();
 
 private:
     Item beginCreate(const QString& filepath);
@@ -86,10 +90,10 @@ private:
     QHash<QString, Item> m_components;
     QPointer<QQmlEngine> m_engine;
     QStringList m_errors;
-    QStringList m_filepaths;
     QPointer<Project> m_project;
     QString m_rootFilepath;
     QList<QPointer<Testcase> > m_testCases;
+    Item* m_currentItem;
 
     friend class QmlEngineWarningScopeGuard;
 };

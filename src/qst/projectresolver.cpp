@@ -36,6 +36,8 @@
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlEngine>
 
+#include <QDebug>
+
 class QmlEngineWarningScopeGuard
 {
 public:
@@ -57,10 +59,16 @@ private:
     QQmlEngine* m_engine;
 };
 
+namespace {
+    ProjectResolver* projectResolver = nullptr;
+}
+
 ProjectResolver::ProjectResolver(QQmlEngine* engine, const QString& rootfilepath)
 {
+    m_currentItem = nullptr;
     m_engine = engine;
     m_rootFilepath = rootfilepath;
+    projectResolver = this;
 }
 
 
@@ -77,6 +85,13 @@ void ProjectResolver::loadRootFile()
         return;
     }
 
+    for (const auto& child: rootItem.children)
+    {
+        child->handleParserEvent(Component::AfterClassBegin);
+    }
+
+    // One test case in a single file.
+    // Create a dummy project item in that case.
     if (rootItem.qstBaseType == "Testcase")
     {
         Testcase* testCase = qobject_cast<Testcase*>(rootItem.object);
@@ -95,9 +110,21 @@ void ProjectResolver::loadRootFile()
             return;
         }
     }
+    // Project item that may reference files with test cases,
+    // but also contain test case items.
     else if (rootItem.qstBaseType == "Project")
     {
         m_project = qobject_cast<Project*>(rootItem.object);
+        // In-line test cases need project context property
+        rootItem.context->setContextProperty("project", m_project);
+
+        for (const auto& child : rootItem.children)
+        {
+            if (child->typeName() == "Testcase")
+            {
+                m_testCases.append(qobject_cast<Testcase*>(child));
+            }
+        }
         m_components.insert(m_project->name(), rootItem);
         this->completeCreate(&rootItem);
         if (this->hasErrors())
@@ -135,6 +162,14 @@ void ProjectResolver::loadRootFile()
             QStringList references = qobject_cast<Project*>(item.object)->references();
             unresolved.append(makeAbsolute(references,
                     item.context->contextProperty("path").toString()));
+
+            for (const auto& child : item.children)
+            {
+                if (child->typeName() == "Testcase")
+                {
+                    m_testCases.append(qobject_cast<Testcase*>(child));
+                }
+            }
         }
         else if (item.qstBaseType == "Testcase")
         {
@@ -145,7 +180,8 @@ void ProjectResolver::loadRootFile()
 
         // TODO: I's not possible to create more than 9 objects
         //       partially. QTBUG-47633. We need to finish creation
-        //       here. Thus, resolving dependencies is impossible.
+        //       here. Thus, resolving dependencies before complete
+        //       creation is impossible.
         this->completeCreate(&item);
         if (hasErrors())
         {
@@ -162,17 +198,17 @@ void ProjectResolver::loadRootFile()
     }
 }
 
+// Begins component creation, performs various sanity checks and returns
+// everything bundled in an Item container.
 ProjectResolver::Item ProjectResolver::beginCreate(const QString& filepath)
 {
     Item item;
-
-    item.context = new QQmlContext(m_engine->rootContext(), this);
-    item.factory = new QQmlComponent(m_engine, filepath, this);
+    m_currentItem = &item;
     item.state = Item::Undefined;
     item.filepath  = filepath;
-
+    item.context = new QQmlContext(m_engine->rootContext(), this);
     item.context->setContextProperty("path", QFileInfo(filepath).dir().absolutePath());
-
+    item.factory = new QQmlComponent(m_engine, filepath, this);
     item.object = item.factory->beginCreate(item.context);
 
     if (item.factory->isError()) \
@@ -187,10 +223,13 @@ ProjectResolver::Item ProjectResolver::beginCreate(const QString& filepath)
 
     Q_ASSERT(!item.object.isNull());
 
-    if (item.object->metaObject()->inherits(&Component::staticMetaObject))
+    for (const auto& child: item.children)
     {
-        qobject_cast<Component*>(item.object)->setFilepath(filepath);
+        child->handleParserEvent(Component::AfterClassBegin);
     }
+
+    // 1. Cache the relevant base type information instead of always looking at meta object.
+    // 2. Perform validity checks
     if (item.object->metaObject()->inherits(&Project::staticMetaObject))
     {
         item.qstBaseType = "Project";
@@ -198,11 +237,10 @@ ProjectResolver::Item ProjectResolver::beginCreate(const QString& filepath)
     else if (item.object->metaObject()->inherits(&Testcase::staticMetaObject))
     {
         item.qstBaseType = "Testcase";
-        if (item.object->property("name").toString().isEmpty())
+        Testcase* test = qobject_cast<Testcase*>(item.object);
+        for (const auto& child: item.children)
         {
-            m_errors.append(QString("Testcase component in %1 must define a unique name.").arg(filepath));
-            item.state = Item::Invalid;
-            return item;
+            test->registerChild(child);
         }
     }
     else
@@ -221,6 +259,10 @@ ProjectResolver::Item ProjectResolver::beginCreate(const QString& filepath)
 
 void ProjectResolver::completeCreate(Item* item)
 {
+    Q_ASSERT(item != nullptr);
+    Q_ASSERT(item->state == Item::Creating);
+
+    m_currentItem = item;
     item->factory->completeCreate();
     if (item->factory->isError()) \
     {
@@ -229,6 +271,12 @@ void ProjectResolver::completeCreate(Item* item)
             m_errors.append(error.toString());
         }
     }
+
+    for (const auto& child: item->children)
+    {
+        child->handleParserEvent(Component::AfterComponentComplete);
+    }
+
     if (item->qstBaseType == "Testcase")
     {
         Testcase* test = static_cast<Testcase*>(item->object.data());
@@ -289,4 +337,16 @@ void ProjectResolver::onQmlEngineWarnings(const QList<QQmlError> &warnings)
             .arg(error.description());
     QST_ERROR_AND_EXIT(message);
 
+}
+
+ProjectResolver::Item* ProjectResolver::currentItem()
+{
+    Q_ASSERT(m_currentItem != nullptr);
+    return m_currentItem;
+}
+
+ProjectResolver* ProjectResolver::instance()
+{
+    Q_ASSERT(projectResolver != nullptr);
+    return projectResolver;
 }

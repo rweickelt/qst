@@ -22,16 +22,16 @@
  ** $END_LICENSE$
 ****************************************************************************/
 #include "component.h"
+#include "projectresolver.h"
 #include "testcase.h"
 #include <QtDebug>
 
-Component::Component(QObject *parent) : QObject(parent)
-{
+namespace {
+    QHash<QString, int> instancesCount;
 }
 
-QQmlListProperty<QObject> Component::defaultProperty()
+Component::Component(QObject *parent) : QObject(parent)
 {
-    return QQmlListProperty<QObject>(this, m_defaultProperty);
 }
 
 Testcase* Component::testCase()
@@ -57,7 +57,38 @@ void Component::setName(const QString& name)
     }
 }
 
+void Component::classBegin()
+{
+    m_filepath = ProjectResolver::instance()->currentItem()->filepath;
+    ProjectResolver::instance()->currentItem()->children.append(this);
+}
+
 void Component::componentComplete()
 {
-    testCase()->registerChild(this);
 }
+
+void Component::handleParserEvent(ParserEvent event)
+{
+    switch (event)
+    {
+    case AfterClassBegin:
+    {
+        m_typeName = this->metaObject()->className();
+        int pos = m_typeName.indexOf("_QML_");
+        if (pos > 0)
+        {
+            m_typeName = m_typeName.left(pos);
+        }
+        if (m_name.isEmpty())
+        {
+            int count = instancesCount[m_typeName]++;
+            m_name = QString("%1-%2").arg(m_typeName.toLower()).arg(count);
+        }
+        this->setObjectName(m_name);
+    }
+        break;
+    case AfterComponentComplete:
+        break;
+    }
+}
+
