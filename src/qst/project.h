@@ -62,6 +62,7 @@ private:
     QString m_name;
     QStringList m_references;
     QString m_workingDirectory;
+    QString m_filepath;
 };
 
 inline QQmlListProperty<QObject> Project::defaultProperty() { return QQmlListProperty<QObject>(this, m_defaultProperty); }

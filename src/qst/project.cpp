@@ -25,11 +25,11 @@
 #include "console.h"
 #include "project.h"
 #include "qst.h"
+#include "projectresolver.h"
 
 #include <QtCore/QDateTime>
 #include <QtCore/QDir>
 #include <QtCore/QHash>
-#include <QtQml/private/qqmlcontext_p.h>
 
 Project::Project(QObject *parent) : QObject(parent)
 {
@@ -42,6 +42,7 @@ void Project::classBegin()
     ApplicationOptions* options = ApplicationOptions::instance();
     m_workingDirectory = options->workingDirectory;
     m_name = "qst-project";
+    m_filepath = ProjectResolver::instance()->currentItem()->filepath;
 }
 
 
@@ -74,11 +75,10 @@ void Project::componentComplete()
     }
     else
     {
-        QQmlData* data = QQmlData::get(this, false);
         // Hash of project name should be replaced by profile name
         QString workDirName = QString("%1-%2")
                 .arg(m_name)
-                .arg(QString::number(qHash(data->outerContext->url().path()), 16));
+                .arg(qHash(m_filepath), 0, 16);
         workDirPath = QDir(QDir::temp()).filePath(workDirName);
         if (!QDir(workDirPath).exists() && !QDir(QDir::temp()).mkdir(workDirName))
         {

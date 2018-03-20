@@ -19,7 +19,7 @@ Testcase {
 
     QtQml.Timer {
         id : timer
-        interval: 5
+        interval: 10
 
         onTriggered: {
             observedExecutionPath = observedExecutionPath.concat("timerTriggered");
@@ -53,11 +53,11 @@ Testcase {
 
         observedExecutionPath = observedExecutionPath.concat("runStarted");
         timer.start();
-        Qst.wait(10);
+        Qst.wait(50);
         observedExecutionPath = observedExecutionPath.concat("waitCompleted");
         probe2Enabled = true;
         timer.start();
-        Qst.wait(10);
+        Qst.wait(50);
         observedExecutionPath = observedExecutionPath.concat("waitCompleted");
 
         Qst.compare(probe1.count, 2);

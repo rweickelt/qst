@@ -19,7 +19,7 @@ Testcase {
 
     QtQml.Timer {
         id : timer
-        interval: 10
+        interval: 20
 
         onTriggered: {
             observedExecutionPath = observedExecutionPath.concat("signalDuringRun");
@@ -33,7 +33,7 @@ Testcase {
     function run() {
         observedExecutionPath = observedExecutionPath.concat("runStarted");
         timer.start();
-        Qst.wait(20);
+        Qst.wait(50);
         observedExecutionPath = observedExecutionPath.concat("runFinished");
     }
 

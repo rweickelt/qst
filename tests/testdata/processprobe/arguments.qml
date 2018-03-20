@@ -6,14 +6,23 @@ Testcase {
 
     ProcessProbe {
         id : process
-        program : "sh"
+        program : (Qst.hostOS === "windows") ? "cmd.exe" : "sh"
         workingDirectory: path
 
-        arguments : [
+        readonly property var posixArguments: [
             "arguments.sh",
-            "argument 1",
+            "argument",
             "error"
         ]
+
+        readonly property var windowsArguments: [
+            "/C",
+            "arguments.bat",
+            "argument",
+            "error"
+        ]
+
+        arguments : (Qst.hostOS === "windows") ? windowsArguments: posixArguments
 
         onStateChanged: {
             switch(state) {
@@ -29,8 +38,7 @@ Testcase {
             }
         }
 
-        onStarted: {
-            observedExecutionPath = observedExecutionPath.concat("onStarted");
+        onStarted: {            observedExecutionPath = observedExecutionPath.concat("onStarted");
         }
 
         onExitCodeChanged : {
@@ -62,7 +70,7 @@ Testcase {
         Qst.compare(observedExecutionPath, expectedExecutionPath);
         var stdout = process.readAllStandardOutput().trim();
         var stderr = process.readAllStandardError().trim();
-        Qst.compare(stdout, process.arguments[1]);
+        Qst.compare(stdout, "argument");
         Qst.compare(stderr, "error");
     }
 

@@ -3,14 +3,15 @@ import qst 1.0
 Testcase {
     name : "wait"
 
-    property int waitTime : 50
+    property int waitTime : 200
+    property int deviation: 5
 
     function run() {
         // TODO: Maybe need to allow some deviation.
-        var begin = elapsedTime;
+        var begin = test.elapsedTime;
         Qst.compare(begin, 0, "elapsedTime must be 0 at begin");
         Qst.wait(waitTime);
-        var end = elapsedTime;
-        Qst.compare(end, waitTime, "elapsedTime must be " + waitTime + " at end");
+        var time = test.elapsedTime - begin;
+        Qst.verify(((time >= (waitTime - deviation)) && (time <= (waitTime + deviation))), "expected: " + waitTime + "ms; actual: " + time + "ms");
     }
 }

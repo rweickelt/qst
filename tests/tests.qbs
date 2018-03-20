@@ -1,7 +1,7 @@
 import qbs
 
 Project {
-    condition : qbs.architecture === "x86_64"
+    condition : { return qbs.architecture.startsWith("x86") }
 
     StaticLibrary {
         name: "qsttestlib"

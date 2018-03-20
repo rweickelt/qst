@@ -4,8 +4,8 @@ import qst 1.0
 
 Testcase {
     name: "duration-inside-range"
-    property int duration: 10
-    property int deviation: 3
+    property int duration: 100
+    property int deviation: 10
 
     signal intervalStarted
     signal intervalStopped
@@ -113,5 +113,7 @@ Testcase {
         Qst.compare(constraint_call_signal.valid, true)
         Qst.compare(constraint_signal_call.valid, true)
         Qst.compare(constraint_signal_signal.valid, true)
+
+        console.log("Duration: " + constraint_call_call.duration)
     }
 }
