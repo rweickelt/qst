@@ -1,6 +1,6 @@
-
 [![Build Status](https://travis-ci.org/rweickelt/qst.svg?branch=master)](https://travis-ci.org/rweickelt/qst)
 [![Documentation Status](https://readthedocs.org/projects/qst/badge/?version=latest)](http://qst.readthedocs.io/en/latest/?badge=latest)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Frweickelt%2Fqst.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Frweickelt%2Fqst?ref=badge_shield)
 
 
 Qst
@@ -91,3 +91,6 @@ License
 -------
 
 Licensed under GPLv3. See http://github.com/rweickelt/qst/COPYING for details.
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Frweickelt%2Fqst.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Frweickelt%2Fqst?ref=badge_large)
