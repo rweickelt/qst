@@ -18,6 +18,11 @@ Project {
 
         cpp.cxxLanguageVersion: "c++14"
 
+        Properties {
+           condition: qbs.buildVariant === "debug"
+           cpp.commonCompilerFlags: "-g"
+        }
+
         qbs.optimization: "none"
 
         files: [

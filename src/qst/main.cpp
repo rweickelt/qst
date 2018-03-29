@@ -44,6 +44,9 @@
 #include <QtCore/QPointer>
 #include <QtQml/QQmlEngine>
 
+#define STRINGIFY(x) #x
+#define AS_STRING(x) STRINGIFY(x)
+
 void execRunCommand();
 
 int main(int argc, char *argv[])
@@ -53,6 +56,14 @@ int main(int argc, char *argv[])
     qputenv("QML_DISABLE_DISK_CACHE", "1");
 
     QCoreApplication app(argc, argv);
+
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
+    app.setApplicationName(QLatin1String("Qst"));
+#else
+    app.setApplicationName(QLatin1String("qst"));
+#endif
+    app.setApplicationVersion(QLatin1String(AS_STRING(QST_VERSION)));
+
     CommandlineParser cli(app.arguments());
     if (cli.hasErrors())
     {

@@ -16,7 +16,6 @@ Module {
         "-Wno-unused-variable",
         "-ffunction-sections",
         "-fdata-sections",
-        "-g",
     ]
     cpp.enableRtti : false
     cpp.positionIndependentCode: false

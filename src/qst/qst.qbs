@@ -12,6 +12,13 @@ QtApplication {
     Depends { name : "shared-types" }
 
     cpp.cxxLanguageVersion : "c++14"
+    cpp.rpaths: [
+        "$ORIGIN/../lib/"
+    ]
+    cpp.defines: [
+        "QST_COMMIT="  + project.commit,
+        "QST_VERSION=" + project.version,
+    ]
 
     consoleApplication : true
     targetName : "qst"

@@ -1,28 +1,152 @@
 language: cpp
 
-sudo: required
+env:
+  global:
+    # Needed by AWS
+    - PATH=$HOME/.local/bin:$PATH
+    - QST_VERSION=$(if [[ "$TRAVIS_TAG" ]]; then echo -n ${TRAVIS_TAG:1} ; else date "+%Y.%m.%d" ; fi)
 
-services:
-  - docker
+stages:
+  - name: build
+  - name: bundle and deploy
 
-addons:
-  apt:
-    packages:
-      - docker-ce
-
+# Load eventual build artifacts
 before_install:
-  - docker build -f docker/Dockerfile -t rweickelt/qst-build .
+  - pip install --user awscli
+  - mkdir -p ~/$TRAVIS_BUILD_NUMBER
+  - aws s3 sync s3://qst-build-artifacts/$TRAVIS_BUILD_NUMBER ~/$TRAVIS_BUILD_NUMBER
 
-script:
-  - docker run -v ${PWD}:/data/qst "rweickelt/qst-build" install
-        --file /data/qst/qst-project.qbs
-        --install-root /data/qst/install-root
-        release
-        profile:simplelink_cc13x0
-  - docker run -v ${PWD}:/data/qst "rweickelt/qst-build" install
-        --file /data/qst/qst-project.qbs
-        --install-root /data/qst/install-root
-        release
-        profile:qt5
-        project.runAutotest:true
-  - find install-root/
+after_success:
+  - aws s3 sync ~/$TRAVIS_BUILD_NUMBER s3://qst-build-artifacts/$TRAVIS_BUILD_NUMBER
+
+jobs:
+  include:
+    # Qst application for Linux
+    - stage: build
+      sudo: required
+      services:
+        - docker
+      addons:
+        apt:
+          packages:
+            - docker-ce
+      env:
+        - TARGET=qst
+        - PLATFORM=linux-x86_64
+        - QBS_PROFILE=qt5
+        - QBS_OPTIONS="project.runAutotest:true project.version:$QST_VERSION"
+      script:
+        - docker run -v ${PWD}:/build rweickelt/qt:latest-${PLATFORM} install
+              --file /build/qst-project.qbs
+              --build-directory /build/build-$QBS_PROFILE
+              --install-root /build/qst
+              release
+              profile:$QBS_PROFILE
+              $QBS_OPTIONS
+        - tar -cjf ~/$TRAVIS_BUILD_NUMBER/$TARGET-$PLATFORM.tar.bz2 qst
+        - find qst/
+    # Qst application for Windows
+    - stage: build
+      sudo: required
+      services:
+        - docker
+      addons:
+        apt:
+          packages:
+            - docker-ce
+      env:
+        - TARGET=qst
+        - PLATFORM=mingw-w64
+        - QBS_PROFILE=qt5
+        - QBS_OPTIONS="project.version:$QST_VERSION"
+      script:
+        - docker run -v ${PWD}:/build rweickelt/qt:latest-${PLATFORM} install
+              --file /build/qst-project.qbs
+              --build-directory /build/build-$QBS_PROFILE
+              --install-root /build/qst
+              release
+              profile:$QBS_PROFILE
+              $QBS_OPTIONS
+        - tar -cjf ~/$TRAVIS_BUILD_NUMBER/$TARGET-$PLATFORM.tar.bz2 qst
+        - find qst/
+    # Launchpad probe for CC13x0
+    - stage: build
+      sudo: required
+      services:
+        - docker
+      addons:
+        apt:
+          packages:
+            - docker-ce
+      env:
+        - TARGET=launchpad-probe
+        - PLATFORM=cc13x0
+        - PROFILE=simplelink_cc13x0
+        - QBS_OPTIONS="project.version:$QST_VERSION"
+      script:
+        - docker build -f docker/Dockerfile -t rweickelt/qst-build .
+        - docker run -v ${PWD}:/build "rweickelt/qst-build" install
+              --file /build/qst-project.qbs
+              --build-directory /build/build-$PROFILE
+              --install-root /build/qst
+              release
+              profile:$PROFILE
+              $QBS_OPTIONS
+        - tar -cjf ~/$TRAVIS_BUILD_NUMBER/$TARGET-$PLATFORM.tar.bz2 qst
+        - find qst/
+    # Deploy linux bundle
+    - stage: bundle and deploy
+      env:
+        - TARGET="linux-x86_64 bundle"
+        - FILE=qst-linux-x86_64-$QST_VERSION.tar.bz2
+      script:
+        - tar -xjf ~/$TRAVIS_BUILD_NUMBER/qst-linux-x86_64.tar.bz2
+        - tar -xjf ~/$TRAVIS_BUILD_NUMBER/launchpad-probe-cc13x0.tar.bz2
+        - tar -jcf $TRAVIS_BUILD_DIR/$FILE qst
+      deploy:
+        - provider: script
+          skip_cleanup: true
+          script: curl -T $TRAVIS_BUILD_DIR/$FILE --ftp-create-dirs --ftp-ssl --user $FTP_USER:$FTP_PASSWORD ftp://$FTP_HOST/$QST_VERSION/
+          on:
+            tags: true
+        - provider: script
+          skip_cleanup: true
+          script: curl --upload-file $TRAVIS_BUILD_DIR/$FILE https://transfer.sh/$FILE
+          on:
+            condition: $TRAVIS_TAG = ""
+            all_branches: true
+    # Deploy windows bundle
+    - stage: bundle and deploy
+      env:
+        - TARGET="windows-x86_64 bundle"
+        - FILE=qst-windows-x86_64-$QST_VERSION.zip
+      script:
+        - tar -xjf ~/$TRAVIS_BUILD_NUMBER/qst-mingw-w64.tar.bz2
+        - tar -xjf ~/$TRAVIS_BUILD_NUMBER/launchpad-probe-cc13x0.tar.bz2
+        - zip -r $TRAVIS_BUILD_DIR/$FILE qst
+      deploy:
+        - provider: script
+          skip_cleanup: true
+          script: curl -T $TRAVIS_BUILD_DIR/$FILE --ftp-create-dirs --ftp-ssl --user $FTP_USER:$FTP_PASSWORD ftp://$FTP_HOST/$QST_VERSION/
+          on:
+            tags: true
+        - provider: script
+          skip_cleanup: true
+          script: curl --upload-file $TRAVIS_BUILD_DIR/$FILE https://transfer.sh/$FILE
+          on:
+            condition: $TRAVIS_TAG = ""
+            all_branches: true
+    # Deploy sources on release
+    - stage: bundle and deploy
+      if: tag IS present
+      env:
+        - TARGET="sources"
+        - FILE=qst-src-$QST_VERSION.tar.bz2
+      script:
+        - git archive $TRAVIS_BRANCH | bzip2 > $TRAVIS_BUILD_DIR/$FILE
+      deploy:
+        - provider: script
+          skip_cleanup: true
+          script: curl -T $TRAVIS_BUILD_DIR/$FILE --ftp-create-dirs --ftp-ssl --user $FTP_USER:$FTP_PASSWORD ftp://$FTP_HOST/$QST_VERSION/
+          on:
+            tags: true
