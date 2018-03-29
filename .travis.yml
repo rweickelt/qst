@@ -4,7 +4,7 @@ env:
   global:
     # Needed by AWS
     - PATH=$HOME/.local/bin:$PATH
-    - QST_VERSION=$(if [[ "$TRAVIS_TAG" ]]; then echo -n ${TRAVIS_TAG:1} ; else date "+%Y.%m.%d" ; fi)
+    - QST_VERSION=$(if [[ "$TRAVIS_TAG" ]]; then echo -n ${TRAVIS_TAG:1} ; else echo -n ${TRAVIS_COMMIT::8} ; fi)
 
 stages:
   - name: build
