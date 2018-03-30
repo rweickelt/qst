@@ -31,6 +31,7 @@
 #include "plaintextlogger.h"
 #include "pinprobe.h"
 #include "processprobe.h"
+#include "profileloader.h"
 #include "project.h"
 #include "projectresolver.h"
 #include "proxylogger.h"
@@ -42,6 +43,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QPointer>
+#include <QtQml/QQmlContext>
 #include <QtQml/QQmlEngine>
 
 #define STRINGIFY(x) #x
@@ -119,6 +121,15 @@ void execRunCommand()
 
     PlaintextLogger plaintextLogger;
     ProxyLogger::instance()->registerLogger(&plaintextLogger);
+
+    ProfileLoader profileLoader(options->profilePaths);
+    QVariant profile = profileLoader.loadProfile(options->profile);
+    if (profileLoader.hasError())
+    {
+        Console::printError("Error: " + profileLoader.errorString());
+        ::exit(qst::ExitApplicationError);
+    }
+    engine.rootContext()->setContextProperty("profile", profile);
 
     ProjectResolver resolver(&engine, options->projectFilepath);
     resolver.loadRootFile();

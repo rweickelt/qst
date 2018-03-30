@@ -232,4 +232,79 @@ void AutoTest::valueRangeConstraint()
     QVERIFY(qstProcess().readAllStandardError().contains("checkpoint passed"));
 }
 
+void AutoTest::profile()
+{
+    QstTestResults results;
+    QByteArray stdErr;
+    // Expected profile search order:
+    // 1. explicitly given -P
+    // 2. testfile dir
+    // 3. config dir
+
+    // Profile in given path -P
+    results = execQstRun(QStringList{
+                                            "-f", dataPath("profile/existing-profile-properties.qml"),
+                                            "-p", "profile-1",
+                                            "-P", dataPath("profile/explicit-directory-2")
+                                        });
+    if (qstProcess().exitCode() != qst::ExitNormal) { QFAIL(qstProcess().readAllStandardError()); }
+    stdErr = qstProcess().readAllStandardError();
+    QVERIFY(stdErr.contains("location:explicit-2"));
+    QVERIFY(stdErr.contains("variant:1"));
+
+    // In one of multiple -P directories
+    results = execQstRun(QStringList{
+                                            "-f", dataPath("profile/existing-profile-properties.qml"),
+                                            "-p", "profile-1",
+                                            "-P", dataPath("profile/explicit-directory-1"),
+                                            "-P", dataPath("profile/explicit-directory-2")
+                                        });
+    if (qstProcess().exitCode() != qst::ExitNormal) { QFAIL(qstProcess().readAllStandardError()); }
+    stdErr = qstProcess().readAllStandardError();
+    QVERIFY(stdErr.contains("location:explicit-2"));
+    QVERIFY(stdErr.contains("variant:1"));
+
+    // Profile in testfile dir (implicit)
+    results = execQstRun(QStringList{
+                                            "-f", dataPath("profile/existing-profile-properties.qml"),
+                                            "-p", "profile-1"
+                                        });
+    if (qstProcess().exitCode() != qst::ExitNormal) { QFAIL(qstProcess().readAllStandardError()); }
+    stdErr = qstProcess().readAllStandardError();
+    QVERIFY(stdErr.contains("location:project"));
+    QVERIFY(stdErr.contains("variant:1"));
+
+    // Profile in config dir (implicit)
+    // Missing
+
+    // Specifying a profile that doesn't exist should error.
+    results = execQstRun(QStringList{
+                                            "-f", dataPath("profile/existing-profile-properties.qml"),
+                                            "-p", "doesnt-exist"
+                                        });
+    QVERIFY2(qstProcess().exitCode() == qst::ExitApplicationError, results.stdOut());
+
+    // Broken JSON file should error.
+    results = execQstRun(QStringList{
+                                            "-f", dataPath("profile/existing-profile-properties.qml"),
+                                            "-p", "broken-profile.json"
+                                        });
+    QVERIFY2(qstProcess().exitCode() == qst::ExitApplicationError, results.stdOut());
+
+    // Non-existing profile properties in a project item should fail
+    results = execQstRun(QStringList{
+                            "-f", dataPath("profile/non-existing-profile-properties-project.qml"),
+                            "-p", "profile-1"
+                         });
+    QCOMPARE(qstProcess().exitCode(), static_cast<int>(qst::ExitApplicationError));
+
+    // Non-existing profile properties in a run() method should fail.
+    results = execQstRun(QStringList{
+                            "-f", dataPath("profile/non-existing-profile-properties-run.qml"),
+                            "-p", "profile-1"
+                         });
+    QCOMPARE(qstProcess().exitCode(), static_cast<int>(qst::ExitTestCaseFailed));
+    VERIFY_FAIL(results, "non-existing-profile-properties-run", "non-existing-profile-properties-run.qml:9");
+}
+
 QTEST_GUILESS_MAIN(AutoTest)

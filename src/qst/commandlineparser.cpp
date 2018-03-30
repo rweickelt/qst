@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -75,6 +75,21 @@ CommandlineParser::CommandlineParser(QStringList arguments)
     {
         m_options->command = ApplicationOptions::RunCommand;
 
+        QCommandLineOption profileOption = {
+            { "p", "profile" },
+            "Load a profile from <name>.json and attach it to the QML root context. "
+            "Matching profiles are searched in the directories specified by -P or in the "
+            "project directory or in the config directory's profile sub-directory "
+            " (in this order).",
+            "name"
+        };
+
+        QCommandLineOption profilePathsOption = {
+            { "P", "profile-directory" },
+            "When looking for profiles, search first in <path>. "
+            "This option might be given multiple times.",
+            "path"
+        };
 
         QCommandLineOption projectFilepathOption = {
             { "f", "file" },
@@ -103,10 +118,12 @@ CommandlineParser::CommandlineParser(QStringList arguments)
 
         QCommandLineParser parser;
         parser.setApplicationDescription(runCommandDescription);
-        parser.addOption(importPathsOption);
-        parser.addOption(projectFilepathOption);
         parser.addOption(workingDirectoryOption);
+        parser.addOption(projectFilepathOption);
         parser.addHelpOption();
+        parser.addOption(importPathsOption);
+        parser.addOption(profileOption);
+        parser.addOption(profilePathsOption);
 
         parser.process(arguments);
 
@@ -204,6 +221,28 @@ CommandlineParser::CommandlineParser(QStringList arguments)
                 }
             }
         }
+
+        if (parser.isSet(profileOption))
+        {
+            QStringList profileNames = parser.values(profileOption);
+            if (profileNames.length() > 1)
+            {
+                m_errorString = QString("--profile/-p can only specified once.");
+                return;
+            }
+            m_options->profile = profileNames.first();
+        }
+
+        if (parser.isSet(profilePathsOption))
+        {
+            m_options->profilePaths = parser.values(profilePathsOption);
+            for (int i = 0; i < m_options->profilePaths.length(); i++)
+            {
+                m_options->profilePaths[i] = QDir(m_options->profilePaths[i]).absolutePath();
+            }
+        }
+        // Add project path to profile search paths
+        m_options->profilePaths << QFileInfo(m_options->projectFilepath).absolutePath();
     }
     else if (command == "help")
     {

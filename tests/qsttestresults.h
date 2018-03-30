@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -49,6 +49,7 @@ public:
     bool hasPassed(const QString& name) const;
     bool contains(const QString& name) const;
     const QstOutput output(const QString& name) const;
+    QByteArray stdOut() const;
 
     quint32 failCount() const;
     quint32 passCount() const;
@@ -57,6 +58,7 @@ private:
     QHash<QString, QstOutput>  m_data;
     quint32 m_failCount;
     quint32 m_passCount;
+    QByteArray m_stdOut;
 };
 
 

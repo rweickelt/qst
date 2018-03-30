@@ -39,6 +39,8 @@ QtApplication {
         "main.cpp",
         "plaintextlogger.cpp",
         "plaintextlogger.h",
+        "profileloader.cpp",
+        "profileloader.h",
         "projectresolver.cpp",
         "projectresolver.h",
         "proxylogger.cpp",

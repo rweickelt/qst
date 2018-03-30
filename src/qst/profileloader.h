@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017-2018 The Qst project.
+ ** Copyright (C) 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -21,31 +21,34 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-
-#ifndef AUTOTEST_H
-#define AUTOTEST_H
-
-#include <qsttest.h>
+#ifndef PROFILELOADER_H
+#define PROFILELOADER_H
 
 #include <QtCore/QObject>
-#include <QtTest/QtTest>
+#include <QtCore/QVariant>
 
-class AutoTest : public QstTest
+/*
+Loads a profile from the file system and returns an object representation
+that can be attached to the QML context.
+ */
+class ProfileLoader : public QObject
 {
     Q_OBJECT
+public:
+    ProfileLoader(const QStringList& profilePaths = QStringList());
+    QString errorString() const;
+    bool hasError() const;
+    QVariant loadProfile(const QString& name);
+    void setProfileSearchPaths(const QStringList& paths);
 
-private slots:
-    void project();
-    void testCase();
-    void testCaseName();
-    void errorHandling();
-    void processProbe();
-    void workingDirectory_data();
-    void workingDirectory();
-    void signalProbe();
-    void durationConstraint();
-    void valueRangeConstraint();
-    void profile();
+private:
+    QString m_error;
+    QStringList m_profileSearchPaths;
 };
 
-#endif // AUTOTEST_H
+inline QString ProfileLoader::errorString() const { return m_error; }
+inline bool ProfileLoader::hasError() const { return m_error.length() > 0; }
+inline void ProfileLoader::setProfileSearchPaths(const QStringList &paths) { m_profileSearchPaths = paths; }
+
+
+#endif // PROFILELOADER_H

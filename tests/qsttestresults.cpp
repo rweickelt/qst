@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -35,6 +35,8 @@ bool QstTestResults::contains(const QString& name) const
 QstTestResults QstTestResults::fromQstOutput(const QByteArray& text)
 {
     QstTestResults results;
+
+    results.m_stdOut = text;
 
     QStringList lines = QString::fromLatin1(text).trimmed().split('\n');
     QRegularExpression parser(
@@ -116,4 +118,9 @@ bool QstTestResults::hasPassed(const QString &name) const
 const QstOutput QstTestResults::output(const QString& name) const
 {
     return m_data.value(name);
+}
+
+QByteArray QstTestResults::stdOut() const
+{
+    return m_stdOut;
 }

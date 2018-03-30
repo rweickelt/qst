@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017, 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -40,6 +40,8 @@ struct ApplicationOptions
 
     Command command;
     QStringList importPaths;
+    QString profile;
+    QStringList profilePaths;
     QString projectFilepath;
     QString workingDirectory;
 
