@@ -52,7 +52,7 @@ QstTestResults QstTestResults::fromQstOutput(const QByteArray& text)
         QRegularExpressionMatch parsed = parser.match(line);
         if (parsed.hasMatch() || parsed.hasPartialMatch())
         {
-            QstOutput& newEntry = results.m_data[parsed.captured("name")];
+            QstOutput newEntry;
             newEntry.result = parsed.captured("result");
             newEntry.name = parsed.captured("name");
             newEntry.component = parsed.captured("component");
@@ -62,10 +62,16 @@ QstTestResults QstTestResults::fromQstOutput(const QByteArray& text)
             if (newEntry.result == "PASS")
             {
                 results.m_passCount++;
+                results.m_data[parsed.captured("name")] = newEntry;
             }
             else if (newEntry.result == "FAIL")
             {
                 results.m_failCount++;
+                results.m_data[parsed.captured("name")] = newEntry;
+            }
+            else if (newEntry.result == "INFO")
+            {
+                results.m_info.insert(parsed.captured("name"), newEntry);
             }
             else
             {

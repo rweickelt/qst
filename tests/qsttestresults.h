@@ -56,6 +56,7 @@ public:
 
 private:
     QHash<QString, QstOutput>  m_data;
+    QMultiHash<QString, QstOutput> m_info;
     quint32 m_failCount;
     quint32 m_passCount;
     QByteArray m_stdOut;

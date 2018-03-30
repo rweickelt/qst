@@ -234,3 +234,8 @@ QstService* QstService::instance(QQmlEngine* engine)
 
     return instances.value(engine); // only until we allow multiple engines
 }
+
+void QstService::info(const QVariant &message)
+{
+    qst::info(message.toString(), "", 0);
+}

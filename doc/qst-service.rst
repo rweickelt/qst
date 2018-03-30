@@ -15,6 +15,7 @@ Qst Service
 
 - :cpp:func:`compare()`
 - :cpp:func:`error()`
+- :cpp:func:`info()`
 - :cpp:func:`verify()`
 - :cpp:func:`wait()`
 
@@ -72,6 +73,12 @@ Methods
 
     The parameters `file` and `line` are optional. If omitted, Qst
     takes those from the top of the caller stack.
+
+
+..  cpp:function:: void info(variant message)
+
+    Prints `message` in the test log output. The parameter `message` can be
+    anything that converts implicitly into a string.
 
 
 ..  cpp:function:: void verify(bool condition, string message)

@@ -89,6 +89,7 @@ public:
     Q_INVOKABLE QmlContext qmlCallerContext();
     Q_INVOKABLE QVariantList qmlCallerTrace();
     Q_INVOKABLE QmlContext qmlDefinitionContext(QObject* object);
+    Q_INVOKABLE void info(const QVariant& message);
 
     static QstService* instance(QQmlEngine* engine);
 };
