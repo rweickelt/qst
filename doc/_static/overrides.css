@@ -26,6 +26,10 @@
     background-color: #4e4a4a;
     cursor: pointer;
 }
+.wy-menu-vertical li.on a, .wy-menu-vertical li.current>a {
+    border-top: none;
+    border-bottom: none;
+}
 
 a, a:hover {
     color: #6ab825;
@@ -49,6 +53,10 @@ body {
     border-left: none;
     background: #eefae7;
     color: #222;
+}
+
+.rst-content table.field-list td {
+    padding-top: 8px;
 }
 
 /* In-line code */
