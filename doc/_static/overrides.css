@@ -1,0 +1,106 @@
+/* Simplify the nav bar */
+.wy-side-nav-search>a, .wy-side-nav-search .wy-dropdown>a {
+    color: #6ab825;
+}
+.wy-side-nav-search>div.version {
+    color: #000;
+}
+.wy-side-nav-search {
+    background-color: #fcfcfc;
+}
+.wy-nav-top {
+    background-color: #4F9312;
+}
+.wy-menu-vertical li.current {
+    background: inherit;
+}
+.wy-menu-vertical li.current a {
+    border-right: none;
+}
+.wy-menu-vertical li.toctree-l2.current>a,
+.wy-menu-vertical li.toctree-l2.current li.toctree-l3>a {
+    background-color: #fcfcfc;
+}
+.wy-menu-vertical li.current a:hover {
+    color: #6ab825;
+    background-color: #4e4a4a;
+    cursor: pointer;
+}
+
+a, a:hover {
+    color: #6ab825;
+}
+
+/* Increase contrast */
+body {
+    color: #000;
+}
+
+/* Classes and functions */
+.rst-content dl:not(.docutils) dt {
+    border-top: none;
+    background: #eefae7;
+    color: #222;
+    display: inline-block; /* Fix missing space on the right */
+}
+
+/* Enums */
+.rst-content dl:not(.docutils) dl dt {
+    border-left: none;
+    background: #eefae7;
+    color: #222;
+}
+
+/* In-line code */
+.rst-content code.literal {
+    color: #222;
+}
+
+/* Disable borders for in-line code blocks */
+.rst-content tt, .rst-content tt, .rst-content code {
+    padding: 0;
+    color: #222;
+}
+
+
+/* Adjust the font */
+code, .rst-content tt, .rst-content code {
+    font-size: 85%;
+    font-weight: bold;
+    border: none;
+}
+
+.rst-content code.xref {
+    color: #6ab825;
+}
+
+
+/* Removes ugly "class" and "enumerator" */
+em.property {
+    display: none !important;
+}
+
+/* Remove search form until Sphinx provides a well-working search */
+.wy-form {
+    display: none;
+}
+
+/* Footer buttons are distracting */
+.rst-footer-buttons {
+    display: none;
+}
+
+/* Reset syntax highlighting so that Pygments can take over
+   https://github.com/rtfd/sphinx_rtd_theme/issues/166
+*/
+.highlight * {
+    color: black;
+    font-weight: normal;
+    font-style: normal;
+    background-color: transparent;
+}
+
+/* Nice dark background for code */
+.highlight {
+    background: #343131 !important;
+}
