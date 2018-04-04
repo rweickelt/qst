@@ -1,0 +1,63 @@
+.. _QML language: https://en.wikipedia.org/wiki/QML
+.. _QML language reference: http://doc.qt.io/qt-5/qmlreference.html
+
+Language reference
+==================
+
+Qst makes use of the `QML language`_, a declarative language mixed with
+Javascript. The official `QML language reference`_ eplains all core concepts in
+detail. In difference to a regular QML interpreter, Qst analyses the the
+documents before it executes them and makes additions to the QML run-time
+environment. It expects a certain structure and enforces some rules. The purpose
+of this document is, to eplain all differences.
+
+
+Context properties
+------------------
+
+The following properties are automatically attached by the Qst QML engine to
+every loaded documented unless unless otherwise stated.
+
+..  cpp:var:: string path
+
+    Directory path of the current file.
+
+..  cpp:var:: var profile
+
+    Reference to the global profile object if a profile is set from command
+    line.
+
+..  cpp:var:: Project project
+
+    Reference to the global project object. Only available in files that do not
+    have a :cpp:class:`Project` item as root component.
+
+
+Basic QML types
+---------------
+
+Basic QML types for properties. Basic QML types are also explained in the `QML
+language reference`_.
+
+..  cpp:type:: list
+
+    List of QML objects. See also http://doc.qt.io/qt-5/qml-list.html
+
+..  cpp:type:: signal
+
+    When used as a property type, ``signal`` is a reference to a `signal
+    attribute <http://doc.qt.io/qt-5/qtqml-syntax-objectattributes.html#signal-
+    attributes>`_ of a component. ``signal`` properties are objects that provide
+    a ``connect()`` and ``disconnect()`` method to connect a destination
+    function. They are also `functors
+    <https://en.wikipedia.org/wiki/Function_object>`_ and can be called like a
+    function in order to invoke connected signal handlers.
+
+..  cpp:type:: string
+
+    Free form text string. See also http://doc.qt.io/qt-5/qml-string.html
+
+..  cpp:type:: var
+
+    Generic property type. See also http://doc.qt.io/qt-5/qml-var.html
+

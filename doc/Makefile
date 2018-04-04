@@ -14,3 +14,5 @@ BUILDDIR      = "$(MAKEFILE_DIR)/../build-results/doc/"
 html:
 	@sphinx-build -b html $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)"
 
+link-check:
+	@sphinx-build -b linkcheck $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)"

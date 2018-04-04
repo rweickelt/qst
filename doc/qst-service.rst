@@ -54,7 +54,8 @@ Methods
 
     Compares an `actual` value to an `expected` value.  If `actual` and
     `expected` are identical, execution continues. If not, a failure is recorded
-    in the test log and the test won't be executed further.
+    in the test log and the test won't be executed further. The string `message`
+    is optional. If not set, a default message is created.
 
     Both values may be of any basic QML basic type. Arrays are compared by their
     containing values. Objects are compared by each property.

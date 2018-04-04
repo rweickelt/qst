@@ -22,6 +22,11 @@ Testcase Item
 
 - :cpp:func:`run()`
 
+..  rubric:: Signals
+
+- :cpp:func:`created()`
+- :cpp:func:`finished()`
+- :cpp:func:`started()`
 
 Detailed Description
 --------------------
@@ -133,3 +138,47 @@ Methods
     2.  An error has occurred or a constraint has failed and
         :cpp:member:`result` has been set to :cpp:enumerator:`Result::Fail`.
         In that case, all remaining statements are aborted.
+
+Signals
+-------
+
+..  cpp:function:: void created()
+
+    This signal is emitted after the :cpp:func:`destruction()` signal of the
+    previous ``Testcase`` and before :cpp:func:`started()` of the current one.
+    It is the QML way of implementing a constructor and can be used to
+    initialize resources.
+
+    The signal is also attached to every :cpp:class:`Component` as
+    ``Testcase.created()``.
+
+
+..  cpp:function:: void destruction()
+
+    This signal is emitted before the ``Testcase`` component is physically
+    destroyed and may be used to free up resources.
+
+    The signal is also attached to every :cpp:class:`Component` as
+    ``Testcase.destruction()``.
+
+
+..  cpp:function:: void finished()
+
+    This signal is emitted after the :cpp:func:`run()` function has returned and
+    may be used for final evaluation or cleaning up. By that time,
+    :cpp:member:`result` may not have been set, yet and thus, it is still
+    allowed to call verification functions.
+
+    The signal is also attached to every :cpp:class:`Component` as
+    ``Testcase.finished()``.
+
+
+..  cpp:function:: void started()
+
+    This signal is emitted after :cpp:func:`created()` and before
+    :cpp:func:`run()` is invoked. It may be used for starting concurrent
+    activities.
+
+    The signal is also attached to every :cpp:class:`Component` as
+    ``Testcase.started()``.
+

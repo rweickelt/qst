@@ -2,11 +2,18 @@ Reference
 =========
 
 .. toctree::
+   :maxdepth: 2
+
+   language
+
+
+.. toctree::
    :maxdepth: 1
    :hidden:
    :glob:
 
-   *-*
+   *-item
+   *-service
 
 ..  rubric:: Core Items
 
@@ -32,6 +39,7 @@ Name                                      Description
 ========================================= ===========
 
 
+.. _services:
 ..  rubric:: Services
 
 ================================== ===========
