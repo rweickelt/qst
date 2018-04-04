@@ -112,3 +112,7 @@ em.property {
 .highlight {
     background: #343131 !important;
 }
+
+div[class^='highlight'] pre {
+    color: #ccc;
+}
