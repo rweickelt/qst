@@ -41,7 +41,6 @@ const QString metaDescription =
         "Usage: qst command [command parameters]\n"
         "\n"
         "Available commands:\n"
-        "  help      Shows general help or command-specific help.\n"
         "  run       Executes one or more test cases.\n"
         "  version   Diplays version information.\n";
 

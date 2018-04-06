@@ -10,6 +10,6 @@ enriched with Javascript.
    :maxdepth: 1
    :caption: Contents:
 
-   tutorial
+   usage
    hardware-probes
    reference

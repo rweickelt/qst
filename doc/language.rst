@@ -7,7 +7,7 @@ Language reference
 Qst makes use of the `QML language`_, a declarative language mixed with
 Javascript. The official `QML language reference`_ eplains all core concepts in
 detail. In difference to a regular QML interpreter, Qst analyses the the
-documents before it executes them and makes additions to the QML run-time
+documents before it executes them and makes additions to the QML runtime
 environment. It expects a certain structure and enforces some rules. The purpose
 of this document is, to eplain all differences.
 
@@ -20,17 +20,23 @@ every loaded documented unless unless otherwise stated.
 
 ..  cpp:var:: string path
 
-    Directory path of the current file.
+    Absolute path of the directory where the current file is located.
 
 ..  cpp:var:: var profile
 
-    Reference to the global profile object if a profile is set from command
-    line.
+    Reference to the global profile object if a :ref:`profile
+    <usage_profiles>` is set from command line.
 
 ..  cpp:var:: Project project
 
     Reference to the global project object. Only available in files that do not
     have a :cpp:class:`Project` item as root component.
+
+..  cpp:var:: Testcase test
+
+    Reference to the owner test case. This property is only available in
+    stand-alone component definitions such as shown in the :ref:`MakeProbe`
+    example. It is not available in :cpp:class:`Project` components.
 
 
 Basic QML types
@@ -46,12 +52,13 @@ language reference`_.
 ..  cpp:type:: signal
 
     When used as a property type, ``signal`` is a reference to a `signal
-    attribute <http://doc.qt.io/qt-5/qtqml-syntax-objectattributes.html#signal-
-    attributes>`_ of a component. ``signal`` properties are objects that provide
-    a ``connect()`` and ``disconnect()`` method to connect a destination
-    function. They are also `functors
-    <https://en.wikipedia.org/wiki/Function_object>`_ and can be called like a
-    function in order to invoke connected signal handlers.
+    attribute
+    <http://doc.qt.io/qt-5/qtqml-syntax-objectattributes.html#signal-attributes>`_
+    of a component. ``signal`` properties are objects that provide a
+    ``connect()`` and ``disconnect()`` method to connect a destination function.
+    They are also `functors <https://en.wikipedia.org/wiki/Function_object>`_
+    and can be called like a function in order to invoke connected signal
+    handlers.
 
 ..  cpp:type:: string
 

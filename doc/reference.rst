@@ -1,9 +1,12 @@
 Reference
 =========
 
+..  rubric:: General
+
 .. toctree::
    :maxdepth: 2
 
+   command-line-interface
    language
 
 

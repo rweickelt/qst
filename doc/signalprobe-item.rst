@@ -34,6 +34,9 @@ Detailed Description
 ``SignalProbe`` can be used to watch signals of other items. A typical use-case
 is a counter for asynchronous events::
 
+    import qst 1.0
+    import QtQml 2.0 as QtQml
+
     Testcase {
         QtQml.Timer {
             id : timer
@@ -57,11 +60,15 @@ is a counter for asynchronous events::
 
 
 The following example shows, how ``SignalProbe`` can be used, to attach to a
-signal that is not directly accessible::
+signal that is not directly accessible:
 
-    // BaseTestcase.qml
+..  code-block:: qml
+    :caption: `BaseTestcase.qml`
+
+    import qst 1.0
+
     Testcase {
-        var pinProbe : PinProbe {
+        property var pinProbe : PinProbe {
             // properties
             // ...
 
@@ -72,7 +79,12 @@ signal that is not directly accessible::
         }
     }
 
-    // ExtendedTestcase.qml
+..  code-block:: qml
+    :caption: `ExtendedTestcase.qml`
+    :name: signalprobe_ExtendedTestcase
+
+    import qst 1.0
+
     BaseTestcase {
         // Cannot attach directly to pinProbe's valueChanged() signal.
         // Use SignalProbe instead.

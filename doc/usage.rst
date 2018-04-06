@@ -6,16 +6,19 @@
 .. _QML language: https://en.wikipedia.org/wiki/QML
 .. _QML language reference: http://doc.qt.io/qt-5/qmlreference.html
 
-Qst in a nutshell
-=================
+Usage
+=====
 
 This document explains most features of Qst and shows how to use them. It is a
-complete walk-through and will take about 15 minutes. Qst makes use of the `QML
-language`_, a declarative language mixed with Javascript. The language is very
-intuitive, but you might want to have a look at the `QML language reference`_ or
-keep it open in a separate browser tab. We will use the terms `component` and
-`item` as synonyms.
+complete walk-through and will take about 15 minutes.
 
+..  contents::
+    :local:
+
+Qst makes use of the `QML language`_, a declarative language mixed with
+Javascript. The language is very intuitive, but you might want to have a look at
+the `QML language reference`_ or keep it open in a separate browser tab. We will
+use the terms `component` and `item` as synonyms.
 
 Running a simple test case
 --------------------------
@@ -29,7 +32,7 @@ characteristics:
 
 The name must be unique across the whole project and must be a plain string. The
 |run()| function may have arbitrary execution length and contain blocking and
-non- blocking function calls. The |Testcase| component is put into a file of an
+non-blocking function calls. The |Testcase| component is put into a file of an
 arbitrary name and in its simplest form it would look as follows:
 
 ..  literalinclude:: ../examples/tutorial/simple-passing-test.qml
@@ -99,7 +102,7 @@ Probes are not a special language construct, but pure QML components with
 properties, methods, signals and slots.
 
 A versatile probe item is the :cpp:class:`ProcessProbe`. It can invoke programs
-on the local computer and monitor their execution. A very simple testcase that
+on the local computer and monitor their execution. A very simple test case that
 runs GNU Make on a Makefile in the current folder would look like this:
 
 ..  literalinclude:: ../examples/tutorial/makefile-test-simple.qml
@@ -122,11 +125,11 @@ Various other probe items exist. For a complete list, have a look at the
 :doc:`reference <reference>` documentation.
 
 
-Adding properties and re-using components
------------------------------------------
+Extending and re-using components
+---------------------------------
 
 The above test case :ref:`makefile-test-simple` is not re-usable in this form
-because all parameters are hard-coded. Consider a project with a buch of
+because all parameters are hard-coded. Consider a project with a bunch of
 makefiles. It would be cumbersome to re-write the whole test case for each
 makefile. Instead, we can turn the test case into a re-usable component by
 defining additional properties:
@@ -150,11 +153,13 @@ testcase files in the following form:
 Later we will learn a way to :ref:`define multiple test case in one document
 <tutorial_inline-testcases>`.
 
-Custom properties are also helpful in large test cases. Instead of hard- coding
+Custom properties are also helpful in large test cases. Instead of hard-coding
 parameters everywhere in-line, it is better to to put them upfront to make the
 test case more readable. This applies to all components in general and is
 `common practise in QML <https://doc.qt.io/qt-5/qml-codingconventions.html>`_.
 
+
+.. _signal-handlers:
 
 Attaching signal handlers
 -------------------------
@@ -171,7 +176,7 @@ instance::
 
 Signal handlers are always written in the form `on<CapitalizedSignal>`. `Signals
 and signal handlers <http://doc.qt.io/qt-5/qtqml-syntax-signals.html>`_ are a
-core concept of the QML language and fall in of 3 categories:
+core concept of the QML language and fall in 1 of 3 categories:
 
 1.  `explicitly defined signals <http://doc.qt.io/qt-5/qtqml-syntax-signals.html#receiving-signals-with-signal-handlers>`_,
     like :cpp:func:`ProcessProbe::finished`,
@@ -181,28 +186,91 @@ core concept of the QML language and fall in of 3 categories:
 3.  `attached signals <http://doc.qt.io/qt-5/qtqml-syntax-signals.html#attached-signal-handlers>`_
     added by other components.
 
-You may follow above links to read more about this topic. Let us now have a
-look, how we can utilize signal handlers in a Qst project.
+Signal handlers may contain arbitrary JavaScript code, but they have run-to-
+completion semantics and must never do blocking calls. You may follow above
+links to read more about this topic. Let us now have a look, how we can utilize
+signal handlers in a Qst project.
 
 Our :ref:`MakefileTestcase` file from above can only do one thing: invoke GNU
 make. But what if a test case is more complex and needs to invoke additional
 programs? In this case, it would be more benefitial to extend
-:cpp:class:`ProcessProbe` into a component instead of :cpp:class:`Testcase`:
+:cpp:class:`ProcessProbe` instead of :cpp:class:`Testcase`:
 
-..  literalinclude:: ../examples/tutorial/GnuMakeProbe.qml
-    :caption: `GnuMakeProbe.qml`
+..  literalinclude:: ../examples/tutorial/MakeProbe.qml
+    :caption: `MakeProbe.qml`
+    :name: MakeProbe
 
-The `GnuMakeProbe.qml` component can now be included even multiple times like
+The `MakeProbe.qml` component can now be included even multiple times like
 this:
 
 ..  literalinclude:: ../examples/tutorial/test-multi-build.qml
     :caption: `test-multi-build.qml`
 
+As we can see in `MakeProbe.qml`, implicit and explicit signal handlers must
+be defined in the scope of the signal's owner component. For instance,
+``onJobsChanged`` would not work outside ``MakeProbe``. In cases where we
+need to handle a signal of a component that is not defined in the current
+component, we can use :cpp:class:`SignalProbe` as shown in the
+:ref:`signalprobe_ExtendedTestcase` example. It is also possible to use the
+`Connections <http://doc.qt.io/qt-5/qtqml-syntax-signals.html#using-the-
+connections-type>`_ component from the QtQml package.
+
 
 Using constraints for continuous evaluation
 -------------------------------------------
 
-- adding constraints to do permanent checks
+In the :ref:`MakeProbe` example we have learned how signal handlers can be
+used for on-going verification. We do not have to think about them in the
+|run()| function, they work silently in the background.
+
+Constraints follow the same principle, but are a bit more formalized and
+declarative. They make the test case fail immediately when they are violated.
+Constraints are usually connected to signals like the
+:cpp:class:`DurationConstraint` or bound to properties like the
+:cpp:class:`ValueRangeConstraint`.
+
+Take the following test case as an example:
+
+..  code-block:: qml
+
+    import qst 1.0
+
+    Testcase {
+        property int responseTime: 0
+
+        onResponseTimeChanged: {
+            Qst.verify((responseTime >= 4) && (responseTime =< 8),
+                "responseTime (" + responseTime
+                + ") is not in the expected range.")
+        }
+
+        function run() {
+            // ...
+        }
+    }
+
+The property ``responseTime`` could be validated by the help of an implicit
+property changed signal handler and :cpp:class:`Qst` verification functions. But
+we could also use a constraint and improve the readability of the test case:
+
+..  code-block:: qml
+
+    import qst 1.0
+
+    Testcase {
+        property int responseTime: 0
+
+        ValueRangeConstraint {
+            value: responseTime
+            minValue: 4
+            maxValue: 8
+        }
+
+        function run() {
+            // ...
+        }
+    }
+
 
 
 Structuring projects
@@ -214,9 +282,10 @@ contain many of them. Qst provides the |Project| item for this purpose. A
 the project::
 
     Project {
+        name: "referencing-project"
         references: [
             "testcase-file-1.qml",
-            "subdir/testcase-file-2.qml",
+            "testcase-file-2.qml",
             /* ... */
         ]
     }
@@ -242,6 +311,7 @@ when parametrizing and instantiating a generic test case multiple times:
     :caption: `project.qml`
 
     Project {
+        name: "inline-project"
         SpecialTestcase { name: "tc-1"; speed: 10 }
         SpecialTestcase { name: "tc-2"; speed: 42000 }
         /* ... */
@@ -277,6 +347,8 @@ and can be accessed as :cpp:var:`project` context property:
 Although the :cpp:var:`project` property is shared across the whole project,
 test cases are not supposed to write to the project's properties.
 
+
+.. _usage_profiles:
 
 Working with profiles
 ---------------------
@@ -335,13 +407,38 @@ configuration directory. Additional profile search paths can be specified with
 The latter option might be given multiple times.
 
 
-Dealing with temporary files
-----------------------------
+Storing temporary files
+-----------------------
 
-TBD:
+Qst uses a `working directory` to store intermediate files during test
+execution. The directory is automatically created in the current folder and by
+default it has the format `.<project-name>-<profile-name>-<hash>`. Each test
+case will have a sub-folder with its name in the project working directory.
 
-- when triggering processes, build processes, for instance, where to store
-  intermediate data
-- using the workingDirectory of the testcase
+Let us assume a test project that:
 
-- might also read and write files with TextFile service
+#. builds a firmware image,
+#. downloads it to the hardware,
+#. executes various tests on the hardware.
+
+The directory layout of this imagined example project would look like:
+
+.. code-block:: console
+
+   .myproject-myprofile-e413c0f7
+   ├── testcase-build
+   │   ├── object-1.o
+   │   ├── object-2.o
+   │   └── firmware.hex
+   ├── testcase-flash
+   ├── testcase-some-feature
+   └── testcase-other-feature
+       └── log.txt
+
+
+For the ``run`` command, the working directory can be overridden by the
+:option:`--working-directory <run -d>` command-line option. When ``run`` is
+executed multiple times and the working directory already exists, each
+test case sub-folder is wiped out before the :cpp:func:`Testcase::created`
+signal is emitted.
+
