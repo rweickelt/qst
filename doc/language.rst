@@ -39,11 +39,27 @@ every loaded documented unless unless otherwise stated.
     example. It is not available in :cpp:class:`Project` components.
 
 
-Basic QML types
----------------
+QML data types
+--------------
 
-Basic QML types for properties. Basic QML types are also explained in the `QML
-language reference`_.
+QML types for properties used in this reference documentation. Basic QML types
+are also explained in the `QML language reference`_.
+
+..  cpp domain doesn't allow to describe built-in types. But we want to be
+..  somehow complete here.
+
+..  c:type:: bool
+
+    Boolean value. Can be either ``true`` or ``false``.
+
+..  c:type:: double
+
+    64 bit (double precision) `floating point
+    <https://en.wikipedia.org/wiki/IEEE_754>`_ number.
+
+..  c:type:: int
+
+    32 bit signed whole number.
 
 ..  cpp:type:: list
 
@@ -51,14 +67,14 @@ language reference`_.
 
 ..  cpp:type:: signal
 
-    When used as a property type, ``signal`` is a reference to a `signal
-    attribute
+    Signal as a property type, ``signal`` is a reference to a `signal attribute.
+    It is stored as
     <http://doc.qt.io/qt-5/qtqml-syntax-objectattributes.html#signal-attributes>`_
     of a component. ``signal`` properties are objects that provide a
-    ``connect()`` and ``disconnect()`` method to connect a destination function.
-    They are also `functors <https://en.wikipedia.org/wiki/Function_object>`_
-    and can be called like a function in order to invoke connected signal
-    handlers.
+    ``connect()`` and ``disconnect()`` method to connect to a destination
+    function. They are also `functors
+    <https://en.wikipedia.org/wiki/Function_object>`_ and can be called like a
+    function in order to invoke connected signal handlers.
 
 ..  cpp:type:: string
 
@@ -66,5 +82,6 @@ language reference`_.
 
 ..  cpp:type:: var
 
-    Generic property type. See also http://doc.qt.io/qt-5/qml-var.html
+    Generic property type. Can hold any other data type, but usually used for
+    objects only. See also http://doc.qt.io/qt-5/qml-var.html
 
