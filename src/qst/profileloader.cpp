@@ -74,5 +74,8 @@ QVariant ProfileLoader::loadProfile(const QString& name)
         m_error = QString("Could not parse the profile document '%1.json': %2").arg(name).arg(error.errorString());
     }
 
-    return document.toVariant();
+    QVariantMap profile = document.toVariant().toMap();
+    profile.insert("name", name);
+
+    return profile;
 }

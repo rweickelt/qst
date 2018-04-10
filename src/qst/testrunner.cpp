@@ -22,14 +22,17 @@
  ** $END_LICENSE$
 ****************************************************************************/
 #include "testrunner.h"
-#include "testcase.h"
+#include "project.h"
 #include "qst.h"
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDir>
 
-TestRunner::TestRunner(const QList<QPointer<Testcase> >& testCases)
+TestRunner::TestRunner(Project* project, const QList<QPointer<Testcase> >& testCases):
+    m_project(project)
 {
     m_testCases = testCases;
+    createWorkingDirectory();
 }
 
 void TestRunner::execTestCases()
@@ -46,5 +49,32 @@ void TestRunner::execTestCases()
     else
     {
         QCoreApplication::exit(qst::ExitNormal);
+    }
+}
+
+void TestRunner::createWorkingDirectory()
+{
+    QString workDirPath = m_project->workingDirectory();
+
+    if (!QFileInfo(workDirPath).exists())
+    {
+        if (!QDir().mkpath(workDirPath))
+        {
+            m_errorString = QString("Could not create working directory '%1'.").arg(workDirPath);
+            return;
+        }
+    }
+    else if (!QFileInfo(workDirPath).isDir())
+    {
+        m_errorString = QString("Working directory path '%1' is not a valid directory.").arg(workDirPath);
+        return;
+    }
+    else
+    {
+        if (!QFileInfo(workDirPath).isWritable())
+        {
+            m_errorString = QString("Working directory '%1' is not writable.").arg(workDirPath);
+            return;
+        }
     }
 }

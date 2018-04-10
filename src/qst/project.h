@@ -24,6 +24,8 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
+#include "parser.h"
+
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
@@ -37,6 +39,8 @@ class Project : public QObject, public QQmlParserStatus
     // We need a default property that can hold objects, but we won't actually use it.
     // Instead, we let component items register manually as testcase children.
     Q_CLASSINFO("DefaultProperty", "__defaultProperty")
+
+    friend class ProjectResolver;
 
 public:
     explicit Project(QObject *parent = 0);
@@ -56,6 +60,9 @@ public:
 
     void setName(const QString& name);
     void setReferences(const QStringList& references);
+
+protected:
+    virtual void handleParserEvent(ParserEvent event);
 
 private:
     QList<QObject *> m_defaultProperty;

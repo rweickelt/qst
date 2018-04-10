@@ -142,7 +142,12 @@ void execRunCommand()
         ::exit(qst::ExitApplicationError);
     }
 
-    TestRunner runner(resolver.testcases());
+    TestRunner runner(resolver.project(), resolver.testcases());
+    if (runner.hasError())
+    {
+        Console::printError("Error: " + runner.errorString());
+        ::exit(qst::ExitApplicationError);
+    }
     runner.execTestCases();
 }
 

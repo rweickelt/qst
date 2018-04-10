@@ -193,32 +193,7 @@ CommandlineParser::CommandlineParser(QStringList arguments)
 
         if (parser.isSet(workingDirectoryOption))
         {
-            QString workDirPath = parser.value(workingDirectoryOption);
             m_options->workingDirectory = QDir(parser.value(workingDirectoryOption)).absolutePath();
-
-            QDir workDir = workDirPath;
-            if (!workDir.exists())
-            {
-                if (!QDir().mkpath(workDirPath))
-                {
-                    m_errorString = QString("Could not create working directory '%1'.")
-                            .arg(workDirPath);
-                    return;
-                }
-            }
-            else if (!QFileInfo(workDirPath).isDir())
-            {
-                m_errorString = QString("Value of --working-directory is not a valid directory.");
-                return;
-            }
-            else
-            {
-                if (!QFileInfo(workDirPath).isWritable())
-                {
-                    m_errorString = QString("Working directory is not writable.");
-                    return;
-                }
-            }
         }
 
         if (parser.isSet(profileOption))

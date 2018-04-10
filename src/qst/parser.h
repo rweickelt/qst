@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017, 2018 The Qst project.
+ ** Copyright (C) 2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -21,41 +21,12 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#ifndef TESTCASERUNNER_H
-#define TESTCASERUNNER_H
+#ifndef PARSER_H
+#define PARSER_H
 
-#include "testcase.h"
-
-#include <QtCore/QList>
-#include <QtCore/QObject>
-#include <QtCore/QPointer>
-
-class Project;
-
-class QQmlEngine;
-
-class TestRunner : public QObject
-{
-    Q_OBJECT
-    Q_DISABLE_COPY(TestRunner)
-public:
-    TestRunner(Project* project, const QList<QPointer<Testcase> >& testCases);
-    QString errorString() const;
-    bool hasError() const;
-
-public slots:
-    void execTestCases();
-
-private:
-    void createWorkingDirectory();
-
-    QString m_errorString;
-    QPointer<Project> m_project;
-    QList<QPointer<Testcase> > m_testCases;
-    QList<Testcase::Result> m_results;
+enum ParserEvent {
+    AfterClassBegin,
+    AfterComponentComplete
 };
 
-inline QString TestRunner::errorString() const { return m_errorString; }
-inline bool TestRunner::hasError() const { return !m_errorString.isEmpty(); }
-
-#endif // TESTCASERUNNER_H
+#endif // PARSER_H

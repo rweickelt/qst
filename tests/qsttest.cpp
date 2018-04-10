@@ -40,6 +40,11 @@ const QString QstTest::m_defaultImportPath =
         QDir(QProcessEnvironment::systemEnvironment().value(
                  "PROJECTPATH", PROJECTPATH) + "/share/qst/imports/").absolutePath();
 
+QstTest::QstTest()
+{
+    m_qstProcess.setWorkingDirectory(QDir::tempPath());
+}
+
 QString QstTest::dataPath(const QString& directory) const
 {
     return m_dataDirectory.absoluteFilePath(directory);

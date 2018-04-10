@@ -148,12 +148,12 @@ void AutoTest::workingDirectory_data()
     QTest::newRow("with name, no override")
             << projectDir.absoluteFilePath("project-with-name.qml")
             << false
-            << QString("project-with-name-%1").arg(qHash(projectDir.absoluteFilePath("project-with-name.qml")), 0, 16);
+            << QString(".project-with-name-default-%1").arg(qHash(projectDir.absoluteFilePath("project-with-name.qml")), 0, 16);
 
     QTest::newRow("without name, no override")
             << projectDir.absoluteFilePath("project-without-name.qml")
             << false
-            << QString("qst-project-%1").arg(qHash(projectDir.absoluteFilePath("project-without-name.qml")), 0, 16);
+            << QString(".project-default-%1").arg(qHash(projectDir.absoluteFilePath("project-without-name.qml")), 0, 16);
 }
 
 void AutoTest::workingDirectory()
@@ -164,23 +164,28 @@ void AutoTest::workingDirectory()
 
     QVERIFY2(QFileInfo(projectFilepath).exists(), "projectFilePath does not exist.");
 
-    QString tempDirPath = QDir::temp().absoluteFilePath(workingDirName);
-    QDir tempDir(tempDirPath);
+    QString workDirPath = QDir(qstProcess().workingDirectory()).absoluteFilePath(workingDirName);
+    QDir workDir(workDirPath);
 
     // Make sure that any old left-overs are removed
-    tempDir.removeRecursively();
-    QVERIFY(!tempDir.exists());
+    workDir.removeRecursively();
+    QVERIFY(!workDir.exists());
 
     QStringList arguments = { "-f", projectFilepath };
     if (overrideWorkingDir == true)
     {
-        arguments << "-d" << QDir::temp().absoluteFilePath(workingDirName);
+        arguments << "-d" << workDirPath;
     }
     QstTestResults results = execQstRun(arguments);
-    QVERIFY2(qstProcess().exitCode() == 0, qstProcess().readAllStandardError());
+    QByteArray stdErr = qstProcess().readAllStandardError();
+    QVERIFY2(qstProcess().exitCode() == 0, stdErr);
+    if (!stdErr.isEmpty())
+    {
+        qDebug() << stdErr;
+    }
     VERIFY_PASS(results, "testcase");
-    QVERIFY(tempDir.exists());
-    QVERIFY(tempDir.exists("testcase"));
+    QVERIFY(workDir.exists());
+    QVERIFY(workDir.exists("testcase"));
 }
 
 void AutoTest::signalProbe()

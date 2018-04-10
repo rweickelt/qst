@@ -25,6 +25,7 @@
 #include "logger.h"
 #include "projectresolver.h"
 #include "qst.h"
+#include "parser.h"
 #include "project.h"
 
 #include <QtCore/QCoreApplication>
@@ -87,7 +88,7 @@ void ProjectResolver::loadRootFile()
 
     for (const auto& child: rootItem.children)
     {
-        child->handleParserEvent(Component::AfterClassBegin);
+        child->handleParserEvent(AfterClassBegin);
     }
 
     // One test case in a single file.
@@ -115,6 +116,7 @@ void ProjectResolver::loadRootFile()
     else if (rootItem.qstBaseType == "Project")
     {
         m_project = qobject_cast<Project*>(rootItem.object);
+        m_project->handleParserEvent(AfterClassBegin);
         // In-line test cases need project context property
         rootItem.context->setContextProperty("project", m_project);
 
@@ -225,7 +227,7 @@ ProjectResolver::Item ProjectResolver::beginCreate(const QString& filepath)
 
     for (const auto& child: item.children)
     {
-        child->handleParserEvent(Component::AfterClassBegin);
+        child->handleParserEvent(AfterClassBegin);
     }
 
     // 1. Cache the relevant base type information instead of always looking at meta object.
@@ -274,7 +276,7 @@ void ProjectResolver::completeCreate(Item* item)
 
     for (const auto& child: item->children)
     {
-        child->handleParserEvent(Component::AfterComponentComplete);
+        child->handleParserEvent(AfterComponentComplete);
     }
 
     if (item->qstBaseType == "Testcase")
@@ -293,7 +295,9 @@ ProjectResolver::Item ProjectResolver::createDefaultProjectComponent()
 
     project.factory = new QQmlComponent(m_engine, this);
     project.factory->setData("import qst 1.0\n Project {}", QUrl());
-    project.object = project.factory->create(m_engine->rootContext());
+    project.object = project.factory->beginCreate(m_engine->rootContext());
+    qobject_cast<Project*>(project.object)->handleParserEvent(AfterClassBegin);
+    project.factory->completeCreate();
     project.state = Item::Finished;
 
     Q_ASSERT(!project.factory->isError());
@@ -349,4 +353,9 @@ ProjectResolver* ProjectResolver::instance()
 {
     Q_ASSERT(projectResolver != nullptr);
     return projectResolver;
+}
+
+Project* ProjectResolver::project()
+{
+    return m_project.data();
 }

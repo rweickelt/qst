@@ -396,13 +396,21 @@ QString Testcase::workingDirectory() const
 void Testcase::initTestCase()
 {
     QDir projectWorkDir(project()->workingDirectory());
-    if (!projectWorkDir.exists(m_name))
+    QDir testcaseWorkDir(projectWorkDir.absoluteFilePath(m_name));
+
+    if (testcaseWorkDir.exists())
     {
-        if ((!projectWorkDir.mkdir(m_name)))
+        if (!testcaseWorkDir.removeRecursively())
         {
-            QST_ERROR_AND_EXIT(QString("Could not create working directory '%1'.")
-                                .arg(projectWorkDir.absoluteFilePath(m_name)));
+            QST_ERROR_AND_EXIT(QString("Could not wipe directory '%1'.")
+                                .arg(testcaseWorkDir.absolutePath()));
         }
+    }
+
+    if ((!projectWorkDir.mkdir(m_name)))
+    {
+        QST_ERROR_AND_EXIT(QString("Could not create working directory '%1'.")
+                            .arg(testcaseWorkDir.absolutePath()));
     }
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2017-2018 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -31,60 +31,43 @@
 #include <QtCore/QDir>
 #include <QtCore/QHash>
 
+#include <QtQml/QQmlContext>
+#include <QtQml/QQmlEngine>
+
 Project::Project(QObject *parent) : QObject(parent)
 {
 
 }
 
-
 void Project::classBegin()
 {
     ApplicationOptions* options = ApplicationOptions::instance();
     m_workingDirectory = options->workingDirectory;
-    m_name = "qst-project";
+    m_name = "project";
     m_filepath = ProjectResolver::instance()->currentItem()->filepath;
 }
 
 
 void Project::componentComplete()
 {
-    QString workDirPath = m_workingDirectory;
-    QDir workDir(workDirPath);
+}
 
-    if (!workDirPath.isEmpty())
+void Project::handleParserEvent(ParserEvent event)
+{
+    if (event == AfterClassBegin)
     {
-        if (!workDir.exists())
+        if (m_workingDirectory.isEmpty())
         {
-            if (!QDir().mkpath(workDirPath))
+            QString profileName = qmlEngine(this)->rootContext()->contextProperty("profile").toMap().value("name").toString();
+            if (profileName.isEmpty())
             {
-                QST_ERROR_AND_EXIT(QString("Could not create working directory '%1'.")
-                                    .arg(workDirPath));
+                profileName = "default";
             }
+            QString workDirName = QString(".%1-%2-%3")
+                    .arg(m_name)
+                    .arg(profileName)
+                    .arg(qHash(m_filepath), 0, 16);
+            m_workingDirectory = QDir().absoluteFilePath(workDirName);
         }
-        else if (!QFileInfo(workDirPath).isDir())
-        {
-            QST_ERROR_AND_EXIT(QString("Value of --working-directory is not a valid directory."));
-        }
-        else
-        {
-            if (!QFileInfo(workDirPath).isWritable())
-            {
-                QST_ERROR_AND_EXIT(QString("Working directory is not writable."));
-            }
-        }
-    }
-    else
-    {
-        // Hash of project name should be replaced by profile name
-        QString workDirName = QString("%1-%2")
-                .arg(m_name)
-                .arg(qHash(m_filepath), 0, 16);
-        workDirPath = QDir(QDir::temp()).filePath(workDirName);
-        if (!QDir(workDirPath).exists() && !QDir(QDir::temp()).mkdir(workDirName))
-        {
-            QST_ERROR_AND_EXIT(QString("Could not create temporary directory '%1'.")
-                                .arg(workDirPath));
-        }
-        m_workingDirectory = workDirPath;
     }
 }

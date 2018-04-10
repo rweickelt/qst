@@ -35,6 +35,9 @@ class QstTest : public QObject
 {
     Q_OBJECT
 
+public:
+    QstTest();
+
 protected:
     QString dataPath(const QString& directory) const;
     QString defaultImportPath() const;

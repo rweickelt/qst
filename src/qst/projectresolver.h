@@ -74,6 +74,7 @@ public:
     bool hasErrors() const;
 
     void loadRootFile();
+    Project* project();
     QList<QPointer<Testcase> > testcases() const;
 
     static ProjectResolver* instance();

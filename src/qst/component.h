@@ -24,6 +24,8 @@
 #ifndef TESTCASEITEM_H
 #define TESTCASEITEM_H
 
+#include "parser.h"
+
 #include <QtCore/QList>
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
@@ -70,11 +72,6 @@ protected:
     virtual void initTestFunction() {}
     virtual void cleanupTestCase() {}
     virtual void cleanupTestFunction() {}
-
-    enum ParserEvent {
-        AfterClassBegin,
-        AfterComponentComplete
-    };
 
     // Called by QmlEngine during creation
     virtual void classBegin();
