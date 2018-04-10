@@ -17,16 +17,20 @@ complete walk-through and will take about 15 minutes.
 
 Qst makes use of the `QML language`_, a declarative language mixed with
 Javascript. The language is very intuitive, but you might want to have a look at
-the `QML language reference`_ or keep it open in a separate browser tab. We will
-use the terms `component` and `item` as synonyms.
+the `QML language reference`_ or keep it open in a separate browser tab.
+
+We will use the terms `item` and `component` a lot. An `item` refers to a data
+type whereas `component` usually refers to a specific instance of an item.
+
 
 Running a simple test case
 --------------------------
 
-Every test case is defined by a |Testcase| component and requires at least 2
-characteristics:
+Let us now get our hands dirty and have a look at a trivial test case. Every
+test case is defined by a |Testcase| component and is characterized by at least
+2 things:
 
-- a **name** that serves as an identifier,
+- a :cpp:member:`name <Testcase::name>` that serves as an identifier,
 
 - a |run()| function which implements sequential test steps.
 
@@ -213,7 +217,7 @@ need to handle a signal of a component that is not defined in the current
 component, we can use :cpp:class:`SignalProbe` as shown in the
 :ref:`signalprobe_ExtendedTestcase` example. It is also possible to use the
 `Connections <http://doc.qt.io/qt-5/qtqml-syntax-signals.html#using-the-
-connections-type>`_ component from the QtQml package.
+connections-type>`_ item from the QtQml package.
 
 
 Using constraints for continuous evaluation
