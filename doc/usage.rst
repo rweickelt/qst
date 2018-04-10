@@ -398,7 +398,7 @@ Profile values can be accessed from anywhere in the project as
 Qst tries to load the he selected profile first from the project directory and
 if it could not be found, it searches in the »profiles« folder inside the Qst
 configuration directory. Additional profile search paths can be specified with
-``--profile-directory`` or ``-P`` respectively:
+:option:`--profile-directory <run -P>` or :option:`-P <run -P>` respectively:
 
 ..  code-block:: console
 
