@@ -29,8 +29,7 @@ every loaded documented unless unless otherwise stated.
 
 ..  cpp:var:: Project project
 
-    Reference to the global project object. Only available in files that do not
-    have a :cpp:class:`Project` item as root component.
+    Reference to the global project object.
 
 ..  cpp:var:: Testcase test
 
@@ -67,14 +66,13 @@ are also explained in the `QML language reference`_.
 
 ..  cpp:type:: signal
 
-    Signal as a property type, ``signal`` is a reference to a `signal attribute.
-    It is stored as
+    A reference to a `signal attribute
     <http://doc.qt.io/qt-5/qtqml-syntax-objectattributes.html#signal-attributes>`_
-    of a component. ``signal`` properties are objects that provide a
-    ``connect()`` and ``disconnect()`` method to connect to a destination
-    function. They are also `functors
-    <https://en.wikipedia.org/wiki/Function_object>`_ and can be called like a
-    function in order to invoke connected signal handlers.
+    of a component. It is not a dedicated data type, but rather stored as
+    :cpp:type:`var`. ``signal`` objects provide a ``connect()`` and
+    ``disconnect()`` method to connect to a destination function. They are also
+    `functors <https://en.wikipedia.org/wiki/Function_object>`_ and can be
+    called like a function in order to invoke connected signal handlers.
 
 ..  cpp:type:: string
 
