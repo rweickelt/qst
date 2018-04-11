@@ -53,7 +53,7 @@ Testcase {
         id: responseTimeConstraint
         name: "responeTimeConstraint"
         beginOn: SignalProbe { signal: writer.valueChanged }
-        endOn:   SignalProbe { signal: reader.valueChanged }
+        endOn:   SignalProbe { signal: reader.valueChanged; condition: reader.value === writer.value }
         enabled: false
         minDuration: 0
         maxDuration: maxResponseTimeMs
@@ -115,6 +115,9 @@ Testcase {
         Qst.wait(maxResponseTimeMs)
         Qst.compare(reader.value, PinProbe.Low)
         Qst.compare(readerValueChanged.count, 1)
+
+        // The order Writer -> Reader is guaranteed in below tests
+        responseTimeConstraint.enabled = false
 
         // Test read / PullUp
         clearSignalProbes()
