@@ -39,7 +39,7 @@ The name must be unique across the whole project and must be a plain string. The
 non-blocking function calls. The |Testcase| component is put into a file of an
 arbitrary name and in its simplest form it would look as follows:
 
-..  literalinclude:: ../examples/tutorial/simple-passing-test.qml
+..  literalinclude:: code/usage/simple-passing-test.qml
     :caption: `simple-passing-test.qml`
     :start-after: header-end
 
@@ -63,7 +63,7 @@ helper :ref:`services <services>` of which |QstS| with its verification
 functions :cpp:func:`Qst::compare()` and :cpp:func:`Qst::verify()` is the most
 important one:
 
-..  literalinclude:: ../examples/tutorial/simple-failing-test.qml
+..  literalinclude:: code/usage/simple-failing-test.qml
     :caption: `simple-failing-test.qml`
     :linenos:
     :start-after: header-end
@@ -109,7 +109,7 @@ A versatile probe item is the :cpp:class:`ProcessProbe`. It can invoke programs
 on the local computer and monitor their execution. A very simple test case that
 runs GNU Make on a Makefile in the current folder would look like this:
 
-..  literalinclude:: ../examples/tutorial/makefile-test-simple.qml
+..  literalinclude:: code/usage/makefile-test-simple.qml
     :name: makefile-test-simple
     :caption: `makefile-test-simple.qml`
 
@@ -138,7 +138,7 @@ makefiles. It would be cumbersome to re-write the whole test case for each
 makefile. Instead, we can turn the test case into a re-usable component by
 defining additional properties:
 
-..  literalinclude:: ../examples/tutorial/MakefileTestcase.qml
+..  literalinclude:: code/usage/MakefileTestcase.qml
     :caption: `MakefileTestcase.qml`
     :emphasize-lines: 5-7
     :name: MakefileTestcase
@@ -148,10 +148,10 @@ as component type ``MakefileTestcase`` in other qml files located in the same
 directory. Based upon `MakefileTestcase.qml`, we can now create multiple
 testcase files in the following form:
 
-..  literalinclude:: ../examples/tutorial/test-app-build.qml
+..  literalinclude:: code/usage/test-app-build.qml
     :caption: `test-app-build.qml`
 
-..  literalinclude:: ../examples/tutorial/test-lib-build.qml
+..  literalinclude:: code/usage/test-lib-build.qml
     :caption: `test-lib-build.qml`
 
 Later we will learn a way to :ref:`define multiple test case in one document
@@ -200,14 +200,14 @@ make. But what if a test case is more complex and needs to invoke additional
 programs? In this case, it would be more benefitial to extend
 :cpp:class:`ProcessProbe` instead of :cpp:class:`Testcase`:
 
-..  literalinclude:: ../examples/tutorial/MakeProbe.qml
+..  literalinclude:: code/usage/MakeProbe.qml
     :caption: `MakeProbe.qml`
     :name: MakeProbe
 
 The `MakeProbe.qml` component can now be included even multiple times like
 this:
 
-..  literalinclude:: ../examples/tutorial/test-multi-build.qml
+..  literalinclude:: code/usage/test-multi-build.qml
     :caption: `test-multi-build.qml`
 
 As we can see in `MakeProbe.qml`, implicit and explicit signal handlers must
