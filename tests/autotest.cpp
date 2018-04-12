@@ -312,4 +312,18 @@ void AutoTest::profile()
     VERIFY_FAIL(results, "non-existing-profile-properties-run", "non-existing-profile-properties-run.qml:9");
 }
 
+void AutoTest::codeSnippets()
+{
+    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("code-snippets/usage.qml")} );
+    if (qstProcess().exitCode() != 2)
+    {
+        QFAIL(qstProcess().readAllStandardError());
+    }
+    VERIFY_PASS(results, "simple-passing-test");
+    VERIFY_PASS(results, "makefile-test-simple");
+    VERIFY_PASS(results, "test-app-build");
+    VERIFY_PASS(results, "test-lib-build");
+    VERIFY_FAIL(results, "simple-failing-test", "simple-failing-test.qml:8");
+}
+
 QTEST_GUILESS_MAIN(AutoTest)

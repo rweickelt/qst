@@ -46,6 +46,7 @@ private slots:
     void durationConstraint();
     void valueRangeConstraint();
     void profile();
+    void codeSnippets();
 };
 
 #endif // AUTOTEST_H

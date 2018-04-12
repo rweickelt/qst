@@ -321,6 +321,10 @@ QStringList ProjectResolver::makeAbsolute(const QStringList& paths, const QStrin
         {
             sanitized << QDir(basePath).absoluteFilePath(filepath);
         }
+        else
+        {
+            sanitized << QDir::cleanPath(filepath);
+        }
     }
     return sanitized;
 }
