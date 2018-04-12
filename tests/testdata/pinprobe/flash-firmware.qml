@@ -7,20 +7,19 @@ Testcase {
 
     UniflashProbe {
         id: board1
-        serial: project.dut.serial
-        file: project.dut.firmwarePath
-        device: project.dut.device
+        serial: profile.dut.serial
+        file: profile.dut.firmwarePath
+        device: profile.dut.device
     }
 
     UniflashProbe {
         id: board2
-        serial: project.probe.serial
-        file: project.probe.firmwarePath
-        device: project.probe.device
+        serial: profile.probe.serial
+        file: profile.probe.firmwarePath
+        device: profile.probe.device
     }
 
     function run() {
-        console.log(Xds.availableSerials());
         board1.flash();
         board2.flash();
         board1.waitForFinished(maxFlashTime);

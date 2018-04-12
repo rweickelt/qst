@@ -33,7 +33,7 @@ ProfileLoader::ProfileLoader(const QStringList& paths)
     setProfileSearchPaths(paths);
 }
 
-QVariant ProfileLoader::loadProfile(const QString& name)
+QVariant ProfileLoader::loadProfile(QString name)
 {
     m_error.clear();
 
@@ -42,10 +42,16 @@ QVariant ProfileLoader::loadProfile(const QString& name)
         return QVariant();
     }
 
+    if (name.endsWith(".json"))
+    {
+        name.chop(5);
+    }
+    QString fileName = name + ".json";
+
     QString profilePath;
     for (const QString& dir: m_profileSearchPaths)
     {
-        QString path = QDir(dir).absoluteFilePath(name + ".json");
+        QString path = QDir(dir).absoluteFilePath(fileName);
         if (QFile::exists(path))
         {
             profilePath = path;
@@ -55,14 +61,14 @@ QVariant ProfileLoader::loadProfile(const QString& name)
 
     if (profilePath.isEmpty())
     {
-        m_error = QString("Could not find profile document '%1.json'").arg(name);
+        m_error = QString("Could not find profile document '%1'").arg(fileName);
         return QVariant();
     }
 
     QFile file(profilePath);
     if (!file.open(QIODevice::ReadOnly))
     {
-        m_error = QString("Could not open the profile document '%1.json': %2").arg(name).arg(file.errorString());
+        m_error = QString("Could not open the profile document '%1': %2").arg(fileName).arg(file.errorString());
         return QVariant();
     }
 
@@ -71,7 +77,7 @@ QVariant ProfileLoader::loadProfile(const QString& name)
     QJsonDocument document = QJsonDocument::fromJson(content, &error);
     if (document.isNull())
     {
-        m_error = QString("Could not parse the profile document '%1.json': %2").arg(name).arg(error.errorString());
+        m_error = QString("Could not parse the profile document '%1': %2").arg(fileName).arg(error.errorString());
     }
 
     QVariantMap profile = document.toVariant().toMap();

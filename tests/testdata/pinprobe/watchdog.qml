@@ -15,7 +15,7 @@ Testcase {
         type: PinProbe.Read
         value: PinProbe.Low
         pullMode: PinProbe.PullDown
-        port: project.probe.ttyPort
+        port:  Xds.portFromSerial(profile.probe.serial)
     }
 
     PinProbe {
@@ -25,7 +25,7 @@ Testcase {
         type: PinProbe.Read
         value: PinProbe.Low
         pullMode: PinProbe.PullDown
-        port: project.probe.ttyPort
+        port:  Xds.portFromSerial(profile.probe.serial)
     }
 
     ProcessProbe {
@@ -35,7 +35,9 @@ Testcase {
         arguments: [
             "run",
             "-f",
-            path + "/watchdog-dut.qml"
+            path + "/watchdog-dut.qml",
+            "-p",
+            profile.name
         ]
 
         onFinished: {

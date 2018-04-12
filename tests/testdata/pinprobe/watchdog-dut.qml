@@ -10,7 +10,7 @@ Testcase {
         ioid: 1
         type: PinProbe.Read
         pullMode: PinProbe.PullDown
-        port: Xds.portFromSerial("L400028Q") // left board
+        port: Xds.portFromSerial(profile.dut.serial) // left board
     }
 
     function run() {

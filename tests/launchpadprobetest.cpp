@@ -27,13 +27,20 @@
 
 void LaunchpadProbeTest::pinProbe()
 {
-    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("pinprobe/project.qml") }, 12000);
+    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("pinprobe/project.qml"), "-p", "cc1310_launchxl" }, 25000);
     if (qstProcess().exitCode() != 0)
     {
         QFAIL(qstProcess().readAllStandardError());
     }
     VERIFY_PASS(results, "flash-firmware");
     VERIFY_PASS(results, "pinprobe-read-write");
+    VERIFY_PASS(results, "benchmark-response-time");
+    VERIFY_PASS(results, "watchdog");
+    QString stdErr = qstProcess().readAllStandardError();
+    for (const auto& line : stdErr.split('\n'))
+    {
+        qDebug() << line;
+    }
 }
 
 QTEST_GUILESS_MAIN(LaunchpadProbeTest)

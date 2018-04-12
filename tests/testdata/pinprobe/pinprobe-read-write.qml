@@ -23,21 +23,21 @@ Testcase {
     PinProbe {
         id: reader
         name: "reader"
-        ioid: project.probe.ioid
+        ioid: profile.probe.ioid
         type: PinProbe.Read
         value: PinProbe.Undefined
         pullMode: PinProbe.PullDisabled
-        port: project.probe.ttyPort
+        port: Xds.portFromSerial(profile.probe.serial)
     }
 
     PinProbe {
         id: writer
         name: "writer"
-        ioid: project.dut.ioid
+        ioid: profile.dut.ioid
         type: PinProbe.Write
         value: PinProbe.Low
         pullMode: PinProbe.PullDisabled
-        port: project.dut.ttyPort
+        port:  Xds.portFromSerial(profile.dut.serial)
     }
 
     SignalProbe { id: readerTypeChanged;     signal: reader.typeChanged }
@@ -116,7 +116,8 @@ Testcase {
         Qst.compare(reader.value, PinProbe.Low)
         Qst.compare(readerValueChanged.count, 1)
 
-        // The order Writer -> Reader is guaranteed in below tests
+        // The order Writer -> Reader is not guaranteed in all below tests
+        // Hence the constraint may fail.
         responseTimeConstraint.enabled = false
 
         // Test read / PullUp
