@@ -5,6 +5,7 @@ env:
     # Needed by AWS
     - PATH=$HOME/.local/bin:$PATH
     - QST_VERSION=$(if [[ "$TRAVIS_TAG" ]]; then echo -n ${TRAVIS_TAG:1} ; else echo -n ${TRAVIS_COMMIT::8} ; fi)
+    - QT_VERSION=v5.9.4-1
 
 stages:
   - name: build
@@ -36,7 +37,7 @@ jobs:
         - QBS_PROFILE=qt5
         - QBS_OPTIONS="project.runAutotest:true project.version:$QST_VERSION"
       script:
-        - docker run -v ${PWD}:/build rweickelt/qt:latest-${PLATFORM} install
+        - docker run -v ${PWD}:/build rweickelt/qt:${QT_VERSION}-${PLATFORM} install
               --file /build/qst-project.qbs
               --build-directory /build/build-$QBS_PROFILE
               --install-root /build/qst
@@ -60,7 +61,7 @@ jobs:
         - QBS_PROFILE=qt5
         - QBS_OPTIONS="project.version:$QST_VERSION"
       script:
-        - docker run -v ${PWD}:/build rweickelt/qt:latest-${PLATFORM} install
+        - docker run -v ${PWD}:/build rweickelt/qt:${QT_VERSION}-${PLATFORM} install
               --file /build/qst-project.qbs
               --build-directory /build/build-$QBS_PROFILE
               --install-root /build/qst
