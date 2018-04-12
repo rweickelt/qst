@@ -24,18 +24,20 @@ every loaded documented unless unless otherwise stated.
 
 ..  cpp:var:: var profile
 
-    Reference to the global profile object if a :ref:`profile
-    <usage_profiles>` is set from command line.
+    Reference to the global profile object if a :ref:`profile <usage_profiles>`
+    is set from command line.
 
 ..  cpp:var:: Project project
 
-    Reference to the global project object.
+    Reference to the global project object. When running a document with a
+    :cpp:class:`Testcase` component, an empty project item is created.
 
 ..  cpp:var:: Testcase test
 
-    Reference to the owner test case. This property is only available in
-    stand-alone component definitions such as shown in the :ref:`MakeProbe`
-    example. It is not available in :cpp:class:`Project` components.
+    Reference to the owner test case. This property is available in
+    :cpp:class:`Testcase` components and in other stand-alone component
+    definitions such as shown in the :ref:`MakeProbe` example. It is not
+    available in documents containing a :cpp:class:`Project` component.
 
 
 QML data types
