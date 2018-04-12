@@ -39,7 +39,6 @@ observed by attaching a signal handler to the ``valueChanged()`` signal.
 Example::
 
     import qst 1.0
-    import ti 1.0
 
     // Assuming a DUT with an LED and a button and two wires of a
     // launchpad probe board attached.
@@ -47,15 +46,18 @@ Example::
     Testcase {
         name: "test-app"
 
+        property string port: "ttyACM3"
+
         PinProbe {
             id: button
-            port: "ttyACM3"
+            port: test.port
             type: PinProbe.Write
             value: PinProbe.High
         }
 
         PinProbe {
             id: led
+            port: test.port
             type: PinProbe.Read
 
             onValueChanged: {

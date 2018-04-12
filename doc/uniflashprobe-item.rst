@@ -41,6 +41,7 @@ together.
 Example::
 
     import qst 1.0
+    import ti 1.0
 
     Testcase {
 

@@ -12,6 +12,10 @@ The launchpad probe firmware converts a launchpad into a cheap real-time IO
 interface. Available are all pins on the board except the LEDs at DIO6 and DIO7
 which are occupied by the probe firmware.
 
+The probe firmware binaries are located in
+`<QST_INSTALL_DIR>/share/qst/firmware` and may be written to the hardware using
+`Uniflash <http://www.ti.com/tool/UNIFLASH>`_.
+
 Supported launchpads:
 
 - `CC1310_LAUNCHXL <http://www.ti.com/tool/LAUNCHXL-CC1310>`_

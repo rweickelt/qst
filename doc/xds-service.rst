@@ -28,6 +28,7 @@ and deduces it's serial port identifier.
 ::
 
     import qst 1.0
+    import ti 1.0
 
     Project {
 
