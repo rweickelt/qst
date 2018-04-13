@@ -45,8 +45,11 @@ User documentation is available at https://qst.readthedocs.org
 Building
 --------
 
-It is recommended to use Docker images for building. Use the following
-instructions if you still want to build in a conventional environment.
+Qst is based upon the [Qt] framework and [Qbs] is used as the build system.
+
+It is recommended to use Docker images for building as it is shown in the [CI
+script](.travis.yml). You may use the following instructions if you still want
+to build in a conventional environment.
 
 <h3>Host application (Qst)</h3>
 
@@ -55,12 +58,12 @@ alternatively:
 
 1.  Prerequisites:
 
-    - [Qt framework](https://qt.io) >= 5.9
-    - [Qt Build Suite](https://qbs.io) >= 1.9.1 or [QtCreator](https://www.qt.io/) >= 4.4
+    - [Qt] >= 5.9
+    - [Qbs] >= 1.9.1 or [QtCreator] >= 4.4
 
 2.  A Qbs build profile for your Qt installation should have been automatically
     created by Qt Creator. If you are using Qbs stand-alone, have a look at the
-    [Qbs documentation](http://doc.qt.io/qbs/qt-versions.html).
+    [Qbs documentation] and also watch the [Qbs introduction video].
 
 3.  Build and install. Run also regression tests.
 
@@ -76,10 +79,10 @@ alternatively:
 
 1.  Prerequisites:
 
-    - [SimpleLink CC13x0 SDK](http://www.ti.com/tool/SIMPLELINK-CC13X0-SDK) >= 1.50.00
-    - [Uniflash](http://www.ti.com/tool/UNIFLASH) >= 4.2
-    - [GCC ARM toolchain](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads)
-    - [Qt Build Suite](https://qbs.io) >= 1.9.1 or [QtCreator](https://www.qt.io/) >= 4.4
+    - [SimpleLink CC13x0 SDK] >= 1.50.00
+    - [Uniflash] >= 4.2
+    - [GCC ARM toolchain]
+    - [Qbs] >= 1.9.1 or [QtCreator] >= 4.4
 
 2.  Create a Qbs build profile for the ARM toolchain:
 
@@ -112,3 +115,14 @@ License
 -------
 
 Licensed under GPLv3. See http://github.com/rweickelt/qst/COPYING for details.
+
+
+[Qbs]: https://qbs.io
+[Qbs documentation]: http://doc.qt.io/qbs/qt-versions.html
+[Qbs introduction video]: https://www.youtube.com/watch?v=iLO8cmXC4yg
+[Qt]: https://qt.io
+[QtCreator]: https://www.qt.io/
+
+[SimpleLink CC13x0 SDK]: http://www.ti.com/tool/SIMPLELINK-CC13X0-SDK
+[Uniflash]: http://www.ti.com/tool/UNIFLASH
+[GCC ARM toolchain]: https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
