@@ -3,7 +3,7 @@ import qst 1.0
 ProcessProbe {
     property string makefile : path + "/Makefile"
     property string target: "all"
-    property jobs: 1
+    property int jobs: 1
 
     program : (Qst.hostOs === "windows") ? "gmake.exe" : "make"
     arguments: [
