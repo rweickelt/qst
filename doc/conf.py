@@ -172,6 +172,11 @@ texinfo_documents = [
 ]
 
 
-def setup(app):
-    app.add_stylesheet('overrides.css')
-    app.add_stylesheet('pygments-native.css')
+def setup(sphinx):
+    sphinx.add_stylesheet('overrides.css')
+    sphinx.add_stylesheet('pygments-native.css')
+
+    # Install custom QML lexer.
+    sys.path.insert(0, os.path.abspath('./../util/pygments/'))
+    from webmisc import QmlLexer
+    sphinx.add_lexer("qml", QmlLexer())

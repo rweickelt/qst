@@ -1,0 +1,3 @@
+*.pyc
+*.qbs.user
+/build-results
