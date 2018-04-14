@@ -16,9 +16,10 @@ Component {
         Qst.verify(File.exists(file), file + " not found. Check 'file' property.");
         Qst.verify(File.exists((installPath
                 + "/deskdb/content/TICloudAgent/linux/ccs_base/common/targetdb/devices/"
-                + device + ".xml")));
+                + device + ".xml")), "No db entry for device '"+ device + "' found in '"
+                + installPath + "/deskdb/content/TICloudAgent/linux/ccs_base/common/targetdb/devices/" + "'.");
 
-        var configFilePath = test.workingDirectory + "/UniFlashProbe"
+        var configFilePath = test.workingDirectory + "/uniflashprobe"
                 + "-" + device
                 + "-" + serial
                 + ".xml";
