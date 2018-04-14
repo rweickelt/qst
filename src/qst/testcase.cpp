@@ -335,7 +335,11 @@ void Testcase::waitMilliseconds(int milliseconds, const QString& file, int line)
     m_callerFile = file;
     m_callerLine = line;
     QEventLoop eventLoop;
-    QTimer::singleShot(milliseconds, &eventLoop, &QEventLoop::quit);
+    QTimer timer;
+    timer.setSingleShot(true);
+    timer.setTimerType(Qt::PreciseTimer);
+    timer.connect(&timer, &QTimer::timeout, &eventLoop, &QEventLoop::quit);
+    timer.start(milliseconds);
     eventLoop.exec();
 }
 

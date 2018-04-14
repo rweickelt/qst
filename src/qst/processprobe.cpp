@@ -27,6 +27,7 @@
 #include "testcase.h"
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
+#include <QtCore/QEventLoop>
 #include <QtQml/QQmlEngine>
 
 ProcessProbe::ProcessProbe(QObject *parent) : Component(parent)
@@ -101,12 +102,37 @@ void ProcessProbe::terminate()
 
 bool ProcessProbe::waitForStarted(int milliseconds)
 {
-    return m_process.waitForStarted(milliseconds);
+    if (m_process.state() != QProcess::Starting)
+    {
+        return true;
+    }
+
+    QEventLoop loop;
+    QTimer timer;
+    timer.setSingleShot(true);
+    timer.setTimerType(Qt::PreciseTimer);
+    timer.start(milliseconds);
+    connect(&m_process, &QProcess::started, &loop, [&loop](){ loop.exit(0); });
+    connect(&timer, &QTimer::timeout, &loop, [&loop]{ loop.exit(1); });
+    return loop.exec() == 0;
 }
 
 bool ProcessProbe::waitForFinished(int milliseconds)
 {
-    return m_process.waitForFinished(milliseconds);
+    if (m_process.state() != QProcess::Running)
+    {
+        return false;
+    }
+
+    QEventLoop loop;
+    QTimer timer;
+    timer.setSingleShot(true);
+    timer.setTimerType(Qt::PreciseTimer);
+    timer.start(milliseconds);
+    connect(&m_process, static_cast<void (QProcess::*)(int)>(&QProcess::finished),
+            &loop, [&loop](int){ loop.exit(0); });
+    connect(&timer, &QTimer::timeout, &loop, [&loop]{ loop.exit(1); });
+    return loop.exec() == 0;
 }
 
 void ProcessProbe::onProcessErrorOccurred(QProcess::ProcessError error)

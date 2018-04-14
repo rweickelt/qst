@@ -51,6 +51,7 @@ RocHostController::RocHostController(const QString& port) : QObject()
                 &m_pingTimer, &QTimer::timeout,
                 this, &RocHostController::onPingTimerTick);
     m_pingTimer.setSingleShot(false);
+    m_pingTimer.setTimerType(Qt::PreciseTimer);
 }
 
 

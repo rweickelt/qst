@@ -156,6 +156,7 @@ bool StpSocket::waitForReadyRead(qint32 milliseconds)
 
     QTimer timeoutTimer;
     timeoutTimer.setSingleShot(true);
+    timeoutTimer.setTimerType(Qt::PreciseTimer);
     timeoutTimer.start(milliseconds);
 
     while (timeoutTimer.isActive() && (m_rxMessageQueue.length() == 0))
