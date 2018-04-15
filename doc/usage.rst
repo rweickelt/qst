@@ -51,7 +51,7 @@ by typing the following command in a terminal:
 ..  code-block:: console
 
     $ qst run --file simple-passing-test.qml
-    PASS, simpletest,,,
+    PASS, simple-passing-test,,,
 
 Qst prints a line of comma-separated values containing the test
 :cpp:member:`result <Testcase::result>` and the :cpp:member:`name
