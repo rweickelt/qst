@@ -68,9 +68,6 @@ public:
     int exitCode() const;
     State state() const;
 
-    void classBegin();
-    void componentComplete();
-
 public slots:
     void start();
     void terminate();
@@ -89,6 +86,7 @@ protected slots:
     void onProcessStateChanged(QProcess::ProcessState);
 
 protected:
+    virtual void handleParserEvent(ParserEventHandler::ParserEvent event) override;
     void setState(State);
     void initTestCase();
 

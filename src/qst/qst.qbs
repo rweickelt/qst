@@ -37,7 +37,7 @@ QtApplication {
         "logger.cpp",
         "logger.h",
         "main.cpp",
-        "parser.h",
+        "parsereventhandler.h",
         "plaintextlogger.cpp",
         "plaintextlogger.h",
         "profileloader.cpp",

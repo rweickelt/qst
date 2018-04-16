@@ -38,20 +38,18 @@ ProcessProbe::ProcessProbe(QObject *parent) : Component(parent)
     connect(&m_process, &QProcess::stateChanged, this, &ProcessProbe::onProcessStateChanged);
 }
 
-void ProcessProbe::classBegin()
+void ProcessProbe::handleParserEvent(ParserEventHandler::ParserEvent event)
 {
-    Component::classBegin();
-}
+    Component::handleParserEvent(event);
 
-void ProcessProbe::componentComplete()
-{
-    Component::componentComplete();
-
-    if (m_workingDirectory.isEmpty())
+    if (event == ParserEventHandler::ComponentComplete)
     {
-        m_workingDirectory = testCase()->workingDirectory();
+        if (m_workingDirectory.isEmpty())
+        {
+            m_workingDirectory = testCase()->workingDirectory();
+        }
+        Q_ASSERT(!m_workingDirectory.isEmpty());
     }
-    Q_ASSERT(!m_workingDirectory.isEmpty());
 }
 
 // TODO Need to replace those conversions by QTextStream

@@ -24,7 +24,7 @@
 #ifndef TESTCASEITEM_H
 #define TESTCASEITEM_H
 
-#include "parser.h"
+#include "parsereventhandler.h"
 
 #include <QtCore/QList>
 #include <QtCore/QObject>
@@ -32,15 +32,13 @@
 #include <QtCore/QString>
 
 #include <QtQml/QQmlListProperty>
-#include <QtQml/QQmlParserStatus>
 
 class ProjectResolver;
 class Testcase;
 
-class Component : public QObject, public QQmlParserStatus
+class Component : public QObject, public ParserEventHandler
 {
     Q_OBJECT
-    Q_INTERFACES(QQmlParserStatus)
     Q_DISABLE_COPY(Component)
     // We need a default property that can hold objects, but we won't actually use it.
     // Instead, we let component items register manually as testcase children.
@@ -73,11 +71,7 @@ protected:
     virtual void cleanupTestCase() {}
     virtual void cleanupTestFunction() {}
 
-    // Called by QmlEngine during creation
-    virtual void classBegin();
-    virtual void componentComplete();
-
-    virtual void handleParserEvent(ParserEvent event);
+    virtual void handleParserEvent(ParserEventHandler::ParserEvent event) override;
 
     QList<QObject *> m_defaultProperty;
     QString m_name;

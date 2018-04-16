@@ -57,17 +57,7 @@ void Component::setName(const QString& name)
     }
 }
 
-void Component::classBegin()
-{
-    m_filepath = ProjectResolver::instance()->currentItem()->filepath;
-    ProjectResolver::instance()->currentItem()->children.append(this);
-}
-
-void Component::componentComplete()
-{
-}
-
-void Component::handleParserEvent(ParserEvent event)
+void Component::handleParserEvent(ParserEventHandler::ParserEvent event)
 {
     switch (event)
     {
@@ -87,7 +77,11 @@ void Component::handleParserEvent(ParserEvent event)
         this->setObjectName(m_name);
     }
         break;
-    case AfterComponentComplete:
+    case ClassBegin:
+        m_filepath = ProjectResolver::instance()->currentItem()->filepath;
+        ProjectResolver::instance()->currentItem()->children.append(this);
+        break;
+    default:
         break;
     }
 }

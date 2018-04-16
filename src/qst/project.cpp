@@ -39,19 +39,6 @@ Project::Project(QObject *parent) : QObject(parent)
 
 }
 
-void Project::classBegin()
-{
-    ApplicationOptions* options = ApplicationOptions::instance();
-    m_workingDirectory = options->workingDirectory;
-    m_name = "project";
-    m_filepath = ProjectResolver::instance()->currentItem()->filepath;
-}
-
-
-void Project::componentComplete()
-{
-}
-
 void Project::handleParserEvent(ParserEvent event)
 {
     if (event == AfterClassBegin)
@@ -69,5 +56,12 @@ void Project::handleParserEvent(ParserEvent event)
                     .arg(qHash(m_filepath), 0, 16);
             m_workingDirectory = QDir().absoluteFilePath(workDirName);
         }
+    }
+    else if (event == ClassBegin)
+    {
+        ApplicationOptions* options = ApplicationOptions::instance();
+        m_workingDirectory = options->workingDirectory;
+        m_name = "project";
+        m_filepath = ProjectResolver::instance()->currentItem()->filepath;
     }
 }

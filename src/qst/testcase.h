@@ -74,7 +74,7 @@ public:
     Q_PROPERTY(QString workingDirectory READ workingDirectory CONSTANT)
     Q_PROPERTY(QString message MEMBER m_message)
 
-    void componentComplete() override;
+    virtual void handleParserEvent(ParserEventHandler::ParserEvent event) override;
 
     template <typename T>
     QList<T*> childrenByType() const;

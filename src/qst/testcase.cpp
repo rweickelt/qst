@@ -48,20 +48,25 @@ Testcase::Testcase(QObject *parent) : Component(parent)
     m_transitionPending = false;
 }
 
-void Testcase::componentComplete()
+void Testcase::handleParserEvent(ParserEventHandler::ParserEvent event)
 {
-    QStringList availableMethods;
-    for (int i = 0; i < metaObject()->methodCount(); i++)
+    Component::handleParserEvent(event);
+
+    if (event == ParserEventHandler::ComponentComplete)
     {
-        QMetaMethod method = metaObject()->method(i);
-        if (method.methodType() == QMetaMethod::Slot)
+        QStringList availableMethods;
+        for (int i = 0; i < metaObject()->methodCount(); i++)
         {
-            availableMethods << method.name();
+            QMetaMethod method = metaObject()->method(i);
+            if (method.methodType() == QMetaMethod::Slot)
+            {
+                availableMethods << method.name();
+            }
         }
-    }
-    if (!availableMethods.contains("run"))
-    {
-        m_errorString = QString("Test case '%1' does not define a 'run' method.").arg(m_name);
+        if (!availableMethods.contains("run"))
+        {
+            m_errorString = QString("Test case '%1' does not define a 'run' method.").arg(m_name);
+        }
     }
 }
 

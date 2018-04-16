@@ -40,12 +40,6 @@ PinProbe::PinProbe(QObject *parent) : Component(parent)
     m_pullMode = PullDisabled;
 }
 
-void PinProbe::componentComplete()
-{
-    Component::componentComplete();
-}
-
-
 void PinProbe::cleanupTestCase()
 {
     unregisterFromHost();

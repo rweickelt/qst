@@ -91,7 +91,6 @@ public:
 
 protected:
     void onDriverValueChanged(int value);
-    void componentComplete();
 
     quint32 classId() const override;
     void processFromTarget(quint32 id, const QByteArray& data) override;

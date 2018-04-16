@@ -25,7 +25,7 @@
 #include "logger.h"
 #include "projectresolver.h"
 #include "qst.h"
-#include "parser.h"
+#include "parsereventhandler.h"
 #include "project.h"
 
 #include <QtCore/QCoreApplication>
@@ -88,7 +88,7 @@ void ProjectResolver::loadRootFile()
 
     for (const auto& child: rootItem.children)
     {
-        child->handleParserEvent(AfterClassBegin);
+        child->handleParserEvent(ParserEventHandler::AfterClassBegin);
     }
 
     // One test case in a single file.
@@ -116,7 +116,7 @@ void ProjectResolver::loadRootFile()
     else if (rootItem.qstBaseType == "Project")
     {
         m_project = qobject_cast<Project*>(rootItem.object);
-        m_project->handleParserEvent(AfterClassBegin);
+        m_project->handleParserEvent(ParserEventHandler::AfterClassBegin);
         // In-line test cases need project context property
         rootItem.context->setContextProperty("project", m_project);
 
@@ -227,7 +227,7 @@ ProjectResolver::Item ProjectResolver::beginCreate(const QString& filepath)
 
     for (const auto& child: item.children)
     {
-        child->handleParserEvent(AfterClassBegin);
+        child->handleParserEvent(ParserEventHandler::AfterClassBegin);
     }
 
     // 1. Cache the relevant base type information instead of always looking at meta object.
@@ -276,7 +276,7 @@ void ProjectResolver::completeCreate(Item* item)
 
     for (const auto& child: item->children)
     {
-        child->handleParserEvent(AfterComponentComplete);
+        child->handleParserEvent(ParserEventHandler::AfterComponentComplete);
     }
 
     if (item->qstBaseType == "Testcase")
@@ -296,7 +296,7 @@ ProjectResolver::Item ProjectResolver::createDefaultProjectComponent()
     project.factory = new QQmlComponent(m_engine, this);
     project.factory->setData("import qst 1.0\n Project {}", QUrl());
     project.object = project.factory->beginCreate(m_engine->rootContext());
-    qobject_cast<Project*>(project.object)->handleParserEvent(AfterClassBegin);
+    qobject_cast<Project*>(project.object)->handleParserEvent(ParserEventHandler::AfterClassBegin);
     project.factory->completeCreate();
     project.state = Item::Finished;
 
