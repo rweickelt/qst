@@ -30,6 +30,7 @@
 #include <QtCore/QStringList>
 #include "testcase.h"
 
+class Matrix;
 class QQmlEngine;
 class QQmlComponent;
 class QQmlContext;
@@ -49,7 +50,7 @@ class ProjectResolver : public QObject
     Q_OBJECT
     Q_DISABLE_COPY(ProjectResolver)
 
-    struct Item {
+    struct Document {
         enum State {
             Undefined = 0,
             Creating,
@@ -58,55 +59,50 @@ class ProjectResolver : public QObject
         };
 
         QPointer<QQmlContext> context;
-        QPointer<QQmlComponent> factory;
+        QPointer<QQmlComponent> qmlComponent;
         QString filepath;
-        QPointer<QObject> object;
+        QPointer<QObject> rootObject;
         QString qstBaseType;
         State state;
-        QList<Component*> children;
+        QList<Component*> components;
+        QList<ParserEventHandler*> handlers;
     };
 
 public:
-    ProjectResolver(QQmlEngine* engine, const QString& rootfilepath);
+    ProjectResolver(QQmlEngine* engine);
 
-    ProjectResolver::Item* currentItem();
+    void registerMatrixComponent(Matrix* matrix);
+    ProjectResolver::Document* currentDocument();
     QStringList errors() const;
     bool hasErrors() const;
-
-    void loadRootFile();
+    void loadRootFile(const QString& rootfilepath);
+    QList<Matrix*> matrices() const;
     Project* project();
-    QList<QPointer<Testcase> > testcases() const;
+    QList<Testcase*> testcases() const;
 
     static ProjectResolver* instance();
 
 private:
-    Item beginCreate(const QString& filepath);
-    void completeCreate(Item* item);
-    Item createDefaultProjectComponent();
+    Document beginCreate(const QString& filepath);
+    void completeCreate(Document* item);
+    Document createDefaultProjectComponent();
     Q_INVOKABLE void onQmlEngineWarnings(const QList<QQmlError> &warnings);
-
 
     static QStringList makeAbsolute(const QStringList& paths, const QString& basePath);
 
-    QHash<QString, Item> m_components;
+    QHash<QString, Document> m_components;
     QPointer<QQmlEngine> m_engine;
     QStringList m_errors;
     QPointer<Project> m_project;
-    QString m_rootFilepath;
-    QList<QPointer<Testcase> > m_testCases;
-    Item* m_currentItem;
+    QList<Testcase*> m_testCases;
+    Document* m_currentDocument;
+    QList<Matrix*> m_matrices;
 
     friend class QmlEngineWarningScopeGuard;
 };
 
-inline QStringList ProjectResolver::errors() const
-{
-    return m_errors;
-}
-
-inline bool ProjectResolver::hasErrors() const
-{
-    return !m_errors.isEmpty();
-}
+inline QStringList ProjectResolver::errors() const { return m_errors; }
+inline bool ProjectResolver::hasErrors() const { return !m_errors.isEmpty(); }
+inline QList<Matrix*> ProjectResolver::matrices() const { return m_matrices; }
 
 #endif // PROJECTRESOLVER_H

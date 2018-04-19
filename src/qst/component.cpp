@@ -78,8 +78,8 @@ void Component::handleParserEvent(ParserEventHandler::ParserEvent event)
     }
         break;
     case ClassBegin:
-        m_filepath = ProjectResolver::instance()->currentItem()->filepath;
-        ProjectResolver::instance()->currentItem()->children.append(this);
+        m_filepath = ProjectResolver::instance()->currentDocument()->filepath;
+        ProjectResolver::instance()->currentDocument()->components.append(this);
         break;
     default:
         break;

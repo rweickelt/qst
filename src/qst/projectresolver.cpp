@@ -21,12 +21,11 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#include "console.h"
-#include "logger.h"
-#include "projectresolver.h"
-#include "qst.h"
+#include "matrix.h"
 #include "parsereventhandler.h"
 #include "project.h"
+#include "projectresolver.h"
+#include "qst.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
@@ -64,42 +63,36 @@ namespace {
     ProjectResolver* projectResolver = nullptr;
 }
 
-ProjectResolver::ProjectResolver(QQmlEngine* engine, const QString& rootfilepath)
+ProjectResolver::ProjectResolver(QQmlEngine* engine)
 {
-    m_currentItem = nullptr;
+    m_currentDocument = nullptr;
     m_engine = engine;
-    m_rootFilepath = rootfilepath;
     projectResolver = this;
 }
 
 
-void ProjectResolver::loadRootFile()
+void ProjectResolver::loadRootFile(const QString& rootfilepath)
 {
     // Re-route QML error handling only in the scope of this method.
     // Cope with multiple exit points.
     QmlEngineWarningScopeGuard guard(this, m_engine.data());
 
     // 1. Create a root object with all const properties.
-    Item rootItem = this->beginCreate(m_rootFilepath);
-    if (rootItem.state == Item::Invalid)
+    Document rootItem = this->beginCreate(rootfilepath);
+    if (rootItem.state == Document::Invalid)
     {
         return;
-    }
-
-    for (const auto& child: rootItem.children)
-    {
-        child->handleParserEvent(ParserEventHandler::AfterClassBegin);
     }
 
     // One test case in a single file.
     // Create a dummy project item in that case.
     if (rootItem.qstBaseType == "Testcase")
     {
-        Testcase* testCase = qobject_cast<Testcase*>(rootItem.object);
+        Testcase* testCase = qobject_cast<Testcase*>(rootItem.rootObject);
         // Stand-alone test case. We need a default Project component
         // to satisfy minimum requirements.
-        Item projectComponent = this->createDefaultProjectComponent();
-        m_project = qobject_cast<Project*>(projectComponent.object);
+        Document projectComponent = this->createDefaultProjectComponent();
+        m_project = qobject_cast<Project*>(projectComponent.rootObject);
         m_components.insert("project", projectComponent);
         m_components.insert(testCase->name(), projectComponent);
         m_testCases.append(testCase);
@@ -115,12 +108,11 @@ void ProjectResolver::loadRootFile()
     // but also contain test case items.
     else if (rootItem.qstBaseType == "Project")
     {
-        m_project = qobject_cast<Project*>(rootItem.object);
-        m_project->handleParserEvent(ParserEventHandler::AfterClassBegin);
+        m_project = qobject_cast<Project*>(rootItem.rootObject);
         // In-line test cases need project context property
         rootItem.context->setContextProperty("project", m_project);
 
-        for (const auto& child : rootItem.children)
+        for (const auto& child : rootItem.components)
         {
             if (child->typeName() == "Testcase")
             {
@@ -136,8 +128,8 @@ void ProjectResolver::loadRootFile()
     }
     else
     {
-        m_errors.append(QString("%1 is not allowed as root component in %2. Allowed types are Project, TestCase.")
-                        .arg(rootItem.object->metaObject()->className()).arg(m_rootFilepath));
+        m_errors.append(QString("%1 is not allowed as root component in %2. Allowed types are Project, Testcase.")
+                        .arg(rootItem.rootObject->metaObject()->className()).arg(rootfilepath));
         return;
     }
 
@@ -153,19 +145,19 @@ void ProjectResolver::loadRootFile()
                             .arg(unresolved.first()).arg(rootItem.filepath));
             return;
         }
-        Item item = beginCreate(unresolved.first());
-        if (item.state == Item::Invalid)
+        Document item = beginCreate(unresolved.first());
+        if (item.state == Document::Invalid)
         {
             return;
         }
 
         if (item.qstBaseType == "Project")
         {
-            QStringList references = qobject_cast<Project*>(item.object)->references();
+            QStringList references = qobject_cast<Project*>(item.rootObject)->references();
             unresolved.append(makeAbsolute(references,
                     item.context->contextProperty("path").toString()));
 
-            for (const auto& child : item.children)
+            for (const auto& child : item.components)
             {
                 if (child->typeName() == "Testcase")
                 {
@@ -175,9 +167,9 @@ void ProjectResolver::loadRootFile()
         }
         else if (item.qstBaseType == "Testcase")
         {
-            m_testCases.append(qobject_cast<Testcase*>(item.object));
+            m_testCases.append(qobject_cast<Testcase*>(item.rootObject));
             item.context->setContextProperty("project", m_project);
-            item.context->setContextProperty("test", item.object);
+            item.context->setContextProperty("test", item.rootObject);
         }
 
         // TODO: I's not possible to create more than 9 objects
@@ -190,7 +182,7 @@ void ProjectResolver::loadRootFile()
             return;
         }
 
-        QString name = item.object->property("name").toString();
+        QString name = item.rootObject->property("name").toString();
         if (m_components.contains(name))
         {
             m_errors.append(QString("A component with the name '%1' already exists.").arg(name));
@@ -202,112 +194,124 @@ void ProjectResolver::loadRootFile()
 
 // Begins component creation, performs various sanity checks and returns
 // everything bundled in an Item container.
-ProjectResolver::Item ProjectResolver::beginCreate(const QString& filepath)
+ProjectResolver::Document ProjectResolver::beginCreate(const QString& filepath)
 {
-    Item item;
-    m_currentItem = &item;
-    item.state = Item::Undefined;
+    Document item;
+    m_currentDocument = &item;
+    item.state = Document::Undefined;
     item.filepath  = filepath;
     item.context = new QQmlContext(m_engine->rootContext(), this);
     item.context->setContextProperty("path", QFileInfo(filepath).dir().absolutePath());
-    item.factory = new QQmlComponent(m_engine, filepath, this);
-    item.object = item.factory->beginCreate(item.context);
+    item.qmlComponent = new QQmlComponent(m_engine, filepath, this);
+    item.rootObject = item.qmlComponent->beginCreate(item.context);
 
-    if (item.factory->isError()) \
+    if (item.qmlComponent->isError()) \
     {
-        item.state = Item::Invalid;
-        for (const auto& error : item.factory->errors())
+        item.state = Document::Invalid;
+        for (const auto& error : item.qmlComponent->errors())
         {
             m_errors.append(error.toString());
         }
         return item;
     }
 
-    Q_ASSERT(!item.object.isNull());
+    Q_ASSERT(!item.rootObject.isNull());
 
-    for (const auto& child: item.children)
+    for (const auto& child: item.handlers)
     {
-        child->handleParserEvent(ParserEventHandler::AfterClassBegin);
+        child->afterClassBegin();
     }
 
     // 1. Cache the relevant base type information instead of always looking at meta object.
     // 2. Perform validity checks
-    if (item.object->metaObject()->inherits(&Project::staticMetaObject))
+    if (item.rootObject->metaObject()->inherits(&Project::staticMetaObject))
     {
         item.qstBaseType = "Project";
     }
-    else if (item.object->metaObject()->inherits(&Testcase::staticMetaObject))
+    else if (item.rootObject->metaObject()->inherits(&Testcase::staticMetaObject))
     {
         item.qstBaseType = "Testcase";
-        Testcase* test = qobject_cast<Testcase*>(item.object);
-        for (const auto& child: item.children)
+        Testcase* test = qobject_cast<Testcase*>(item.rootObject);
+        for (const auto& child: item.components)
         {
             test->registerChild(child);
         }
     }
+    else if (item.rootObject->metaObject()->inherits(&Matrix::staticMetaObject))
+    {
+        item.qstBaseType = "Matrix";
+    }
     else
     {
-        m_errors.append(QString("The type %1 is not allowed as root component in %2. Allowed types are Project, Testcase")
-                        .arg(item.object->metaObject()->className())
+        m_errors.append(QString("The type %1 is not allowed as document root in %2. Allowed types are Matrix, Project, Testcase")
+                        .arg(item.rootObject->metaObject()->className())
                         .arg(filepath));
-        item.state = Item::Invalid;
+        item.state = Document::Invalid;
         return item;
     }
 
-    item.state = Item::Creating;
+    item.state = Document::Creating;
     return item;
 }
 
 
-void ProjectResolver::completeCreate(Item* item)
+void ProjectResolver::completeCreate(Document* item)
 {
     Q_ASSERT(item != nullptr);
-    Q_ASSERT(item->state == Item::Creating);
+    Q_ASSERT(item->state == Document::Creating);
 
-    m_currentItem = item;
-    item->factory->completeCreate();
-    if (item->factory->isError()) \
+    Document* currentItemBackup = m_currentDocument;
+    m_currentDocument = item;
+
+    item->qmlComponent->completeCreate();
+    if (item->qmlComponent->isError()) \
     {
-        for (const auto& error : item->factory->errors())
+        for (const auto& error : item->qmlComponent->errors())
         {
             m_errors.append(error.toString());
         }
     }
 
-    for (const auto& child: item->children)
+    for (const auto& child: item->handlers)
     {
-        child->handleParserEvent(ParserEventHandler::AfterComponentComplete);
+        child->afterComponentComplete();
     }
 
     if (item->qstBaseType == "Testcase")
     {
-        Testcase* test = static_cast<Testcase*>(item->object.data());
+        Testcase* test = static_cast<Testcase*>(item->rootObject.data());
         if (test->hasErrors())
         {
             m_errors.append(test->errorString());
         }
     }
+
+    m_currentDocument = currentItemBackup;
 }
 
-ProjectResolver::Item ProjectResolver::createDefaultProjectComponent()
+ProjectResolver::Document ProjectResolver::createDefaultProjectComponent()
 {
-    Item project;
+    Document* currentItemBackup = m_currentDocument;
 
-    project.factory = new QQmlComponent(m_engine, this);
-    project.factory->setData("import qst 1.0\n Project {}", QUrl());
-    project.object = project.factory->beginCreate(m_engine->rootContext());
-    qobject_cast<Project*>(project.object)->handleParserEvent(ParserEventHandler::AfterClassBegin);
-    project.factory->completeCreate();
-    project.state = Item::Finished;
+    Document project;
+    m_currentDocument = &project;
 
-    Q_ASSERT(!project.factory->isError());
-    Q_ASSERT(!project.object.isNull());
+    project.qmlComponent = new QQmlComponent(m_engine, this);
+    project.qmlComponent->setData("import qst 1.0\n Project {}", QUrl());
+    project.rootObject = project.qmlComponent->beginCreate(m_engine->rootContext());
+    qobject_cast<Project*>(project.rootObject)->afterClassBegin();
+    project.qmlComponent->completeCreate();
+    qobject_cast<Project*>(project.rootObject)->afterComponentComplete();
+    project.state = Document::Finished;
 
+    Q_ASSERT(!project.qmlComponent->isError());
+    Q_ASSERT(!project.rootObject.isNull());
 
+    m_currentDocument = currentItemBackup;
     return project;
 }
 
-QList<QPointer<Testcase> > ProjectResolver::testcases() const
+QList<Testcase*> ProjectResolver::testcases() const
 {
     return m_testCases;
 }
@@ -347,10 +351,10 @@ void ProjectResolver::onQmlEngineWarnings(const QList<QQmlError> &warnings)
 
 }
 
-ProjectResolver::Item* ProjectResolver::currentItem()
+ProjectResolver::Document* ProjectResolver::currentDocument()
 {
-    Q_ASSERT(m_currentItem != nullptr);
-    return m_currentItem;
+    Q_ASSERT(m_currentDocument != nullptr);
+    return m_currentDocument;
 }
 
 ProjectResolver* ProjectResolver::instance()
@@ -362,4 +366,9 @@ ProjectResolver* ProjectResolver::instance()
 Project* ProjectResolver::project()
 {
     return m_project.data();
+}
+
+void ProjectResolver::registerMatrixComponent(Matrix* matrix)
+{
+    m_matrices << matrix;
 }

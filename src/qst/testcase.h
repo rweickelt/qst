@@ -45,7 +45,6 @@ class Testcase : public Component
     Q_DISABLE_COPY(Testcase)
 
     friend class ProjectResolver;
-    friend class TestRunner;
 
 public:
     enum State
@@ -79,6 +78,8 @@ public:
     template <typename T>
     QList<T*> childrenByType() const;
 
+    Result exec();
+
     void registerChild(Component* component);
 
     static Testcase* instance();
@@ -101,7 +102,6 @@ public slots:
 
 
 protected slots:
-    Result exec();
     void onQmlEngineWarnings(const QList<QQmlError> &warnings);
 
 protected:

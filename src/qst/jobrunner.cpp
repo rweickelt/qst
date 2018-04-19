@@ -21,25 +21,45 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#include "testrunner.h"
+#include "jobrunner.h"
 #include "project.h"
 #include "qst.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
+#include <QtQml/QQmlProperty>
 
-TestRunner::TestRunner(Project* project, const QList<QPointer<Testcase> >& testCases):
-    m_project(project)
+#include <QtDebug>
+
+JobRunner::JobRunner(Project* project, const QList<TestJob>& jobs,
+                     const QVector<QVariantMap>& tags):
+    m_project(project), m_jobs(jobs), m_tags(tags)
 {
-    m_testCases = testCases;
-    createWorkingDirectory();
+    createProjectWorkingDirectory();
 }
 
-void TestRunner::execTestCases()
+void JobRunner::execTestCases()
 {
-    for (int index = 0; index < m_testCases.size(); index++)
+    for (auto& job: m_jobs)
     {
-        m_results << m_testCases[index]->exec();
+        if (job.tagEntry >= 0) {
+            QString name = job.testcase->name();
+            job.testcase->setName(QString("%1-%2").arg(name).arg(job.tagEntry));
+            const auto& values = m_tags[job.tagEntry];
+            for (const auto& key: values.keys())
+            {
+                QQmlProperty property(job.testcase, key);
+//                Q_ASSERT(property.isProperty());
+//                Q_ASSERT(property.isWritable());
+                property.write(values[key]);
+            }
+            m_results << job.testcase->exec();
+            job.testcase->setName(name);
+        }
+        else
+        {
+            m_results << job.testcase->exec();
+        }
     }
 
     if (m_results.contains(Testcase::Fail))
@@ -52,7 +72,7 @@ void TestRunner::execTestCases()
     }
 }
 
-void TestRunner::createWorkingDirectory()
+void JobRunner::createProjectWorkingDirectory()
 {
     QString workDirPath = m_project->workingDirectory();
 

@@ -21,41 +21,39 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#ifndef TESTCASERUNNER_H
-#define TESTCASERUNNER_H
+#ifndef JOBRUNNER_H
+#define JOBRUNNER_H
 
 #include "testcase.h"
+#include "testjob.h"
 
 #include <QtCore/QList>
-#include <QtCore/QObject>
-#include <QtCore/QPointer>
+#include <QtCore/QString>
+#include <QtCore/QVector>
+#include <QtCore/QVariantMap>
 
 class Project;
 
-class QQmlEngine;
-
-class TestRunner : public QObject
+class JobRunner
 {
-    Q_OBJECT
-    Q_DISABLE_COPY(TestRunner)
+    Q_DISABLE_COPY(JobRunner)
 public:
-    TestRunner(Project* project, const QList<QPointer<Testcase> >& testCases);
+    JobRunner(Project* project, const QList<TestJob>& testCases, const QVector<QVariantMap>& tags);
     QString errorString() const;
+    void execTestCases();
     bool hasError() const;
 
-public slots:
-    void execTestCases();
-
 private:
-    void createWorkingDirectory();
+    void createProjectWorkingDirectory();
 
     QString m_errorString;
-    QPointer<Project> m_project;
-    QList<QPointer<Testcase> > m_testCases;
+    Project* m_project;
+    QList<TestJob> m_jobs;
     QList<Testcase::Result> m_results;
+    QVector<QVariantMap> m_tags;
 };
 
-inline QString TestRunner::errorString() const { return m_errorString; }
-inline bool TestRunner::hasError() const { return !m_errorString.isEmpty(); }
+inline QString JobRunner::errorString() const { return m_errorString; }
+inline bool JobRunner::hasError() const { return !m_errorString.isEmpty(); }
 
-#endif // TESTCASERUNNER_H
+#endif // JOBRUNNER_H

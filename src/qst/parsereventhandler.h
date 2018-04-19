@@ -1,6 +1,8 @@
 #ifndef PARSERSTATEHANDLER_H
 #define PARSERSTATEHANDLER_H
 
+#include <QtCore/QList>
+#include <QtCore/QObject>
 #include <QtQml/QQmlParserStatus>
 
 class ParserEventHandler : public QQmlParserStatus
@@ -22,11 +24,10 @@ protected:
     };
 
     virtual void handleParserEvent(ParserEvent event) = 0;
-};
 
-inline void ParserEventHandler::afterClassBegin() { handleParserEvent(AfterClassBegin); }
-inline void ParserEventHandler::afterComponentComplete() { handleParserEvent(AfterComponentComplete); }
-inline void ParserEventHandler::classBegin() { handleParserEvent(ClassBegin); }
-inline void ParserEventHandler::componentComplete() { handleParserEvent(ComponentComplete); }
+private:
+    QList<QMetaObject*> m_allowedChildrenTypes;
+    QList<QMetaObject*> m_allowedParentTypes;
+};
 
 #endif // PARSERSTATEHANDLER_H

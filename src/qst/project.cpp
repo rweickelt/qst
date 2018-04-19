@@ -62,6 +62,6 @@ void Project::handleParserEvent(ParserEvent event)
         ApplicationOptions* options = ApplicationOptions::instance();
         m_workingDirectory = options->workingDirectory;
         m_name = "project";
-        m_filepath = ProjectResolver::instance()->currentItem()->filepath;
+        m_filepath = ProjectResolver::instance()->currentDocument()->filepath;
     }
 }
