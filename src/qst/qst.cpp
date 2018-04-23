@@ -59,7 +59,7 @@ void error(const QString& message)
 void info(const QString& message, const QString& file, int line)
 {
     LogInfo info {
-        .test = Testcase::instance()->name(),
+        .test = Testcase::instance()->displayName(),
         .component = "",
         .file = file,
         .line = line,
@@ -112,7 +112,7 @@ void verify(bool condition, const QString& message, const QString& file, int lin
 void warning(const QString& message, const QString& file, int line)
 {
     LogInfo info {
-        .test = Testcase::instance()->name(),
+        .test = Testcase::instance()->displayName(),
         .component = "",
         .file = file,
         .line = line,

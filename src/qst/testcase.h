@@ -70,7 +70,7 @@ public:
     Q_PROPERTY(qint64 elapsedTime READ elapsedTime)
     Q_PROPERTY(Result result MEMBER m_result READ result)
     Q_PROPERTY(State state READ state)
-    Q_PROPERTY(QString workingDirectory READ workingDirectory CONSTANT)
+    Q_PROPERTY(QString workingDirectory READ workingDirectory NOTIFY workingDirectoryChanged)
     Q_PROPERTY(QString message MEMBER m_message)
 
     virtual void handleParserEvent(ParserEventHandler::ParserEvent event) override;
@@ -97,6 +97,8 @@ signals:
     // Emitted everytime after a test function has been invoked.
     void finished();
 
+    void workingDirectoryChanged();
+
 public slots:
     void finishAndExit(Testcase::Result result, const QString& file = "", int line = 0, const QString& message = "");
 
@@ -108,15 +110,17 @@ protected:
     Q_INVOKABLE void waitMilliseconds(int milliseconds, const QString& file, int line);
     Q_INVOKABLE void waitUntilExpression(QJSValue expression, int milliseconds, const QString& file, int line);
 
-    void initTestCase() override;
     Project* project() const;
 
 public:
     Testcase(QObject *parent = 0);
+    QString displayName() const;
     QString errorString() const;
     bool hasErrors() const;
     qint64 elapsedTime() const;
     Result result() const;
+    void setDisplayName(const QString& name);
+    void setWorkingDirectory(const QString& path);
     State state() const;
     QString workingDirectory() const;
 
@@ -143,6 +147,8 @@ private:
     QString m_message;
     QElapsedTimer m_timer;
     qint64 m_executionTime;
+    QString m_displayName;
+    QString m_workingDirectory;
 
     static QPointer<Testcase> m_currentTestCase;
     QString m_errorString;
@@ -156,6 +162,7 @@ inline bool Testcase::hasErrors() const { return !m_errorString.isEmpty(); }
 inline Testcase::Result Testcase::result() const { return m_result; }
 inline Testcase::State Testcase::state() const { return m_state; }
 inline void Testcase::registerChild(Component* component) { m_children.append(component); }
+inline QString Testcase::workingDirectory() const { return m_workingDirectory; }
 
 template <typename T>
 QList<T*> Testcase::childrenByType() const

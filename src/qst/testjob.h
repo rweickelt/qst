@@ -1,6 +1,8 @@
 #ifndef TESTJOB_H
 #define TESTJOB_H
 
+#include "tag.h"
+
 #include <QtCore/QSharedPointer>
 #include <QtCore/QVariantMap>
 
@@ -11,7 +13,10 @@ class Testcase;
  */
 struct TestJob {
     Testcase* testcase = nullptr;
-    int tagEntry = -1;
+    TagGroupId tagGroupId = InvalidId;
+    TagId tagId = InvalidId;
+
+    static TestJob fromTestcase(Testcase* testcase, TagGroupId tagGroupId = InvalidId, TagId tagId = InvalidId);
 };
 
 #endif // TESTJOB_H

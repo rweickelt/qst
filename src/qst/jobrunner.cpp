@@ -32,7 +32,7 @@
 #include <QtDebug>
 
 JobRunner::JobRunner(Project* project, const QList<TestJob>& jobs,
-                     const QVector<QVariantMap>& tags):
+                     const TagStorage& tags):
     m_project(project), m_jobs(jobs), m_tags(tags)
 {
     createProjectWorkingDirectory();
@@ -42,24 +42,28 @@ void JobRunner::execTestCases()
 {
     for (auto& job: m_jobs)
     {
-        if (job.tagEntry >= 0) {
-            QString name = job.testcase->name();
-            job.testcase->setName(QString("%1-%2").arg(name).arg(job.tagEntry));
-            const auto& values = m_tags[job.tagEntry];
+        QString name = job.testcase->name();
+        QString displayName = name;
+
+        if (job.tagGroupId != InvalidId)
+        {
+            displayName = QString("%1-%2").arg(name).arg(job.tagId, 7, 36, QChar('0'));
+
+            const auto& values = m_tags[job.tagGroupId][job.tagId];
             for (const auto& key: values.keys())
             {
                 QQmlProperty property(job.testcase, key);
-//                Q_ASSERT(property.isProperty());
-//                Q_ASSERT(property.isWritable());
+                Q_ASSERT(property.isProperty());
+                Q_ASSERT(property.isWritable());
                 property.write(values[key]);
             }
-            m_results << job.testcase->exec();
-            job.testcase->setName(name);
         }
-        else
-        {
-            m_results << job.testcase->exec();
-        }
+
+        QString workingDirectory = createTestcaseWorkingDirectory(displayName);
+        job.testcase->setWorkingDirectory(workingDirectory);
+        job.testcase->setDisplayName(displayName);
+
+        m_results << job.testcase->exec();
     }
 
     if (m_results.contains(Testcase::Fail))
@@ -97,4 +101,27 @@ void JobRunner::createProjectWorkingDirectory()
             return;
         }
     }
+}
+
+QString JobRunner::createTestcaseWorkingDirectory(const QString& name)
+{
+    QDir projectWorkDir(m_project->workingDirectory());
+    QDir testcaseWorkDir(projectWorkDir.absoluteFilePath(name));
+
+    if (testcaseWorkDir.exists())
+    {
+        if (!testcaseWorkDir.removeRecursively())
+        {
+            QST_ERROR_AND_EXIT(QString("Could not wipe directory '%1'.")
+                                .arg(testcaseWorkDir.absolutePath()));
+        }
+    }
+
+    if ((!projectWorkDir.mkdir(name)))
+    {
+        QST_ERROR_AND_EXIT(QString("Could not create working directory '%1'.")
+                            .arg(testcaseWorkDir.absolutePath()));
+    }
+
+    return testcaseWorkDir.absolutePath();
 }

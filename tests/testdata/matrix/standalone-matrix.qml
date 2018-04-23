@@ -2,12 +2,8 @@ import qst 1.0
 
 Matrix {
     testcases: [
-        "test"
+        "testcase"
     ]
-
-    Dimension {
-
-    }
 
     Dimension {
 

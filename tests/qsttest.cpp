@@ -21,10 +21,12 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
+#include <qst.h>
 #include "qsttest.h"
 #include "qsttestresults.h"
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDebug>
 #include <QtCore/QProcessEnvironment>
 #include <QtTest/QTest>
 
@@ -62,4 +64,39 @@ QstTestResults QstTest::execQstRun(const QStringList& arguments, int timeoutMs)
     }
 
     return QstTestResults::fromQstOutput(m_qstProcess.readAllStandardOutput());
+}
+
+
+bool QstTest::execQstRun(const QStringList& arguments, int expectedExitCode, const QString& file, int line)
+{
+    QStringList cmdLine = { "run", "--import", m_defaultImportPath };
+    cmdLine += arguments;
+    QDir qstDir(QCoreApplication::applicationDirPath());
+    m_qstProcess.start(qstDir.absoluteFilePath("qst"), cmdLine);
+    m_qstProcess.waitForFinished();
+
+    if (m_qstProcess.exitCode() == expectedExitCode)
+    {
+        m_results = QstTestResults::fromQstOutput(m_qstProcess.readAllStandardOutput());
+        return true;
+    }
+
+    QStringList log = QString(m_qstProcess.readAllStandardOutput()).split('\n');
+    for (auto& logline: log)
+    {
+        logline.prepend("    ");
+    }
+
+    QString statement = QString("%1 ended with wrong result. Expected: %2, actual: %3")
+            .arg("qst " + m_qstProcess.arguments().join(' '))
+            .arg(expectedExitCode)
+            .arg(m_qstProcess.exitCode());
+
+    QString description = QString("\n%1%2")
+            .arg(log.join('\n'))
+            .arg(QString(m_qstProcess.readAllStandardError()));
+
+    QTest::qVerify(false, qPrintable(statement), qPrintable(description), qPrintable(file), line);
+
+    return false;
 }

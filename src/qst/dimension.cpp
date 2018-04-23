@@ -13,16 +13,16 @@ Dimension::Dimension(QObject* parent) : QObject(parent)
     }
     else if (i == 1)
     {
+        m_data << QVariantMap { {"animal", "dog"} };
+        m_data << QVariantMap { {"animal", "cat"} };
+    }
+    else
+    {
         m_data << QVariantMap { {"op", "sleeps"} };
         m_data << QVariantMap { {"op", "eats"} };
         m_data << QVariantMap { {"op", "studies animal rights"} };
     }
-    else
-    {
-        m_data << QVariantMap { {"animal", "dog"} };
-        m_data << QVariantMap { {"animal", "cat"} };
-    }
-    i++;
+    i = (i+1) % 3;
 }
 
 const QVector<QVariantMap>& Dimension::data() const
@@ -49,6 +49,8 @@ void Dimension::handleParserEvent(ParserEventHandler::ParserEvent event)
                     .arg(ourContext.file()).arg(ourContext.line());
             QST_ERROR_AND_EXIT(message);
         }
+        break;
+    case ParserEventHandler::AfterComponentComplete:
         break;
     default:
         break;

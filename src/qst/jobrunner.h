@@ -24,6 +24,7 @@
 #ifndef JOBRUNNER_H
 #define JOBRUNNER_H
 
+#include "tag.h"
 #include "testcase.h"
 #include "testjob.h"
 
@@ -38,19 +39,20 @@ class JobRunner
 {
     Q_DISABLE_COPY(JobRunner)
 public:
-    JobRunner(Project* project, const QList<TestJob>& testCases, const QVector<QVariantMap>& tags);
+    JobRunner(Project* project, const QList<TestJob>& testCases, const TagStorage& tags);
     QString errorString() const;
     void execTestCases();
     bool hasError() const;
 
 private:
     void createProjectWorkingDirectory();
+    QString createTestcaseWorkingDirectory(const QString& name);
 
     QString m_errorString;
     Project* m_project;
     QList<TestJob> m_jobs;
     QList<Testcase::Result> m_results;
-    QVector<QVariantMap> m_tags;
+    TagStorage m_tags;
 };
 
 inline QString JobRunner::errorString() const { return m_errorString; }

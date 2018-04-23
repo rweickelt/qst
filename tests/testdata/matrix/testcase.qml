@@ -1,11 +1,12 @@
 import qst 1.0
 
 Testcase {
-    name: "test"
+    name: "testcase"
 
-    property string color
+    property string attribute
+    property string animal
 
     function run() {
-        Qst.info("Neo takes the " + color + " pill.")
+        Qst.info(name + ";" + attribute + ":" + animal);
     }
 }

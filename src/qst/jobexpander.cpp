@@ -5,22 +5,15 @@
 #include "qst.h"
 #include "testcase.h"
 
+#include <QtCore/QRegularExpression>
+#include <QtCore/QRegularExpressionMatch>
+#include <QtCore/QStringList>
+
 #include <QtDebug>
 
 namespace {
 
-//    QVariantMap operator+(const QVariantMap& left, const QVariantMap& right)
-//    {
-//        QVariantMap result = left;
-//        for (const auto& key: right.keys())
-//        {
-//            Q_ASSERT(!left.contains(key));
-//            result.insert(key, right[key]);
-//        }
-//        return result;
-//    }
-
-    QVariantMap& operator+=(QVariantMap& self, const QVariantMap& other)
+    Tag& operator+=(Tag& self, const Tag& other)
     {
         for (const auto& key: other.keys())
         {
@@ -40,37 +33,52 @@ JobExpander::JobExpander(const QList<Matrix*>& matrices, const QList<Testcase*>&
         m_testcases[testcase->name()] = testcase;
     }
 
+    // Create tagged jobs for all test cases that
+    // are part of a matrix.
     for (const auto& matrix: m_matrices)
     {
-        QVector<QVariantMap> tags = expand(matrix);
+        QMap<TagId, Tag> tags = expand(matrix);
         QStringList patterns = matrix->testcases();
-        QStringList names = match(m_testcases.uniqueKeys(), patterns);
+        QStringList names = match(m_testcases.keys(), patterns);
+
+        if (names.isEmpty())
+        {
+            QmlContext context = qst::qmlDefinitionContext(matrix);
+            QST_ERROR_AND_EXIT(QString("Matrix defined at %1:%2 doesn't match anything.")
+                               .arg(context.file()).arg(context.line()));
+        }
+
+        QSet<QString> usedNames = m_jobs.uniqueKeys().toSet();
+        QSet<QString> overlappingNames = names.toSet().intersect(usedNames);
+        if (overlappingNames.size() > 0)
+        {
+            QmlContext context = qst::qmlDefinitionContext(matrix);
+            QST_ERROR_AND_EXIT(QString("Matrix defined at %1:%2 overlaps another matrix. Testcases: '%3'")
+                               .arg(context.file()).arg(context.line())
+                               .arg(overlappingNames.toList().join("' '")));
+        }
+
         QMultiMap<QString, TestJob> jobs = combine(names, tags);
-        jobs = filterExempted(jobs, QStringList(), QVector<QVariantMap>());
+        jobs = removeExcluded(jobs, QStringList(), TagStorage());
 
         m_jobs += jobs;
-        m_tags = tags;
+        TagGroupId groupId = makeTagGroupId(tags.first());
+        Q_ASSERT(!m_tags.contains(groupId));
+        m_tags[groupId] = tags;
+    }
+
+    QSet<QString> allNames = m_testcases.keys().toSet();
+    QSet<QString> usedNames = m_jobs.uniqueKeys().toSet();
+    QSet<QString> untaggedNames = allNames.subtract(usedNames);
+
+    // Create normal jobs for the remaining test cases.
+    for (const auto& name: untaggedNames)
+    {
+        Q_ASSERT(!m_jobs.contains(name));
+        m_jobs.insert(name, TestJob::fromTestcase(m_testcases[name]));
     }
 }
 
-bool JobExpander::isValid(const Matrix& matrix)
-{
-//    QStringList properties;
-//    for (const auto& dimension: matrix.dimensions())
-//    {
-//        for (const auto& name: dimension->data().first().keys())
-//        {
-
-//        }
-//    }
-    return true;
-}
-
-bool JobExpander::isValid(const Dimension& dimension)
-{
-    Q_UNUSED(dimension);
-    return true;
-}
 
 /*
    Span an array for job data. Multiple dimensions are defined in QML,
@@ -80,7 +88,7 @@ bool JobExpander::isValid(const Dimension& dimension)
 
    We assume that dimensions always have at least 1 entry.
 */
-QVector<QVariantMap> JobExpander::expand(const Matrix* matrix)
+QMap<TagId, Tag> JobExpander::expand(const Matrix* matrix)
 {
     QList<int> lengths;
     QList<int> dividers;
@@ -97,38 +105,61 @@ QVector<QVariantMap> JobExpander::expand(const Matrix* matrix)
         dividers << dividers.value(i-1, 1) * lengths.value(i-1, 1);
     }
 
-    QVector<QVariantMap> expandedJobs(dividers.last() * lengths.last());
-    for (int i = 0; i < expandedJobs.length(); i++)
+    QMap<TagId, Tag> expandedTags;
+    for (int i = 0; i < dividers.last() * lengths.last(); i++)
     {
-        QVariantMap currentJob;
+        Tag tag;
 
         for (int j = 0; j < matrix->dimensions().length(); j++)
         {
             const auto& dimension = matrix->dimensions()[j];
-            currentJob += dimension->data()[(i / dividers[j]) % lengths[j]];
+            tag += dimension->data()[(i / dividers[j]) % lengths[j]];
         }
 
-        expandedJobs[i] = currentJob;
+        TagId id = makeTagId(tag);
+        Q_ASSERT(!expandedTags.contains(id));
+        expandedTags[id] = tag;
     }
 
-    return expandedJobs;
+    return expandedTags;
 }
 
+/* We can expect that testcase names and patterns have been sanitized. */
 QStringList JobExpander::match(const QStringList& testcases, const QStringList& patterns)
 {
-    return testcases;
+    QStringList matchedNames;
+    QStringList regifiedPatterns = patterns;
+    regifiedPatterns.replaceInStrings("*", ".*");
+    regifiedPatterns.replaceInStrings("?", ".");
+
+    // Let's combine everything in one big regexp and assume that
+    // the regexp implementation is fast enough.
+    QRegularExpression pattern("^(" + regifiedPatterns.join('|') + ")$",
+                               QRegularExpression::OptimizeOnFirstUsageOption);
+
+    for (const auto& name: testcases)
+    {
+        QRegularExpressionMatch match = pattern.match(name);
+        if (match.hasMatch())
+        {
+            matchedNames << name;
+        }
+    }
+
+    return matchedNames;
 }
 
-QMultiMap<QString, TestJob> JobExpander::combine(const QStringList& testcases, const QVector<QVariantMap>& tags)
+QMultiMap<QString, TestJob> JobExpander::combine(const QStringList& testcases, const QMap<TagId, Tag>& tags)
 {
     QMultiMap<QString, TestJob> result;
     for (const auto& name: testcases)
     {
-        for (int i = 0; i < tags.length(); i++)
+        for (const auto& tag: tags)
         {
             TestJob job;
             job.testcase = m_testcases[name];
-            job.tagEntry = i;
+            job.tagGroupId = makeTagGroupId(tag);
+            job.tagId = makeTagId(tag);
             result.insert(name, job);
         }
     }
@@ -136,9 +167,9 @@ QMultiMap<QString, TestJob> JobExpander::combine(const QStringList& testcases, c
 }
 
 
-QMultiMap<QString, TestJob> JobExpander::filterExempted(const QMultiMap<QString, TestJob>& jobs,
+QMultiMap<QString, TestJob> JobExpander::removeExcluded(const QMultiMap<QString, TestJob>& jobs,
                                                           const QStringList& patterns,
-                                                          const QVector<QVariantMap>& tags)
+                                                          const TagStorage& tags)
 {
     return jobs;
 }

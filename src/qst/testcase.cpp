@@ -196,14 +196,14 @@ Testcase::State Testcase::cleaningUpTestFunctionStateFunction()
     case Unfinished:
     case Success:
         info.type = LogInfo::Success;
-        info.test = m_name;
+        info.test = displayName();
         info.component = m_name;
         info.file = m_callerFile;
         ProxyLogger::instance()->print(info);
         break;
     case Fail:
         info.type = LogInfo::Fail;
-        info.test = m_name;
+        info.test = displayName();
         info.component = m_name;
         info.file = m_callerFile;
         info.line = m_callerLine;
@@ -397,30 +397,28 @@ Testcase* Testcase::instance()
     return m_currentTestCase.data();
 }
 
-QString Testcase::workingDirectory() const
+void Testcase::setDisplayName(const QString& name)
 {
-    return QDir(project()->workingDirectory()).absoluteFilePath(m_name);
+    m_displayName = name;
 }
 
-void Testcase::initTestCase()
+QString Testcase::displayName() const
 {
-    QDir projectWorkDir(project()->workingDirectory());
-    QDir testcaseWorkDir(projectWorkDir.absoluteFilePath(m_name));
-
-    if (testcaseWorkDir.exists())
+    if (!m_displayName.isEmpty())
     {
-        if (!testcaseWorkDir.removeRecursively())
-        {
-            QST_ERROR_AND_EXIT(QString("Could not wipe directory '%1'.")
-                                .arg(testcaseWorkDir.absolutePath()));
-        }
+        return m_displayName;
     }
-
-    if ((!projectWorkDir.mkdir(m_name)))
+    else
     {
-        QST_ERROR_AND_EXIT(QString("Could not create working directory '%1'.")
-                            .arg(testcaseWorkDir.absolutePath()));
+        return name();
     }
 }
 
-
+void Testcase::setWorkingDirectory(const QString& path)
+{
+    if (m_workingDirectory != path)
+    {
+        m_workingDirectory = path;
+        emit workingDirectoryChanged();
+    }
+}

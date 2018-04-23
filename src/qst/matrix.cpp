@@ -64,6 +64,19 @@ void Matrix::handleParserEvent(ParserEventHandler::ParserEvent event)
 
 void Matrix::setTestcases(const QStringList& names)
 {
+// TODO
+//    QRegularExpression patternCheck("[\\w-\\*\\?]");
+
+//    for (const auto& pattern: patterns)
+//    {
+//        QRegularExpressionMatch match = patternCheck.match(pattern);
+//        if (!match.hasMatch())
+//        {
+
+//        }
+//    }
+
+
     m_testcases = names;
     emit testcasesChanged();
 }

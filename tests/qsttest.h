@@ -24,12 +24,12 @@
 #ifndef QSTTEST_H
 #define QSTTEST_H
 
+#include "qsttestresults.h"
+
 #include <QtCore/QDir>
 #include <QtCore/QObject>
 #include <QtCore/QProcess>
 #include <QtCore/QString>
-
-class QstTestResults;
 
 class QstTest : public QObject
 {
@@ -42,15 +42,19 @@ protected:
     QString dataPath(const QString& directory) const;
     QString defaultImportPath() const;
     QstTestResults execQstRun(const QStringList& arguments, int timeoutMs = 500);
+    bool execQstRun(const QStringList& arguments, int expectedExitCode, const QString& file, int line);
     QProcess& qstProcess();
+    const QstTestResults& results() const;
 
 private:
     QProcess m_qstProcess;
+    QstTestResults m_results;
     static const QDir m_dataDirectory;
     static const QString m_defaultImportPath;
 };
 
 inline QProcess& QstTest::qstProcess() { return m_qstProcess; }
+inline const QstTestResults& QstTest::results() const { return m_results; }
 
 
 #define VERIFY_PASS(results, name) \
@@ -63,7 +67,6 @@ inline QProcess& QstTest::qstProcess() { return m_qstProcess; }
                     .arg(name) \
                     .arg(results.output(name).message))); \
     }
-
 
 #define VERIFY_FAIL(results, name, expectedLocation) \
     if (!results.contains(name)) { \
@@ -80,5 +83,11 @@ inline QProcess& QstTest::qstProcess() { return m_qstProcess; }
                     .arg(expectedLocation) \
                     .arg(results.output(name).location))); \
     }
+
+#define RUN_AND_EXPECT(expectedExitCode, arguments... ) \
+    if (!execQstRun(QStringList{arguments}, expectedExitCode, __FILE__, __LINE__)) { \
+        return; \
+    }
+
 
 #endif // QSTTEST_H
