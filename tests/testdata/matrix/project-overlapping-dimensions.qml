@@ -1,7 +1,7 @@
 import qst 1.0
 
 Project {
-    name: "objects"
+    name: "malformed-dimensions"
 
     Matrix {
         testcases: [
@@ -9,11 +9,17 @@ Project {
         ]
 
         Dimension {
-
+            attribute: [
+                "brown",
+                "white"
+            ]
         }
 
         Dimension {
-
+            attribute: [
+                "brown",
+                "white"
+            ]
         }
     }
 

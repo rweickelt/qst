@@ -9,11 +9,22 @@ Project {
         ]
 
         Dimension {
-
+            animal: [
+                "cat",
+                "dog"
+            ]
+            action: [
+                "studies animal rights",
+                "sleeps",
+                "eats"
+            ]
         }
 
         Dimension {
-
+            attribute: [
+                "brown",
+                "white"
+            ]
         }
     }
 

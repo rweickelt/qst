@@ -45,17 +45,19 @@ protected:
     bool execQstRun(const QStringList& arguments, int expectedExitCode, const QString& file, int line);
     QProcess& qstProcess();
     const QstTestResults& results() const;
+    QString stdError() const;
 
 private:
     QProcess m_qstProcess;
     QstTestResults m_results;
+    QString m_stdError;
     static const QDir m_dataDirectory;
     static const QString m_defaultImportPath;
 };
 
 inline QProcess& QstTest::qstProcess() { return m_qstProcess; }
 inline const QstTestResults& QstTest::results() const { return m_results; }
-
+inline QString QstTest::stdError() const { return m_stdError; }
 
 #define VERIFY_PASS(results, name) \
     if (!results.contains(name)) { \

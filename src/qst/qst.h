@@ -56,7 +56,7 @@ enum ExitCode {
 
 void info(const QString& message, const QString& file = "", int line = 0);
 void error(const QString& message);
-QmlContext qmlDefinitionContext(QObject* object);
+QmlContext qmlDefinitionContext(const QObject* object);
 void verify(bool condition, const QString& message = "", const QString& file = "", int line = 0);
 void warning(const QString& message, const QString& file = "", int line = 0);
 

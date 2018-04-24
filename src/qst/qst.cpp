@@ -75,7 +75,7 @@ void info(const QString& message, const QString& file, int line)
     ProxyLogger::instance()->print(info);
 }
 
-QmlContext qmlDefinitionContext(QObject* object)
+QmlContext qmlDefinitionContext(const QObject* object)
 {
     QmlContext result;
 

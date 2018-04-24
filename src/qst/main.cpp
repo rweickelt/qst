@@ -121,7 +121,7 @@ void execRunCommand()
         engine.addImportPath(path);
     }
 
-    qmlRegisterType<Dimension>("qst", 1,0, "Dimension");
+    qmlRegisterCustomType<Dimension>("qst", 1,0, "Dimension", new DimensionParser());
     qmlRegisterType<Matrix>("qst", 1,0, "Matrix");
     qmlRegisterType<Component>("qst", 1,0, "Component");
     qmlRegisterType<Testcase>("qst", 1,0, "Testcase");

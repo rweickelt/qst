@@ -5,15 +5,22 @@ Project {
 
     Matrix {
         testcases: [
-            "sometest",
+            "testcase",
         ]
 
         Dimension {
-
+            animal: [
+                "cat",
+                "dog"
+            ]
         }
 
         Dimension {
-
+            attribute: [
+                "brown",
+                "white"
+            ]
+            doesntexist: "no"
         }
     }
 

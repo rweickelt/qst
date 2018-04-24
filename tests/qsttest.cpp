@@ -77,7 +77,14 @@ bool QstTest::execQstRun(const QStringList& arguments, int expectedExitCode, con
 
     if (m_qstProcess.exitCode() == expectedExitCode)
     {
-        m_results = QstTestResults::fromQstOutput(m_qstProcess.readAllStandardOutput());
+        if (expectedExitCode == qst::ExitApplicationError)
+        {
+            m_stdError = m_qstProcess.readAllStandardError();
+        }
+        else
+        {
+            m_results = QstTestResults::fromQstOutput(m_qstProcess.readAllStandardOutput());
+        }
         return true;
     }
 
@@ -92,9 +99,11 @@ bool QstTest::execQstRun(const QStringList& arguments, int expectedExitCode, con
             .arg(expectedExitCode)
             .arg(m_qstProcess.exitCode());
 
+    m_stdError = m_qstProcess.readAllStandardError();
+
     QString description = QString("\n%1%2")
             .arg(log.join('\n'))
-            .arg(QString(m_qstProcess.readAllStandardError()));
+            .arg(stdError());
 
     QTest::qVerify(false, qPrintable(statement), qPrintable(description), qPrintable(file), line);
 

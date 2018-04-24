@@ -315,34 +315,42 @@ void AutoTest::profile()
 void AutoTest::matrix()
 {
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/project-ok.qml"));
-    VERIFY_PASS(results(), "testcase-1jfuru8");
+    VERIFY_PASS(results(), "testcase-1scca4h");
     VERIFY_PASS(results(), "testcase-1gmluzj");
     VERIFY_PASS(results(), "testcase-0wgajg3");
-    VERIFY_PASS(results(), "testcase-041nwkc");
+    VERIFY_PASS(results(), "testcase-0cyywtp");
 
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/project-wildcard.qml"));
-    VERIFY_PASS(results(), "testcase-1jfuru8");
+    VERIFY_PASS(results(), "testcase-1scca4h");
     VERIFY_PASS(results(), "testcase-1gmluzj");
     VERIFY_PASS(results(), "testcase-0wgajg3");
-    VERIFY_PASS(results(), "testcase-041nwkc");
-    VERIFY_PASS(results(), "othertestcase-1jfuru8");
+    VERIFY_PASS(results(), "testcase-0cyywtp");
+    VERIFY_PASS(results(), "othertestcase-1scca4h");
     VERIFY_PASS(results(), "othertestcase-1gmluzj");
     VERIFY_PASS(results(), "othertestcase-0wgajg3");
-    VERIFY_PASS(results(), "othertestcase-041nwkc");
+    VERIFY_PASS(results(), "othertestcase-0cyywtp");
     VERIFY_PASS(results(), "toastcase");
 
-    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-overlapping-matrices.qml"));
-
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/project-with-external-matrix.qml"));
-    VERIFY_PASS(results(), "testcase-1jfuru8");
+    VERIFY_PASS(results(), "testcase-1scca4h");
     VERIFY_PASS(results(), "testcase-1gmluzj");
     VERIFY_PASS(results(), "testcase-0wgajg3");
-    VERIFY_PASS(results(), "testcase-041nwkc");
+    VERIFY_PASS(results(), "testcase-0cyywtp");
+
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-overlapping-matrices.qml"));
+    QVERIFY(stdError().contains("project-overlapping-matrices.qml:26"));
+
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-overlapping-dimensions.qml"));
+    QVERIFY(stdError().contains("project-overlapping-dimensions.qml:6"));
 
     RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-no-matching-testcase.qml"));
-    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-malformed-dimensions.qml"));
-    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-objects.qml"));
+    QVERIFY(stdError().contains("project-no-matching-testcase.qml:6"));
 
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-malformed-dimensions.qml"));
+    QVERIFY(stdError().contains("project-malformed-dimensions.qml:11"));
+
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-testcase-incompatible-properties.qml"));
+    QVERIFY(stdError().contains("testcase.qml:3"));
 }
 
 void AutoTest::codeSnippets()

@@ -9,11 +9,17 @@ Project {
         ]
 
         Dimension {
-
+            animal: [
+                "cat",
+                "dog"
+            ]
         }
 
         Dimension {
-
+            attribute: [
+                "brown",
+                "white"
+            ]
         }
     }
 

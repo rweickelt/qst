@@ -7,6 +7,6 @@ Testcase {
     property string animal
 
     function run() {
-        Qst.info(name + ";" + attribute + ":" + animal);
+        Qst.info(name + ":" + attribute + ";" + animal);
     }
 }
