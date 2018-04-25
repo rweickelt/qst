@@ -57,6 +57,7 @@ public:
     explicit Component(QObject* parent = 0);
     QQmlListProperty<QObject> defaultProperty();
     Testcase* testCase();
+    const Testcase* testCase() const;
 
     QString name() const;
     QString filepath() const;

@@ -55,7 +55,7 @@ public:
     Q_PROPERTY(QString program MEMBER m_program)
     Q_PROPERTY(QStringList arguments MEMBER m_arguments)
     Q_PROPERTY(int exitCode READ exitCode STORED false NOTIFY exitCodeChanged)
-    Q_PROPERTY(QString workingDirectory MEMBER m_workingDirectory)
+    Q_PROPERTY(QString workingDirectory READ workingDirectory WRITE setWorkingDirectory NOTIFY workingDirectoryChanged)
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
 
     Q_INVOKABLE QString errorString() const;
@@ -66,7 +66,9 @@ public:
 
     explicit ProcessProbe(QObject *parent = 0);
     int exitCode() const;
+    void setWorkingDirectory(const QString& path);
     State state() const;
+    QString workingDirectory() const;
 
 public slots:
     void start();
@@ -78,6 +80,7 @@ signals:
     void started();
     void finished();
     void stateChanged();
+    void workingDirectoryChanged();
 
 protected slots:
     void onProcessErrorOccurred(QProcess::ProcessError error);
@@ -86,7 +89,6 @@ protected slots:
     void onProcessStateChanged(QProcess::ProcessState);
 
 protected:
-    virtual void handleParserEvent(ParserEventHandler::ParserEvent event) override;
     void setState(State);
     void initTestCase();
 

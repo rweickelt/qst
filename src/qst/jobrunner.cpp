@@ -44,22 +44,31 @@ void JobRunner::execTestCases()
     {
         QString name = job.testcase->name();
         QString displayName = name;
+        QString workingDirectoryName = name;
 
         if (job.tagGroupId != InvalidId)
         {
-            displayName = QString("%1-%2").arg(name).arg(job.tagId, 7, 36, QChar('0'));
+            const auto& taglist = m_tags[job.tagGroupId][job.tagId];
 
-            const auto& values = m_tags[job.tagGroupId][job.tagId];
-            for (const auto& key: values.keys())
+            displayName = QString("%1 %2 [ %3 ]")
+                    .arg(name)
+                    .arg(job.tagId, 7, 36, QChar('0'))
+                    .arg(QVariant(taglist.values()).toStringList().join(" "));
+
+            workingDirectoryName = QString("%1-%2")
+                    .arg(name)
+                    .arg(job.tagId, 7, 36, QChar('0'));
+
+            for (const auto& key: taglist.keys())
             {
                 QQmlProperty property(job.testcase, key);
                 Q_ASSERT(property.isProperty());
                 Q_ASSERT(property.isWritable());
-                property.write(values[key]);
+                property.write(taglist[key]);
             }
         }
 
-        QString workingDirectory = createTestcaseWorkingDirectory(displayName);
+        QString workingDirectory = createTestcaseWorkingDirectory(workingDirectoryName);
         job.testcase->setWorkingDirectory(workingDirectory);
         job.testcase->setDisplayName(displayName);
 

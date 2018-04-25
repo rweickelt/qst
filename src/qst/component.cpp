@@ -48,6 +48,21 @@ Testcase* Component::testCase()
     return nullptr;
 }
 
+const Testcase* Component::testCase() const
+{
+    for (const QObject* currentObject = this; currentObject != NULL;
+         currentObject = currentObject->parent())
+    {
+        if (currentObject->metaObject()->inherits(&Testcase::staticMetaObject))
+        {
+            return qobject_cast<const Testcase*>(currentObject);
+        }
+    }
+    Q_ASSERT(false);
+    return nullptr;
+}
+
+
 void Component::setName(const QString& name)
 {
     if (name != m_name)
