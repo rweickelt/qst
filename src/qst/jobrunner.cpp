@@ -32,7 +32,7 @@
 #include <QtDebug>
 
 JobRunner::JobRunner(Project* project, const QList<TestJob>& jobs,
-                     const TagStorage& tags):
+                     const TagLookupTable& tags):
     m_project(project), m_jobs(jobs), m_tags(tags)
 {
     createProjectWorkingDirectory();

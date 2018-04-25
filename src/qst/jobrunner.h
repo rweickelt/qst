@@ -39,7 +39,7 @@ class JobRunner
 {
     Q_DISABLE_COPY(JobRunner)
 public:
-    JobRunner(Project* project, const QList<TestJob>& testCases, const TagStorage& tags);
+    JobRunner(Project* project, const QList<TestJob>& testCases, const TagLookupTable& tags);
     QString errorString() const;
     void execTestCases();
     bool hasError() const;
@@ -52,7 +52,7 @@ private:
     Project* m_project;
     QList<TestJob> m_jobs;
     QList<Testcase::Result> m_results;
-    TagStorage m_tags;
+    TagLookupTable m_tags;
 };
 
 inline QString JobRunner::errorString() const { return m_errorString; }

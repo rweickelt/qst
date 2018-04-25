@@ -31,7 +31,7 @@
 #include "xds.h"
 #include "plaintextlogger.h"
 #include "matrix.h"
-#include "jobexpander.h"
+#include "jobmultiplier.h"
 #include "pinprobe.h"
 #include "processprobe.h"
 #include "profileloader.h"
@@ -152,7 +152,7 @@ void execRunCommand()
     resolver.loadRootFile(options->projectFilepath);
     CHECK_FOR_ERRORS(resolver);
 
-    JobExpander expander(resolver.matrices(), resolver.testcases());
+    JobMultiplier expander(resolver.matrices(), resolver.testcases());
     CHECK_FOR_ERROR(expander);
 
     JobRunner runner(resolver.project(), expander.jobs().values(), expander.tags());

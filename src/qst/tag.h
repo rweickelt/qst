@@ -6,9 +6,9 @@
 #include <QtCore/QVariantMap>
 
 typedef QVariantMap Tag;
-typedef uint TagGroupId;
-typedef uint TagId;
-typedef QMap<TagGroupId, QMap<TagId, Tag> > TagStorage;
+typedef uint TagGroupId; // Hash of tag names (property names)
+typedef uint TagId;      // Hash of tag values (property values)
+typedef QMap<TagGroupId, QMap<TagId, Tag> > TagLookupTable;
 
 enum {
     InvalidId = static_cast<uint>(-1)

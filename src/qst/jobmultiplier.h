@@ -29,16 +29,16 @@ class Testcase;
        (correct format, valid trivial values, no objecs etc.)
 
  */
-class JobExpander
+class JobMultiplier
 {
-    Q_DISABLE_COPY(JobExpander)
+    Q_DISABLE_COPY(JobMultiplier)
 
 public:
-    JobExpander(const QList<Matrix*>& matrices, const QList<Testcase*>& testcases);
+    JobMultiplier(const QList<Matrix*>& matrices, const QList<Testcase*>& testcases);
     QString errorString() const;
     bool hasError() const;
     QMultiMap<QString, TestJob> jobs() const;
-    TagStorage tags() const;
+    TagLookupTable tags() const;
 
 
 private:
@@ -55,19 +55,19 @@ private:
     // Returns a filtered jobs table with all exceptions removed
     static QMultiMap<QString, TestJob> removeExcluded(const QMultiMap<QString, TestJob>& jobs,
                                                       const QStringList& patterns,       // = "Excepts" item
-                                                      const TagStorage& tags); // = "Excepts" item
+                                                      const TagLookupTable& tags); // = "Excepts" item
 
     QString m_errorString;
     QList<Matrix*> m_matrices;
     QMap<QString, Testcase*> m_testcases;
     QMultiMap<QString, TestJob> m_jobs;
-    TagStorage m_tags;
+    TagLookupTable m_tags;
 };
 
-inline QString JobExpander::errorString() const { return m_errorString; }
-inline bool JobExpander::hasError() const { return !m_errorString.isEmpty(); }
-inline QMultiMap<QString, TestJob> JobExpander::jobs() const { return m_jobs; }
-inline TagStorage JobExpander::tags() const { return m_tags; }
+inline QString JobMultiplier::errorString() const { return m_errorString; }
+inline bool JobMultiplier::hasError() const { return !m_errorString.isEmpty(); }
+inline QMultiMap<QString, TestJob> JobMultiplier::jobs() const { return m_jobs; }
+inline TagLookupTable JobMultiplier::tags() const { return m_tags; }
 
 
 #endif // MATRIXEXPANDER_H

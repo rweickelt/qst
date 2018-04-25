@@ -30,8 +30,8 @@ Project {
 
         Dimension {
             animal: [
-                "cat",
-                "dog"
+                "bat",
+                "hog"
             ]
         }
 
