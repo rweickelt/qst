@@ -18,28 +18,30 @@ Reference
    *-item
    *-service
 
-..  rubric:: Core Items
+..  rubric:: Language Items
+
+======================================================== ===========
+Name                                                     Description
+======================================================== ===========
+:doc:`Dimension <dimension-item>`
+:doc:`Matrix <matrix-item>`
+:doc:`Project <project-item>`                            A container item for multiple :cpp:class:`Testcase` items.
+:doc:`Testcase <testcase-item>`                          Implements a test action.
+======================================================== ===========
+
+
+..  rubric:: Convenience Items
 
 ======================================================== ===========
 Name                                                     Description
 ======================================================== ===========
 :doc:`DurationConstraint <durationconstraint-item>`      Checks the time between two signal occurrences.
 :doc:`PinProbe <pinprobe-item>`                          Represents a digital IO pin on the launchpad probe board.
-:doc:`ProcessProbe <processprobe-item>`                  Starts and watches processes.
-:doc:`Project <project-item>`                            A container item for multiple :cpp:class:`Testcase` items.
 :doc:`SignalProbe <signalprobe-item>`                    Watches signals from other items.
-:doc:`Testcase <testcase-item>`                          Implements a test action.
+:doc:`ProcessProbe <processprobe-item>`                  Starts and watches processes.
+:doc:`UniflashProbe <uniflashprobe-item>`                Flash programmer for Texas Instruments MCUs.
 :doc:`ValueRangeConstraint <valuerangeconstraint-item>`  Checks whether a property is in a certain range.
 ======================================================== ===========
-
-
-..  rubric:: Convenience Items
-
-========================================= ===========
-Name                                      Description
-========================================= ===========
-:doc:`UniflashProbe <uniflashprobe-item>` Flash programmer for Texas Instruments MCUs.
-========================================= ===========
 
 
 .. _services:
