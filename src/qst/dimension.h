@@ -5,17 +5,14 @@
 #include <QtCore/QStringList>
 #include <QtCore/QVariantMap>
 #include <QtCore/QVector>
-#include <QtQml/QQmlListProperty>
 
 #include <QtQml/private/qqmlcustomparser_p.h>
 
-#include "parsereventhandler.h"
+#include "qstitem.h"
 
-class Dimension : public QObject, public ParserEventHandler
+class Dimension : public QstItem
 {
     Q_OBJECT
-    Q_CLASSINFO("DefaultProperty", "children")
-    Q_PROPERTY(QQmlListProperty<QObject> children READ children CONSTANT)
     Q_PROPERTY(QStringList testcases READ testcases WRITE setTestcases NOTIFY testcasesChanged)
 
     friend class DimensionParser;
@@ -25,24 +22,21 @@ signals:
 
 public:
     Dimension(QObject* parent = nullptr);
-    QQmlListProperty<QObject> children();
     const QVector<QVariantMap>& data() const;
     int length() const;
     QStringList testcases() const;
     void setTestcases(const QStringList& names);
 
 protected:
-    void handleParserEvent(ParserEventHandler::ParserEvent event) override;
+    void handleParserEvent(QstItem::ParserEvent event) override;
     void setData(const QVector<QVariantMap>& data);
 
 private:
 
-    QList<QObject *> m_children;
     QStringList m_testcases;
     QVector<QVariantMap> m_data;
 };
 
-inline QQmlListProperty<QObject> Dimension::children() { return QQmlListProperty<QObject>(this, m_children); }
 inline QStringList Dimension::testcases() const { return m_testcases; }
 
 class DimensionParser : public QQmlCustomParser

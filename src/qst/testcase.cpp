@@ -39,7 +39,7 @@
 
 QPointer<Testcase> Testcase::m_currentTestCase;
 
-Testcase::Testcase(QObject *parent) : Component(parent)
+Testcase::Testcase(QObject *parent) : Component(&Testcase::staticMetaObject, parent)
 {
     m_state = Uninitialized;
     m_nextState = Uninitialized;
@@ -48,11 +48,11 @@ Testcase::Testcase(QObject *parent) : Component(parent)
     m_transitionPending = false;
 }
 
-void Testcase::handleParserEvent(ParserEventHandler::ParserEvent event)
+void Testcase::handleParserEvent(QstItem::ParserEvent event)
 {
     Component::handleParserEvent(event);
 
-    if (event == ParserEventHandler::ComponentComplete)
+    if (event == QstItem::ComponentComplete)
     {
         QStringList availableMethods;
         for (int i = 0; i < metaObject()->methodCount(); i++)

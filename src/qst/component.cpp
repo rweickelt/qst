@@ -30,7 +30,7 @@ namespace {
     QHash<QString, int> instancesCount;
 }
 
-Component::Component(QObject *parent) : QObject(parent)
+Component::Component(const QMetaObject* basetypeInfo, QObject* parent) : QstItem(basetypeInfo, parent)
 {
 }
 
@@ -72,7 +72,7 @@ void Component::setName(const QString& name)
     }
 }
 
-void Component::handleParserEvent(ParserEventHandler::ParserEvent event)
+void Component::handleParserEvent(QstItem::ParserEvent event)
 {
     switch (event)
     {

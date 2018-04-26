@@ -22,7 +22,7 @@
  ** $END_LICENSE$
 ****************************************************************************/
 #include "matrix.h"
-#include "parsereventhandler.h"
+#include "qstitem.h"
 #include "project.h"
 #include "projectresolver.h"
 #include "qst.h"

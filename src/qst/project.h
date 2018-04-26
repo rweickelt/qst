@@ -24,31 +24,26 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
-#include "parsereventhandler.h"
+#include "qstitem.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtQml/QQmlListProperty>
 
-class Project : public QObject, public ParserEventHandler
+class Project : public QstItem
 {
     Q_OBJECT
-    // We need a default property that can hold objects, but we won't actually use it.
-    // Instead, we let component items register manually as testcase children.
-    Q_CLASSINFO("DefaultProperty", "__defaultProperty")
 
     friend class ProjectResolver;
 
 public:
     explicit Project(QObject *parent = 0);
 
-    Q_PROPERTY(QQmlListProperty<QObject> __defaultProperty READ defaultProperty CONSTANT)
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QStringList references READ references WRITE setReferences)
     Q_PROPERTY(QString workingDirectory READ workingDirectory CONSTANT)
 
-    QQmlListProperty<QObject> defaultProperty();
     QString name() const;
     QStringList references() const;
     QString workingDirectory() const;
@@ -57,17 +52,14 @@ public:
     void setReferences(const QStringList& references);
 
 protected:
-    virtual void handleParserEvent(ParserEventHandler::ParserEvent event);
+    virtual void handleParserEvent(QstItem::ParserEvent event);
 
 private:
-    QList<QObject *> m_defaultProperty;
     QString m_name;
     QStringList m_references;
     QString m_workingDirectory;
     QString m_filepath;
 };
-
-inline QQmlListProperty<QObject> Project::defaultProperty() { return QQmlListProperty<QObject>(this, m_defaultProperty); }
 
 inline QString Project::name() const { return m_name; }
 

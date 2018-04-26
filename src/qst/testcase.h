@@ -73,7 +73,7 @@ public:
     Q_PROPERTY(QString workingDirectory READ workingDirectory NOTIFY workingDirectoryChanged)
     Q_PROPERTY(QString message MEMBER m_message)
 
-    virtual void handleParserEvent(ParserEventHandler::ParserEvent event) override;
+    virtual void handleParserEvent(QstItem::ParserEvent event) override;
 
     template <typename T>
     QList<T*> childrenByType() const;

@@ -79,7 +79,6 @@ public:
     PinProbe(QObject *parent = 0);
 
     int ioid() const;
-    QString name() const;
     PullMode pullMode() const;
     Type type() const;
     int value() const;
@@ -107,7 +106,6 @@ private:
 inline int PinProbe::ioid() const { return m_ioid; }
 inline PinProbe::PullMode PinProbe::pullMode() const { return m_pullMode; }
 inline int PinProbe::value() const { return m_value; }
-inline QString PinProbe::name() const { return m_name; }
 inline PinProbe::Type PinProbe::type() const { return m_type; }
 
 

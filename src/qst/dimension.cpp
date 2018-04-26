@@ -1,4 +1,5 @@
 #include "dimension.h"
+#include "matrix.h"
 #include "qst.h"
 
 #include <QtDebug>
@@ -8,8 +9,10 @@
 
 int i = 0;
 
-Dimension::Dimension(QObject* parent) : QObject(parent)
+Dimension::Dimension(QObject* parent) : QstItem(&Dimension::staticMetaObject, parent)
 {
+    QstItem::setAllowedParentTypes({&Matrix::staticMetaObject});
+    QstItem::setAllowedNestedTypes({});
 }
 
 const QVector<QVariantMap>& Dimension::data() const
@@ -22,22 +25,11 @@ int Dimension::length() const
     return m_data.length();
 }
 
-void Dimension::handleParserEvent(ParserEventHandler::ParserEvent event)
+void Dimension::handleParserEvent(QstItem::ParserEvent event)
 {
     switch (event)
     {
-    case ParserEventHandler::AfterClassBegin:
-        if (!m_children.isEmpty())
-        {
-            QmlContext ourContext = qst::qmlDefinitionContext(this);
-            QmlContext childContext = qst::qmlDefinitionContext(m_children.first());
-            auto message = QString("At %1:%2: Dimension item defined at %3:%4 cannot contain other items.")
-                    .arg(childContext.file()).arg(childContext.line())
-                    .arg(ourContext.file()).arg(ourContext.line());
-            QST_ERROR_AND_EXIT(message);
-        }
-        break;
-    case ParserEventHandler::AfterComponentComplete:
+    case QstItem::AfterComponentComplete:
         if (m_data.length() == 0)
         {
             QmlContext context = qst::qmlDefinitionContext(this);

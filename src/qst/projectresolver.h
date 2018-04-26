@@ -65,7 +65,7 @@ class ProjectResolver : public QObject
         QString qstBaseType;
         State state;
         QList<Component*> components;
-        QList<ParserEventHandler*> handlers;
+        QList<QstItem*> handlers;
     };
 
 public:

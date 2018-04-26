@@ -5,15 +5,13 @@
 #include <QtCore/QStringList>
 #include <QtQml/QQmlListProperty>
 
-#include "parsereventhandler.h"
+#include "qstitem.h"
 
 class Dimension;
 
-class Matrix : public QObject, public ParserEventHandler
+class Matrix : public QstItem
 {
     Q_OBJECT
-    Q_CLASSINFO("DefaultProperty", "children")
-    Q_PROPERTY(QQmlListProperty<QObject> children READ children CONSTANT)
 
     Q_PROPERTY(QStringList testcases READ testcases WRITE setTestcases NOTIFY testcasesChanged)
 
@@ -27,22 +25,19 @@ public:
     };
 
     Matrix(QObject* parent = nullptr);
-    QQmlListProperty<QObject> children();
     QList<Dimension*> dimensions() const;
     QStringList testcases() const;
     Scope scope() const;
     void setTestcases(const QStringList& names);
 
 protected:
-    void handleParserEvent(ParserEventHandler::ParserEvent event);
+    void handleParserEvent(QstItem::ParserEvent event);
 
 private:
-    QList<QObject *> m_children;
     Scope m_scope;
     QStringList m_testcases;
 };
 
-inline QQmlListProperty<QObject> Matrix::children() { return QQmlListProperty<QObject>(this, m_children); }
 inline Matrix::Scope Matrix::scope() const { return m_scope; }
 inline QStringList Matrix::testcases() const { return m_testcases; }
 

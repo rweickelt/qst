@@ -24,7 +24,7 @@
 #ifndef TESTCASEITEM_H
 #define TESTCASEITEM_H
 
-#include "parsereventhandler.h"
+#include "qstitem.h"
 
 #include <QtCore/QList>
 #include <QtCore/QObject>
@@ -36,26 +36,21 @@
 class ProjectResolver;
 class Testcase;
 
-class Component : public QObject, public ParserEventHandler
+class Component : public QstItem
 {
     Q_OBJECT
     Q_DISABLE_COPY(Component)
-    // We need a default property that can hold objects, but we won't actually use it.
-    // Instead, we let component items register manually as testcase children.
-    Q_CLASSINFO("DefaultProperty", "__defaultProperty")
 
     friend class ProjectResolver;
     friend class Testcase;
 
-    Q_PROPERTY(QQmlListProperty<QObject> __defaultProperty READ defaultProperty CONSTANT)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 
 signals:
     void nameChanged();
 
 public:
-    explicit Component(QObject* parent = 0);
-    QQmlListProperty<QObject> defaultProperty();
+    explicit Component(const QMetaObject* basetypeInfo = &Component::staticMetaObject, QObject* parent = 0);
     Testcase* testCase();
     const Testcase* testCase() const;
 
@@ -72,15 +67,15 @@ protected:
     virtual void cleanupTestCase() {}
     virtual void cleanupTestFunction() {}
 
-    virtual void handleParserEvent(ParserEventHandler::ParserEvent event) override;
+    virtual void handleParserEvent(QstItem::ParserEvent event) override;
 
+private:
     QList<QObject *> m_defaultProperty;
     QString m_name;
     QString m_filepath;
     QString m_typeName;
 };
 
-inline QQmlListProperty<QObject> Component::defaultProperty() { return QQmlListProperty<QObject>(this, m_defaultProperty); }
 inline QString Component::filepath() const { return m_filepath; }
 inline QString Component::name() const { return m_name; }
 inline QString Component::typeName() const { return m_typeName; }

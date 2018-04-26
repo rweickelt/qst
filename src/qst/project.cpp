@@ -23,6 +23,7 @@
 ****************************************************************************/
 #include "applicationoptions.h"
 #include "console.h"
+#include "matrix.h"
 #include "project.h"
 #include "qst.h"
 #include "projectresolver.h"
@@ -34,9 +35,10 @@
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlEngine>
 
-Project::Project(QObject *parent) : QObject(parent)
+Project::Project(QObject *parent) : QstItem(&Project::staticMetaObject, parent)
 {
-
+    QstItem::setAllowedParentTypes({nullptr});
+    QstItem::setAllowedNestedTypes({&Matrix::staticMetaObject, &Testcase::staticMetaObject});
 }
 
 void Project::handleParserEvent(ParserEvent event)
