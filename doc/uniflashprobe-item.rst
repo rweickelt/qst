@@ -55,7 +55,7 @@ Example::
         }
 
         void run() {
-            uniflash.start();
+            uniflash.flash();
             uniflash.waitForFinished(10000);
         }
     }
