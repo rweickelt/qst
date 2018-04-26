@@ -115,14 +115,14 @@ Testcase::State Testcase::unitializedStateFunction()
 {
     m_result = Unfinished;
 
-    m_children = childrenByType<Component>();
-    m_children << this;
+    m_nestedComponents = childrenByType<Component>();
+    m_nestedComponents << this;
 
     Q_ASSERT(this != nullptr);
     m_currentTestCase = this;
 
     // created() is a signal that even QML children can subscribe.
-    for (Component* child : m_children)
+    for (Component* child : m_nestedComponents)
     {
         QObject* attached = qmlAttachedPropertiesObject<Testcase>(child, false);
         if (attached != NULL)
@@ -139,7 +139,7 @@ Testcase::State Testcase::unitializedStateFunction()
 
 Testcase::State Testcase::initingTestCaseStateFunction()
 {
-    for (auto child : m_children)
+    for (auto child : m_nestedComponents)
     {
         child->initTestCase();
     }
@@ -149,7 +149,7 @@ Testcase::State Testcase::initingTestCaseStateFunction()
 
 Testcase::State Testcase::initingTestFunctionStateFunction()
 {
-    for (auto child : m_children)
+    for (auto child : m_nestedComponents)
     {
         child->initTestFunction();
     }
@@ -212,7 +212,7 @@ Testcase::State Testcase::cleaningUpTestFunctionStateFunction()
         break;
     }
 
-    for (auto child : m_children)
+    for (auto child : m_nestedComponents)
     {
         child->cleanupTestFunction();
     }
@@ -229,7 +229,7 @@ Testcase::State Testcase::cleaningUpTestCaseStateFunction()
         m_result = Success;
     }
 
-    for (auto child : m_children)
+    for (auto child : m_nestedComponents)
     {
         child->cleanupTestCase();
     }

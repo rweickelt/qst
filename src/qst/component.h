@@ -40,14 +40,10 @@ class Component : public QstItem
 {
     Q_OBJECT
     Q_DISABLE_COPY(Component)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 
     friend class ProjectResolver;
     friend class Testcase;
-
-    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
-
-signals:
-    void nameChanged();
 
 public:
     explicit Component(const QMetaObject* basetypeInfo = &Component::staticMetaObject, QObject* parent = 0);
@@ -60,6 +56,8 @@ public:
     void setFilepath(const QString& filepath);
     QString typeName() const;
 
+signals:
+    void nameChanged();
 
 protected:
     virtual void initTestCase() {}
@@ -70,7 +68,6 @@ protected:
     virtual void handleParserEvent(QstItem::ParserEvent event) override;
 
 private:
-    QList<QObject *> m_defaultProperty;
     QString m_name;
     QString m_filepath;
     QString m_typeName;

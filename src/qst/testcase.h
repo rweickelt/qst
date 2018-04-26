@@ -139,7 +139,7 @@ private:
     State m_state;
     State m_nextState;
     bool m_transitionPending;
-    QList<Component*> m_children;
+    QList<Component*> m_nestedComponents;
     QList<QObject*> m_attachedObjects;
 
     int m_callerLine;
@@ -161,14 +161,14 @@ inline QString Testcase::errorString() const { return m_errorString; }
 inline bool Testcase::hasErrors() const { return !m_errorString.isEmpty(); }
 inline Testcase::Result Testcase::result() const { return m_result; }
 inline Testcase::State Testcase::state() const { return m_state; }
-inline void Testcase::registerChild(Component* component) { m_children.append(component); }
+inline void Testcase::registerChild(Component* component) { m_nestedComponents.append(component); }
 inline QString Testcase::workingDirectory() const { return m_workingDirectory; }
 
 template <typename T>
 QList<T*> Testcase::childrenByType() const
 {
     QList<T*> result;
-    for (auto child : m_children)
+    for (auto child : m_nestedComponents)
     {
         if (child->metaObject()->inherits(&T::staticMetaObject))
         {
