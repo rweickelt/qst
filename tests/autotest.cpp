@@ -347,6 +347,12 @@ void AutoTest::matrix()
     VERIFY_PASS(results(), "testcase 0r0l9i9 [ hog white ]");
     VERIFY_PASS(results(), "testcase 062v5j3 [ bat white ]");
 
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/matrix-inside-testcase-ok.qml"));
+    VERIFY_PASS(results(), "testcase 1scca4h [ cat white ]");
+    VERIFY_PASS(results(), "testcase 1gmluzj [ dog brown ]");
+    VERIFY_PASS(results(), "testcase 0wgajg3 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0cyywtp [ dog white ]");
+
     RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-overlapping-dimensions.qml"));
     QVERIFY(stdError().contains("project-overlapping-dimensions.qml:6"));
 
@@ -358,6 +364,9 @@ void AutoTest::matrix()
 
     RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-testcase-incompatible-properties.qml"));
     QVERIFY(stdError().contains("testcase.qml:3"));
+
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/matrix-inside-testcase-protected-testcases.qml"));
+    QVERIFY(stdError().contains("matrix-inside-testcase-protected-testcases.qml:9"));
 }
 
 void AutoTest::codeSnippets()

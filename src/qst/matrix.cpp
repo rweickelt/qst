@@ -40,6 +40,12 @@ void Matrix::handleParserEvent(QstItem::ParserEvent event)
             m_scope = TestcaseScope;
         }
         break;
+    case QstItem::AfterComponentComplete:
+        if (m_scope == TestcaseScope)
+        {
+            Testcase* test = qobject_cast<Testcase*>(parent());
+            m_testcases = QStringList{ test->name() };
+        }
     default:
         break;
     }
@@ -47,6 +53,13 @@ void Matrix::handleParserEvent(QstItem::ParserEvent event)
 
 void Matrix::setTestcases(const QStringList& names)
 {
+    if (m_scope == TestcaseScope)
+    {
+        QmlContext context = qst::qmlDefinitionContext(this);
+        QString message = QString("At %1:%2: 'testcases' property cannot be used when Matrix resides inside Testcase.")
+                .arg(context.file()).arg(context.line());
+        QST_ERROR_AND_EXIT(message);
+    }
     m_testcases = names;
     emit testcasesChanged();
 }

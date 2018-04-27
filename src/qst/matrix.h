@@ -12,7 +12,6 @@ class Dimension;
 class Matrix : public QstItem
 {
     Q_OBJECT
-
     Q_PROPERTY(QStringList testcases READ testcases WRITE setTestcases NOTIFY testcasesChanged)
 
 signals:
