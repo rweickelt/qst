@@ -23,9 +23,9 @@ Reference
 ======================================================== ===========
 Name                                                     Description
 ======================================================== ===========
-:doc:`Dimension <dimension-item>`
-:doc:`Matrix <matrix-item>`
-:doc:`Project <project-item>`                            A container item for multiple :cpp:class:`Testcase` items.
+:doc:`Dimension <dimension-item>`                        Defines a value span within a :class:`Matrix`.
+:doc:`Matrix <matrix-item>`                              Replicates :class:`Testcase` components with different property values.
+:doc:`Project <project-item>`                            Container item for multiple :cpp:class:`Testcase` items.
 :doc:`Testcase <testcase-item>`                          Implements a test action.
 ======================================================== ===========
 

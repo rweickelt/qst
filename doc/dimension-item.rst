@@ -1,0 +1,142 @@
+Dimension Item
+==============
+
+..  cpp:class:: Dimension
+
+    Defines a value span within a :class:`Matrix`.
+
+..  cpp:namespace:: Dimension
+
+========================== ==========================
+Possible locations         :cpp:class:`Matrix`
+========================== ==========================
+
+
+Detailed Description
+--------------------
+
+..  cpp:namespace:: Dimension
+
+The ``Dimension`` item defines a span of one or more property values. It can
+only exist in a :cpp:class:`Matrix` context. The size of a ``Dimension`` is
+determined by its values. The item does not have any predefined properties and
+it is not intended to `declare` new properties using the ``property`` keyword.
+Instead, it is enough to write a property `name` and assign `values` to it.
+
+The property `name` must be present in all testcases that the
+:cpp:class:`Matrix` is applied to. If the testcase does not have a property with
+that name, an error is thrown.
+
+The `values` must be supplied either in an array with a defined length or as a
+trivial type.
+
+Single array
+~~~~~~~~~~~~
+
+A typical ``Dimension`` component defines a single property in array format::
+
+    Matrix {
+        testcases: "*"
+
+        Dimension {
+            /* mcu must be a property in all testcases */
+            mcu: [
+                "cc1312R1",
+                "cc1352R1",
+                "cc1352P1",
+            ]
+        }
+
+        // ...
+    }
+
+Multiple arrays
+~~~~~~~~~~~~~~~
+
+It is also possible to define multiple arrays in one dimension as long as they
+have equal length. The values are read as tuples, for instance::
+
+    Dimension {
+        mcu: [
+            "cc1312R1",
+            "cc1352R1",
+            "cc1352P1",
+        ]
+        board: [
+            "CC1312R1_LAUNCHXL",
+            "CC1352R1_LAUNCHXL",
+            "CC1352P1_LAUNCHXL"
+        ]
+    }
+
+results in:
+
+- cc1312R1, CC1312R1_LAUNCHXL
+- cc1352R1, CC1352R1_LAUNCHXL
+- cc1352P1, CC1352P1_LAUNCHXL
+
+
+Arrays and trivial values
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For convenience it is possible to shrink arrays with identical values as long as
+the ``Dimension`` contains an array that determines its length::
+
+    Dimension {
+        mcu: [
+            "cc1312R1",
+            "cc1352R1",
+            "cc1352P1",
+        ]
+        family: "cc13x2" // cloned 3 times
+    }
+
+The above ``Dimension`` results in:
+
+- cc1312R1, "cc13x2"
+- cc1352R1, "cc13x2"
+- cc1352P1, "cc13x2"
+
+
+References and complex expressions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+References to other properties are allowed as well as referencing the whole
+array::
+
+    Matrix {
+        id: matrix
+
+        property var animals: {
+            var values = []
+            values.push("cat")
+            values.push("dog")
+            return values
+        }
+
+        property string color: "white"
+
+        Dimension {
+            animal: matrix.animals
+        }
+
+        Dimension {
+            attribute: [
+                "brown",
+                matrix.color
+            ]
+       }
+    }
+
+It is currently only possible to evaluate JavaScript expressions by referencing
+other properties. The following example does not work::
+
+        // Not supported
+        Dimension {
+            animals: {
+                var values = []
+                values.push("cat")
+                values.push("dog")
+                return values
+            }
+       }

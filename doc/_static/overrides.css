@@ -40,6 +40,11 @@ body {
     color: #000;
 }
 
+/* Italic captions */
+span.caption-text {
+    font-style: italic
+}
+
 /* Classes and functions */
 .rst-content dl:not(.docutils) dt {
     border-top: none;

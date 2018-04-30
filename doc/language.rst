@@ -80,8 +80,12 @@ are also explained in the `QML language reference`_.
 
     Free form text string. See also http://doc.qt.io/qt-5/qml-string.html
 
+..  cpp:type:: stringlist
+
+    An array of strings. See also http://doc.qt.io/qt-5/qml-var.html
+
 ..  cpp:type:: var
 
-    Generic property type. Can hold any other data type, but usually used for
-    objects only. See also http://doc.qt.io/qt-5/qml-var.html
+    Generic property type. Can hold any data type, but usually used for
+    objects and arrays. See also http://doc.qt.io/qt-5/qml-var.html
 
