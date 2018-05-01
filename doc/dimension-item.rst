@@ -39,15 +39,12 @@ A typical ``Dimension`` component defines a single property in array format::
         testcases: "*"
 
         Dimension {
-            /* mcu must be a property in all testcases */
             mcu: [
                 "cc1312R1",
                 "cc1352R1",
                 "cc1352P1",
             ]
         }
-
-        // ...
     }
 
 Multiple arrays
@@ -69,11 +66,11 @@ have equal length. The values are read as tuples, for instance::
         ]
     }
 
-results in:
+results in the tag pairs:
 
-- cc1312R1, CC1312R1_LAUNCHXL
-- cc1352R1, CC1352R1_LAUNCHXL
-- cc1352P1, CC1352P1_LAUNCHXL
+- :code:`Testcase { mcu: "cc1312R1"; board: "CC1312R1_LAUNCHXL"`
+- :code:`Testcase { mcu: "cc1352R1"; board: "CC1352R1_LAUNCHXL"`
+- :code:`Testcase { mcu: "cc1352P1"; board: "CC1352P1_LAUNCHXL"`
 
 
 Arrays and trivial values
@@ -93,9 +90,9 @@ the ``Dimension`` contains an array that determines its length::
 
 The above ``Dimension`` results in:
 
-- cc1312R1, "cc13x2"
-- cc1352R1, "cc13x2"
-- cc1352P1, "cc13x2"
+- :code:`Testcase { mcu: "cc1312R1"; family: "cc13x2" }`
+- :code:`Testcase { mcu: "cc1352R1"; family: "cc13x2" }`
+- :code:`Testcase { mcu: "cc1352P1"; family: "cc13x2" }`
 
 
 References and complex expressions

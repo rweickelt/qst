@@ -1,3 +1,7 @@
+.. |Dimension| replace:: :cpp:class:`Dimension`
+.. |Matrix| replace:: ``Matrix``
+
+
 Matrix Item
 ===========
 
@@ -22,17 +26,17 @@ Detailed Description
 
 ..  cpp:namespace:: Matrix
 
-The ``Matrix`` item allows to implement data-driven tests and to separate
+The |Matrix| item allows to implement data-driven tests and to separate
 implementation from input data. It spans a space of values based on one or more
-:cpp:class:`Dimension` items. The resulting value combinations are called tags.
-Each tag may be applied to one or more test cases depending on the
+|Dimension| items. The resulting value combinations are called tags. Each tag
+may be applied to one or more test cases depending on the
 :cpp:member:`testcases` property.
 
 ..  literalinclude:: code/reference/matrix-project.qml
     :caption: matrix-project.qml
     :name: matrix-project.qml
 
-The ``Matrix`` component in :ref:`matrix-project.qml` has two dimensions, each
+The |Matrix| component in :ref:`matrix-project.qml` has two dimensions, each
 containing an array of length 2. Thus, the matrix expands to 4 different tag
 combinations:
 
@@ -40,6 +44,10 @@ combinations:
 dog bites dog moans
 cat bites cat moans
 ========= =========
+
+
+Matrix execution
+~~~~~~~~~~~~~~~~
 
 A tagged testcase is re-executed for each tag and every execution entity is
 called a job. The job order is generally undefined. Tagging has consequences on
@@ -66,10 +74,14 @@ command line:
     INFO, tagged-test 07cs7hy [ dog moans ], , /matrix-project.qml:27, The dog moans.
     PASS, tagged-test 07cs7hy [ dog moans ],,,
 
-A ``Matrix`` can be defined on two levels: on project level and on testcase
-level. When defined in project scope, the :cpp:member:`testcases` property
-specifies, to which testcases the ``Matrix`` applies. When defined inside a
-:cpp:class:`Testcase` item, the ``Matrix`` implicitly applies to the surrounding
+
+Matrix in :cpp:class:`Project` and in :cpp:class:`Testcase`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A |Matrix| can be defined on two levels: on project level and on testcase level.
+When defined in project scope, the :cpp:member:`testcases` property specifies,
+to which testcases the |Matrix| applies. When defined inside a
+:cpp:class:`Testcase` item, the |Matrix| implicitly applies to the surrounding
 testcase only.
 
 ..  code-block:: qml
@@ -94,8 +106,58 @@ testcase only.
         Matrix { ... }
     }
 
+Multiple matrices and overlap
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+It is possible to define multiple |Matrix| components both on
+:cpp:class:`Project` and :cpp:class:`Testcase` level and it is even allowed for
+different matrices to attach their tags to the same testcases. However, the
+resulting tag combinations must be distinct and must not shadow each other so
+that every job can be clearly identified by the combination of testcase name and
+tags.
 
+..  code-block:: qml
+    :caption: ambiguously-overlapping-matrices.qml:
+              :code:`Testcase { color: "red" }` would map to 3 different jobs.
+
+    // Matrices shadow each other.
+    Matrix {
+        testcases: "*"
+        Dimension {
+            color: [ "red", "blue" ]
+        }
+    }
+
+    Matrix {
+        testcases: "*"
+        Dimension {
+            color: [ "red", "blue" ]
+        }
+        Dimension {
+            speed: [ "fast", "slow" ]
+        }
+    }
+
+..  code-block:: qml
+    :caption: unambiguously-overlapping-matrices.qml:
+
+    // Matrices are compatible.
+    Matrix {
+        testcases: "*"
+        Dimension {
+            color: [ "orange", "green" ]
+        }
+    }
+
+    Matrix {
+        testcases: "*"
+        Dimension {
+            color: [ "red", "blue" ]
+        }
+        Dimension {
+            speed: [ "fast", "slow" ]
+        }
+    }
 
 Properties
 ----------
