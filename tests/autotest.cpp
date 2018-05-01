@@ -371,16 +371,25 @@ void AutoTest::matrix()
 
 void AutoTest::codeSnippets()
 {
-    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("code-snippets/usage.qml")} );
-    if (qstProcess().exitCode() != 2)
-    {
-        QFAIL(qstProcess().readAllStandardError());
-    }
-    VERIFY_PASS(results, "simple-passing-test");
-    VERIFY_PASS(results, "makefile-test-simple");
-    VERIFY_PASS(results, "test-app-build");
-    VERIFY_PASS(results, "test-lib-build");
-    VERIFY_FAIL(results, "simple-failing-test", "simple-failing-test.qml:8");
+    RUN_AND_EXPECT(qst::ExitTestCaseFailed, "-f", dataPath("code-snippets/usage.qml"));
+    VERIFY_PASS(results(), "simple-passing-test");
+    VERIFY_PASS(results(), "makefile-test-simple");
+    VERIFY_PASS(results(), "test-app-build");
+    VERIFY_PASS(results(), "test-lib-build");
+    VERIFY_FAIL(results(), "simple-failing-test", "simple-failing-test.qml:8");
+
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("../../doc/code/reference/matrix-project.qml"));
+    VERIFY_PASS(results(), "tagged-test 1ms2r6i [ cat moans ]");
+    VERIFY_PASS(results(), "tagged-test 17tca19 [ dog bites ]");
+    VERIFY_PASS(results(), "tagged-test 0ni1i5d [ cat bites ]");
+    VERIFY_PASS(results(), "tagged-test 07cs7hy [ dog moans ]");
+
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("../../doc/code/reference/dimension-with-references.qml"));
+    VERIFY_PASS(results(), "testcase 1scca4h [ cat white ]");
+    VERIFY_PASS(results(), "testcase 1gmluzj [ dog brown ]");
+    VERIFY_PASS(results(), "testcase 0wgajg3 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0cyywtp [ dog white ]");
+
 }
 
 QTEST_GUILESS_MAIN(AutoTest)

@@ -99,41 +99,24 @@ References and complex expressions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 References to other properties are allowed as well as referencing the whole
-array::
+array:
 
-    Matrix {
-        id: matrix
+..  literalinclude:: code/reference/dimension-with-references.qml
+    :name: dimension-with-references.qml
+    :start-after: @snip
+    :end-before: @snap
+    :dedent: 4
 
-        property var animals: {
+
+It is currently only possible to evaluate JavaScript expressions by referencing
+other properties. The following example does not work::
+
+    // Not supported
+    Dimension {
+        animals: {
             var values = []
             values.push("cat")
             values.push("dog")
             return values
         }
-
-        property string color: "white"
-
-        Dimension {
-            animal: matrix.animals
-        }
-
-        Dimension {
-            attribute: [
-                "brown",
-                matrix.color
-            ]
-       }
     }
-
-It is currently only possible to evaluate JavaScript expressions by referencing
-other properties. The following example does not work::
-
-        // Not supported
-        Dimension {
-            animals: {
-                var values = []
-                values.push("cat")
-                values.push("dog")
-                return values
-            }
-       }
