@@ -23,9 +23,9 @@ determined by its values. The item does not have any predefined properties and
 it is not intended to `declare` new properties using the ``property`` keyword.
 Instead, it is enough to write a property `name` and assign `values` to it.
 
-The property `name` must be present in all testcases that the
-:cpp:class:`Matrix` is applied to. If the testcase does not have a property with
-that name, an error is thrown.
+The property `name` must be present in all test cases that the
+:cpp:class:`Matrix` is applied to. If the test case does not have a property
+with that name, an error is thrown.
 
 The `values` must be supplied either in an array with a defined length or as a
 trivial type.

@@ -146,7 +146,7 @@ defining additional properties:
 When saving it to a file `MakefileTestcase.qml`, it is automatically available
 as component type ``MakefileTestcase`` in other qml files located in the same
 directory. Based upon `MakefileTestcase.qml`, we can now create multiple
-testcase files in the following form:
+test case files in the following form:
 
 ..  literalinclude:: code/usage/test-app-build.qml
     :caption: `test-app-build.qml`
@@ -302,6 +302,7 @@ when parametrizing and instantiating a generic test case multiple times:
 
 ..  code-block:: qml
     :caption: `SpecialTestcase.qml`
+    :name: SpecialTestcase.qml
 
     Testcase {
         property int speed
@@ -446,3 +447,45 @@ executed multiple times and the working directory already exists, each
 test case sub-folder is wiped out before the :cpp:func:`Testcase::created`
 signal is emitted.
 
+
+Tagging test cases for data-driven tests
+----------------------------------------
+
+In :ref:`MakefileTestcase` and :ref:`SpecialTestcase.qml` we have already seen
+two ways to re-use and parameterize |Testcase| components. This can be
+cumbersome for larger amount of data. It might also be annoying to give each
+test case a different name while only some input parameters change, but not the
+test case itself.
+
+Especially for data-driven testing, Qst provides the :cpp:class:`Matrix` item. A
+matrix spans a n-dimensional parameter space that is then applied to a one or
+more test cases. Each data sample is called a `tag` and the combination of a
+`tag` and a |Testcase| is called a `job`.
+
+The following example project defines a matrix with two dimensions, each
+containing a parameter array of length 2:
+
+..  literalinclude:: code/reference/matrix-project.qml
+    :caption: matrix-project.qml
+
+Thus, the matrix expands to 4 different tag combinations:
+
+========= =========
+dog bites dog moans
+cat bites cat moans
+========= =========
+
+When executing above project, the command line output looks as follows:
+
+..  code-block:: console
+
+    $ qst run -f matrix-project.qml
+    PASS, normal-test,,,
+    INFO, tagged-test 1ms2r6i [ cat moans ], , /matrix-project.qml:27, The cat moans.
+    PASS, tagged-test 1ms2r6i [ cat moans ],,,
+    INFO, tagged-test 17tca19 [ dog bites ], , /matrix-project.qml:27, The dog bites.
+    PASS, tagged-test 17tca19 [ dog bites ],,,
+    INFO, tagged-test 0ni1i5d [ cat bites ], , /matrix-project.qml:27, The cat bites.
+    PASS, tagged-test 0ni1i5d [ cat bites ],,,
+    INFO, tagged-test 07cs7hy [ dog moans ], , /matrix-project.qml:27, The dog moans.
+    PASS, tagged-test 07cs7hy [ dog moans ],,,

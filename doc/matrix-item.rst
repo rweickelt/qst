@@ -49,14 +49,14 @@ cat bites cat moans
 Matrix execution
 ~~~~~~~~~~~~~~~~
 
-A tagged testcase is re-executed for each tag and every execution entity is
+A tagged test case is re-executed for each tag and every execution entity is
 called a job. The job order is generally undefined. Tagging has consequences on
-the testcase's execution:
+the test case's execution:
 
-1. The testcase name in the command line output is followed by the tag data and
+1. The test case name in the command line output is followed by the tag data and
    a hash of the tag data.
 
-2. The testcase's working directory name is expanded with the hash.
+2. The test case's working directory name is expanded with the hash.
 
 Above :ref:`matrix-project.qml` example results in the following output on
 command line:
@@ -78,14 +78,14 @@ command line:
 Matrix in :cpp:class:`Project` and in :cpp:class:`Testcase`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A |Matrix| can be defined on two levels: on project level and on testcase level.
-When defined in project scope, the :cpp:member:`testcases` property specifies,
-to which testcases the |Matrix| applies. When defined inside a
+A |Matrix| can be defined on two levels: on project level and on test case
+level. When defined in project scope, the :cpp:member:`testcases` property
+specifies, to which test cases the |Matrix| applies. When defined inside a
 :cpp:class:`Testcase` item, the |Matrix| implicitly applies to the surrounding
-testcase only.
+test case only.
 
 ..  code-block:: qml
-    :caption: Matrix applies to multiple testcases.
+    :caption: Matrix applies to multiple test cases.
 
     import qst 1.0
 
@@ -98,7 +98,7 @@ testcase only.
     }
 
 ..  code-block:: qml
-    :caption: Matrix applies to single testcase.
+    :caption: Matrix applies to single test case.
 
     import qst 1.0
 
@@ -111,10 +111,10 @@ Multiple matrices and overlap
 
 It is possible to define multiple |Matrix| components both on
 :cpp:class:`Project` and :cpp:class:`Testcase` level and it is even allowed for
-different matrices to attach their tags to the same testcases. However, the
+different matrices to attach their tags to the same test cases. However, the
 resulting tag combinations must be distinct and must not shadow each other so
-that every job can be clearly identified by the combination of testcase name and
-tags.
+that every job can be clearly identified by the combination of test case name
+and tags.
 
 ..  code-block:: qml
     :caption: ambiguously-overlapping-matrices.qml:
@@ -166,7 +166,7 @@ Properties
 
     :default: empty list
 
-    A list of testcase names that the matrix is applied to. Entries may contain
+    A list of test case names that the matrix is applied to. Entries may contain
     exact names as well as the wildcard characters ``*`` (match any string) and
     ``?`` (match any character). Duplicate entries are ignored.
 
@@ -181,4 +181,4 @@ Properties
 
     This property is not writable when ``Matrix`` is defined inside a
     :cpp:class:`Testcase` component as the matrix then implicitly applies to the
-    surrounding testcase only.
+    surrounding test case only.
