@@ -30,7 +30,7 @@
 
 #include "QDebug"
 
-PinProbe::PinProbe(QObject *parent) : Component(parent)
+PinProbe::PinProbe(QObject *parent) : Component(&PinProbe::staticMetaObject, parent)
 {
     setObjectName("PinProbe");
     m_ioid = 0;
@@ -39,12 +39,6 @@ PinProbe::PinProbe(QObject *parent) : Component(parent)
     m_active = false;
     m_pullMode = PullDisabled;
 }
-
-void PinProbe::componentComplete()
-{
-    Component::componentComplete();
-}
-
 
 void PinProbe::cleanupTestCase()
 {
@@ -149,7 +143,7 @@ void PinProbe::setValue(int value)
     }
     else
     {
-        qst::warning(QString("Error: Cannot set %1.value to '%2' because it is not an output.").arg(m_name).arg(value));
+        qst::warning(QString("Error: Cannot set %1.value to '%2' because it is not an output.").arg(name()).arg(value));
     }
 }
 

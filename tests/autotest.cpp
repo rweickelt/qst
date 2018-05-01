@@ -312,18 +312,84 @@ void AutoTest::profile()
     VERIFY_FAIL(results, "non-existing-profile-properties-run", "non-existing-profile-properties-run.qml:9");
 }
 
+void AutoTest::matrix()
+{
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/project-ok.qml"));
+    VERIFY_PASS(results(), "testcase 1scca4h [ cat white ]");
+    VERIFY_PASS(results(), "testcase 1gmluzj [ dog brown ]");
+    VERIFY_PASS(results(), "testcase 0wgajg3 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0cyywtp [ dog white ]");
+
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/project-wildcard.qml"));
+    VERIFY_PASS(results(), "testcase 1scca4h [ cat white ]");
+    VERIFY_PASS(results(), "testcase 1gmluzj [ dog brown ]");
+    VERIFY_PASS(results(), "testcase 0wgajg3 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0cyywtp [ dog white ]");
+    VERIFY_PASS(results(), "othertestcase 1scca4h [ cat white ]");
+    VERIFY_PASS(results(), "othertestcase 1gmluzj [ dog brown ]");
+    VERIFY_PASS(results(), "othertestcase 0wgajg3 [ cat brown ]");
+    VERIFY_PASS(results(), "othertestcase 0cyywtp [ dog white ]");
+    VERIFY_PASS(results(), "toastcase");
+
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/project-with-external-matrix.qml"));
+    VERIFY_PASS(results(), "testcase 1scca4h [ cat white ]");
+    VERIFY_PASS(results(), "testcase 1gmluzj [ dog brown ]");
+    VERIFY_PASS(results(), "testcase 0wgajg3 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0cyywtp [ dog white ]");
+
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/project-overlapping-matrices.qml"));
+    VERIFY_PASS(results(), "testcase 1scca4h [ cat white ]");
+    VERIFY_PASS(results(), "testcase 1gmluzj [ dog brown ]");
+    VERIFY_PASS(results(), "testcase 0wgajg3 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0cyywtp [ dog white ]");
+    VERIFY_PASS(results(), "testcase 1v8a6z7 [ hog brown ]");
+    VERIFY_PASS(results(), "testcase 11g8wzx [ bat brown ]");
+    VERIFY_PASS(results(), "testcase 0r0l9i9 [ hog white ]");
+    VERIFY_PASS(results(), "testcase 062v5j3 [ bat white ]");
+
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/matrix-inside-testcase-ok.qml"));
+    VERIFY_PASS(results(), "testcase 1scca4h [ cat white ]");
+    VERIFY_PASS(results(), "testcase 1gmluzj [ dog brown ]");
+    VERIFY_PASS(results(), "testcase 0wgajg3 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0cyywtp [ dog white ]");
+
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-overlapping-dimensions.qml"));
+    QVERIFY(stdError().contains("project-overlapping-dimensions.qml:6"));
+
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-no-matching-testcase.qml"));
+    QVERIFY(stdError().contains("project-no-matching-testcase.qml:6"));
+
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-malformed-dimensions.qml"));
+    QVERIFY(stdError().contains("project-malformed-dimensions.qml:11"));
+
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-testcase-incompatible-properties.qml"));
+    QVERIFY(stdError().contains("testcase.qml:3"));
+
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/matrix-inside-testcase-protected-testcases.qml"));
+    QVERIFY(stdError().contains("matrix-inside-testcase-protected-testcases.qml:9"));
+}
+
 void AutoTest::codeSnippets()
 {
-    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("code-snippets/usage.qml")} );
-    if (qstProcess().exitCode() != 2)
-    {
-        QFAIL(qstProcess().readAllStandardError());
-    }
-    VERIFY_PASS(results, "simple-passing-test");
-    VERIFY_PASS(results, "makefile-test-simple");
-    VERIFY_PASS(results, "test-app-build");
-    VERIFY_PASS(results, "test-lib-build");
-    VERIFY_FAIL(results, "simple-failing-test", "simple-failing-test.qml:8");
+    RUN_AND_EXPECT(qst::ExitTestCaseFailed, "-f", dataPath("code-snippets/usage.qml"));
+    VERIFY_PASS(results(), "simple-passing-test");
+    VERIFY_PASS(results(), "makefile-test-simple");
+    VERIFY_PASS(results(), "test-app-build");
+    VERIFY_PASS(results(), "test-lib-build");
+    VERIFY_FAIL(results(), "simple-failing-test", "simple-failing-test.qml:8");
+
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("../../doc/code/reference/matrix-project.qml"));
+    VERIFY_PASS(results(), "tagged-test 1ms2r6i [ cat moans ]");
+    VERIFY_PASS(results(), "tagged-test 17tca19 [ dog bites ]");
+    VERIFY_PASS(results(), "tagged-test 0ni1i5d [ cat bites ]");
+    VERIFY_PASS(results(), "tagged-test 07cs7hy [ dog moans ]");
+
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("../../doc/code/reference/dimension-with-references.qml"));
+    VERIFY_PASS(results(), "testcase 1scca4h [ cat white ]");
+    VERIFY_PASS(results(), "testcase 1gmluzj [ dog brown ]");
+    VERIFY_PASS(results(), "testcase 0wgajg3 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0cyywtp [ dog white ]");
+
 }
 
 QTEST_GUILESS_MAIN(AutoTest)

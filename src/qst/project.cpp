@@ -23,6 +23,7 @@
 ****************************************************************************/
 #include "applicationoptions.h"
 #include "console.h"
+#include "matrix.h"
 #include "project.h"
 #include "qst.h"
 #include "projectresolver.h"
@@ -34,22 +35,10 @@
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlEngine>
 
-Project::Project(QObject *parent) : QObject(parent)
+Project::Project(QObject *parent) : QstItem(&Project::staticMetaObject, parent)
 {
-
-}
-
-void Project::classBegin()
-{
-    ApplicationOptions* options = ApplicationOptions::instance();
-    m_workingDirectory = options->workingDirectory;
-    m_name = "project";
-    m_filepath = ProjectResolver::instance()->currentItem()->filepath;
-}
-
-
-void Project::componentComplete()
-{
+    QstItem::setAllowedParentTypes({nullptr});
+    QstItem::setAllowedNestedTypes({&Matrix::staticMetaObject, &Testcase::staticMetaObject});
 }
 
 void Project::handleParserEvent(ParserEvent event)
@@ -69,5 +58,12 @@ void Project::handleParserEvent(ParserEvent event)
                     .arg(qHash(m_filepath), 0, 16);
             m_workingDirectory = QDir().absoluteFilePath(workDirName);
         }
+    }
+    else if (event == ClassBegin)
+    {
+        ApplicationOptions* options = ApplicationOptions::instance();
+        m_workingDirectory = options->workingDirectory;
+        m_name = "project";
+        m_filepath = ProjectResolver::instance()->currentDocument()->filepath;
     }
 }

@@ -24,7 +24,7 @@
 #ifndef TESTCASEITEM_H
 #define TESTCASEITEM_H
 
-#include "parser.h"
+#include "qstitem.h"
 
 #include <QtCore/QList>
 #include <QtCore/QObject>
@@ -32,33 +32,23 @@
 #include <QtCore/QString>
 
 #include <QtQml/QQmlListProperty>
-#include <QtQml/QQmlParserStatus>
 
 class ProjectResolver;
 class Testcase;
 
-class Component : public QObject, public QQmlParserStatus
+class Component : public QstItem
 {
     Q_OBJECT
-    Q_INTERFACES(QQmlParserStatus)
     Q_DISABLE_COPY(Component)
-    // We need a default property that can hold objects, but we won't actually use it.
-    // Instead, we let component items register manually as testcase children.
-    Q_CLASSINFO("DefaultProperty", "__defaultProperty")
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 
     friend class ProjectResolver;
     friend class Testcase;
 
-    Q_PROPERTY(QQmlListProperty<QObject> __defaultProperty READ defaultProperty CONSTANT)
-    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
-
-signals:
-    void nameChanged();
-
 public:
-    explicit Component(QObject* parent = 0);
-    QQmlListProperty<QObject> defaultProperty();
+    explicit Component(const QMetaObject* basetypeInfo = &Component::staticMetaObject, QObject* parent = 0);
     Testcase* testCase();
+    const Testcase* testCase() const;
 
     QString name() const;
     QString filepath() const;
@@ -66,6 +56,8 @@ public:
     void setFilepath(const QString& filepath);
     QString typeName() const;
 
+signals:
+    void nameChanged();
 
 protected:
     virtual void initTestCase() {}
@@ -73,19 +65,14 @@ protected:
     virtual void cleanupTestCase() {}
     virtual void cleanupTestFunction() {}
 
-    // Called by QmlEngine during creation
-    virtual void classBegin();
-    virtual void componentComplete();
+    virtual void handleParserEvent(QstItem::ParserEvent event) override;
 
-    virtual void handleParserEvent(ParserEvent event);
-
-    QList<QObject *> m_defaultProperty;
+private:
     QString m_name;
     QString m_filepath;
     QString m_typeName;
 };
 
-inline QQmlListProperty<QObject> Component::defaultProperty() { return QQmlListProperty<QObject>(this, m_defaultProperty); }
 inline QString Component::filepath() const { return m_filepath; }
 inline QString Component::name() const { return m_name; }
 inline QString Component::typeName() const { return m_typeName; }

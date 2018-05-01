@@ -41,7 +41,7 @@ QstTestResults QstTestResults::fromQstOutput(const QByteArray& text)
     QStringList lines = QString::fromLatin1(text).trimmed().split('\n');
     QRegularExpression parser(
                 "^(?<result>\\w+)"
-                ",\\s*(?<name>[\\w\\-]+)"
+                ",\\s*(?<name>[\\w\\-\\[\\]\\s]+)"
                 ",\\s*(?<component>[\\w\\-]*)"
                 "(,\\s*(?<position>.*)"
                 ",\\s*(?<message>.*))?$"

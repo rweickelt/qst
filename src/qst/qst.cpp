@@ -59,7 +59,7 @@ void error(const QString& message)
 void info(const QString& message, const QString& file, int line)
 {
     LogInfo info {
-        .test = Testcase::instance()->name(),
+        .test = Testcase::instance()->displayName(),
         .component = "",
         .file = file,
         .line = line,
@@ -73,6 +73,24 @@ void info(const QString& message, const QString& file, int line)
         info.line = context.line();
     }
     ProxyLogger::instance()->print(info);
+}
+
+QmlContext qmlDefinitionContext(const QObject* object)
+{
+    QmlContext result;
+
+    if (object)
+    {
+        QQmlData* data = QQmlData::get(object);
+        if (data && data->outerContext)
+        {
+            result["file"] = data->outerContext->url().path();
+            result["line"] = data->lineNumber;
+            result["column"] = data->columnNumber;
+        }
+    }
+
+    return result;
 }
 
 void verify(bool condition, const QString& message, const QString& file, int line)
@@ -94,7 +112,7 @@ void verify(bool condition, const QString& message, const QString& file, int lin
 void warning(const QString& message, const QString& file, int line)
 {
     LogInfo info {
-        .test = Testcase::instance()->name(),
+        .test = Testcase::instance()->displayName(),
         .component = "",
         .file = file,
         .line = line,
@@ -195,20 +213,7 @@ QVariantList QstService::qmlCallerTrace()
 
 QmlContext QstService::qmlDefinitionContext(QObject* object)
 {
-    QmlContext result;
-
-    if (object)
-    {
-        QQmlData* data = QQmlData::get(object);
-        if (data && data->outerContext)
-        {
-            result["file"] = data->outerContext->url().path();
-            result["line"] = data->lineNumber;
-            result["column"] = data->columnNumber;
-        }
-    }
-
-    return result;
+    return qst::qmlDefinitionContext(object);
 }
 
 

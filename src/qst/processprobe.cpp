@@ -30,28 +30,12 @@
 #include <QtCore/QEventLoop>
 #include <QtQml/QQmlEngine>
 
-ProcessProbe::ProcessProbe(QObject *parent) : Component(parent)
+ProcessProbe::ProcessProbe(QObject* parent) : Component(&ProcessProbe::staticMetaObject, parent)
 {
     connect(&m_process, &QProcess::errorOccurred, this, &ProcessProbe::onProcessErrorOccurred);
     connect(&m_process, &QProcess::started, this, &ProcessProbe::onProcessStarted);
     connect(&m_process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessProbe::onProcessFinished);
     connect(&m_process, &QProcess::stateChanged, this, &ProcessProbe::onProcessStateChanged);
-}
-
-void ProcessProbe::classBegin()
-{
-    Component::classBegin();
-}
-
-void ProcessProbe::componentComplete()
-{
-    Component::componentComplete();
-
-    if (m_workingDirectory.isEmpty())
-    {
-        m_workingDirectory = testCase()->workingDirectory();
-    }
-    Q_ASSERT(!m_workingDirectory.isEmpty());
 }
 
 // TODO Need to replace those conversions by QTextStream
@@ -73,6 +57,15 @@ QString ProcessProbe::errorString() const
 int ProcessProbe::exitCode() const
 {
     return m_process.exitCode();
+}
+
+void ProcessProbe::setWorkingDirectory(const QString& path)
+{
+    if (m_workingDirectory != path)
+    {
+        m_workingDirectory = path;
+        emit workingDirectoryChanged();
+    }
 }
 
 ProcessProbe::State ProcessProbe::state() const
@@ -133,6 +126,18 @@ bool ProcessProbe::waitForFinished(int milliseconds)
             &loop, [&loop](int){ loop.exit(0); });
     connect(&timer, &QTimer::timeout, &loop, [&loop]{ loop.exit(1); });
     return loop.exec() == 0;
+}
+
+QString ProcessProbe::workingDirectory() const
+{
+    if (!m_workingDirectory.isEmpty())
+    {
+        return m_workingDirectory;
+    }
+    else
+    {
+        return testCase()->workingDirectory();
+    }
 }
 
 void ProcessProbe::onProcessErrorOccurred(QProcess::ProcessError error)

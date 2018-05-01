@@ -39,7 +39,7 @@
 
 QPointer<Testcase> Testcase::m_currentTestCase;
 
-Testcase::Testcase(QObject *parent) : Component(parent)
+Testcase::Testcase(QObject *parent) : Component(&Testcase::staticMetaObject, parent)
 {
     m_state = Uninitialized;
     m_nextState = Uninitialized;
@@ -48,20 +48,25 @@ Testcase::Testcase(QObject *parent) : Component(parent)
     m_transitionPending = false;
 }
 
-void Testcase::componentComplete()
+void Testcase::handleParserEvent(QstItem::ParserEvent event)
 {
-    QStringList availableMethods;
-    for (int i = 0; i < metaObject()->methodCount(); i++)
+    Component::handleParserEvent(event);
+
+    if (event == QstItem::ComponentComplete)
     {
-        QMetaMethod method = metaObject()->method(i);
-        if (method.methodType() == QMetaMethod::Slot)
+        QStringList availableMethods;
+        for (int i = 0; i < metaObject()->methodCount(); i++)
         {
-            availableMethods << method.name();
+            QMetaMethod method = metaObject()->method(i);
+            if (method.methodType() == QMetaMethod::Slot)
+            {
+                availableMethods << method.name();
+            }
         }
-    }
-    if (!availableMethods.contains("run"))
-    {
-        m_errorString = QString("Test case '%1' does not define a 'run' method.").arg(m_name);
+        if (!availableMethods.contains("run"))
+        {
+            m_errorString = QString("Test case '%1' does not define a 'run' method.").arg(m_name);
+        }
     }
 }
 
@@ -110,14 +115,14 @@ Testcase::State Testcase::unitializedStateFunction()
 {
     m_result = Unfinished;
 
-    m_children = childrenByType<Component>();
-    m_children << this;
+    m_nestedComponents = childrenByType<Component>();
+    m_nestedComponents << this;
 
     Q_ASSERT(this != nullptr);
     m_currentTestCase = this;
 
     // created() is a signal that even QML children can subscribe.
-    for (Component* child : m_children)
+    for (Component* child : m_nestedComponents)
     {
         QObject* attached = qmlAttachedPropertiesObject<Testcase>(child, false);
         if (attached != NULL)
@@ -134,7 +139,7 @@ Testcase::State Testcase::unitializedStateFunction()
 
 Testcase::State Testcase::initingTestCaseStateFunction()
 {
-    for (auto child : m_children)
+    for (auto child : m_nestedComponents)
     {
         child->initTestCase();
     }
@@ -144,7 +149,7 @@ Testcase::State Testcase::initingTestCaseStateFunction()
 
 Testcase::State Testcase::initingTestFunctionStateFunction()
 {
-    for (auto child : m_children)
+    for (auto child : m_nestedComponents)
     {
         child->initTestFunction();
     }
@@ -191,14 +196,14 @@ Testcase::State Testcase::cleaningUpTestFunctionStateFunction()
     case Unfinished:
     case Success:
         info.type = LogInfo::Success;
-        info.test = m_name;
+        info.test = displayName();
         info.component = m_name;
         info.file = m_callerFile;
         ProxyLogger::instance()->print(info);
         break;
     case Fail:
         info.type = LogInfo::Fail;
-        info.test = m_name;
+        info.test = displayName();
         info.component = m_name;
         info.file = m_callerFile;
         info.line = m_callerLine;
@@ -207,7 +212,7 @@ Testcase::State Testcase::cleaningUpTestFunctionStateFunction()
         break;
     }
 
-    for (auto child : m_children)
+    for (auto child : m_nestedComponents)
     {
         child->cleanupTestFunction();
     }
@@ -224,7 +229,7 @@ Testcase::State Testcase::cleaningUpTestCaseStateFunction()
         m_result = Success;
     }
 
-    for (auto child : m_children)
+    for (auto child : m_nestedComponents)
     {
         child->cleanupTestCase();
     }
@@ -392,30 +397,28 @@ Testcase* Testcase::instance()
     return m_currentTestCase.data();
 }
 
-QString Testcase::workingDirectory() const
+void Testcase::setDisplayName(const QString& name)
 {
-    return QDir(project()->workingDirectory()).absoluteFilePath(m_name);
+    m_displayName = name;
 }
 
-void Testcase::initTestCase()
+QString Testcase::displayName() const
 {
-    QDir projectWorkDir(project()->workingDirectory());
-    QDir testcaseWorkDir(projectWorkDir.absoluteFilePath(m_name));
-
-    if (testcaseWorkDir.exists())
+    if (!m_displayName.isEmpty())
     {
-        if (!testcaseWorkDir.removeRecursively())
-        {
-            QST_ERROR_AND_EXIT(QString("Could not wipe directory '%1'.")
-                                .arg(testcaseWorkDir.absolutePath()));
-        }
+        return m_displayName;
     }
-
-    if ((!projectWorkDir.mkdir(m_name)))
+    else
     {
-        QST_ERROR_AND_EXIT(QString("Could not create working directory '%1'.")
-                            .arg(testcaseWorkDir.absolutePath()));
+        return name();
     }
 }
 
-
+void Testcase::setWorkingDirectory(const QString& path)
+{
+    if (m_workingDirectory != path)
+    {
+        m_workingDirectory = path;
+        emit workingDirectoryChanged();
+    }
+}

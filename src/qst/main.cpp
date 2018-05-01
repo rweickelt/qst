@@ -26,9 +26,12 @@
 #include "commandlineparser.h"
 #include "component.h"
 #include "console.h"
+#include "dimension.h"
 #include "file.h"
 #include "xds.h"
 #include "plaintextlogger.h"
+#include "matrix.h"
+#include "jobmultiplier.h"
 #include "pinprobe.h"
 #include "processprobe.h"
 #include "profileloader.h"
@@ -38,7 +41,7 @@
 #include "qst.h"
 #include "testcase.h"
 #include "testcaseattached.h"
-#include "testrunner.h"
+#include "jobrunner.h"
 #include "textfile.h"
 
 #include <QtCore/QCoreApplication>
@@ -48,6 +51,22 @@
 
 #define STRINGIFY(x) #x
 #define AS_STRING(x) STRINGIFY(x)
+
+#define CHECK_FOR_ERROR(object) \
+    if (object.hasError()) \
+    { \
+        Console::printError("Error: " + object.errorString()); \
+        ::exit(qst::ExitApplicationError); \
+    }
+
+#define CHECK_FOR_ERRORS(object) \
+    if (object.hasErrors()) { \
+        for (const auto& error : object.errors()) { \
+            Console::printError("Error: " + error); \
+        } \
+        ::exit(qst::ExitApplicationError); \
+    }
+
 
 void execRunCommand();
 
@@ -102,6 +121,8 @@ void execRunCommand()
         engine.addImportPath(path);
     }
 
+    qmlRegisterCustomType<Dimension>("qst", 1,0, "Dimension", new DimensionParser());
+    qmlRegisterType<Matrix>("qst", 1,0, "Matrix");
     qmlRegisterType<Component>("qst", 1,0, "Component");
     qmlRegisterType<Testcase>("qst", 1,0, "Testcase");
     qmlRegisterType<TestcaseAttached>();
@@ -124,30 +145,19 @@ void execRunCommand()
 
     ProfileLoader profileLoader(options->profilePaths);
     QVariant profile = profileLoader.loadProfile(options->profile);
-    if (profileLoader.hasError())
-    {
-        Console::printError("Error: " + profileLoader.errorString());
-        ::exit(qst::ExitApplicationError);
-    }
+    CHECK_FOR_ERROR(profileLoader);
     engine.rootContext()->setContextProperty("profile", profile);
 
-    ProjectResolver resolver(&engine, options->projectFilepath);
-    resolver.loadRootFile();
-    if (resolver.hasErrors())
-    {
-        for (const QString& error : resolver.errors())
-        {
-            Console::printError("Error: " + error);
-        }
-        ::exit(qst::ExitApplicationError);
-    }
+    ProjectResolver resolver(&engine);
+    resolver.loadRootFile(options->projectFilepath);
+    CHECK_FOR_ERRORS(resolver);
 
-    TestRunner runner(resolver.project(), resolver.testcases());
-    if (runner.hasError())
-    {
-        Console::printError("Error: " + runner.errorString());
-        ::exit(qst::ExitApplicationError);
-    }
+    JobMultiplier expander(resolver.matrices(), resolver.testcases());
+    CHECK_FOR_ERROR(expander);
+
+    JobRunner runner(resolver.project(), expander.jobs().values(), expander.tags());
+    CHECK_FOR_ERROR(runner);
+
     runner.execTestCases();
 }
 

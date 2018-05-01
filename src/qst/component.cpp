@@ -30,7 +30,7 @@ namespace {
     QHash<QString, int> instancesCount;
 }
 
-Component::Component(QObject *parent) : QObject(parent)
+Component::Component(const QMetaObject* basetypeInfo, QObject* parent) : QstItem(basetypeInfo, parent)
 {
 }
 
@@ -48,6 +48,21 @@ Testcase* Component::testCase()
     return nullptr;
 }
 
+const Testcase* Component::testCase() const
+{
+    for (const QObject* currentObject = this; currentObject != NULL;
+         currentObject = currentObject->parent())
+    {
+        if (currentObject->metaObject()->inherits(&Testcase::staticMetaObject))
+        {
+            return qobject_cast<const Testcase*>(currentObject);
+        }
+    }
+    Q_ASSERT(false);
+    return nullptr;
+}
+
+
 void Component::setName(const QString& name)
 {
     if (name != m_name)
@@ -57,17 +72,7 @@ void Component::setName(const QString& name)
     }
 }
 
-void Component::classBegin()
-{
-    m_filepath = ProjectResolver::instance()->currentItem()->filepath;
-    ProjectResolver::instance()->currentItem()->children.append(this);
-}
-
-void Component::componentComplete()
-{
-}
-
-void Component::handleParserEvent(ParserEvent event)
+void Component::handleParserEvent(QstItem::ParserEvent event)
 {
     switch (event)
     {
@@ -87,7 +92,11 @@ void Component::handleParserEvent(ParserEvent event)
         this->setObjectName(m_name);
     }
         break;
-    case AfterComponentComplete:
+    case ClassBegin:
+        m_filepath = ProjectResolver::instance()->currentDocument()->filepath;
+        ProjectResolver::instance()->currentDocument()->components.append(this);
+        break;
+    default:
         break;
     }
 }

@@ -32,6 +32,19 @@
 class QQmlEngine;
 class Testcase;
 
+struct QmlContext : public QVariantMap
+{
+    Q_GADGET
+    Q_PROPERTY(int column READ column CONSTANT)
+    Q_PROPERTY(QString file READ file CONSTANT)
+    Q_PROPERTY(int line READ line CONSTANT)
+
+public:
+    inline int column() const { return this->value("column").toInt(); }
+    inline QString file() const { return this->value("file").toString(); }
+    inline int line() const { return this->value("line").toInt(); }
+};
+
 namespace qst {
 
 
@@ -43,6 +56,7 @@ enum ExitCode {
 
 void info(const QString& message, const QString& file = "", int line = 0);
 void error(const QString& message);
+QmlContext qmlDefinitionContext(const QObject* object);
 void verify(bool condition, const QString& message = "", const QString& file = "", int line = 0);
 void warning(const QString& message, const QString& file = "", int line = 0);
 
@@ -59,19 +73,6 @@ void warning(const QString& message, const QString& file = "", int line = 0);
 
 #define QST_WARNING(message) \
     qst::warning(message, __FILE__, __LINE__)
-
-struct QmlContext : public QVariantMap
-{
-    Q_GADGET
-    Q_PROPERTY(int column READ column CONSTANT)
-    Q_PROPERTY(QString file READ file CONSTANT)
-    Q_PROPERTY(int line READ line CONSTANT)
-
-public:
-    inline int column() const { return this->value("column").toInt(); }
-    inline QString file() const { return this->value("file").toString(); }
-    inline int line() const { return this->value("line").toInt(); }
-};
 
 class QstService : public QObject
 {
