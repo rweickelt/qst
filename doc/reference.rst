@@ -18,11 +18,12 @@ Reference
    *-item
    *-service
 
-..  rubric:: Language Items
+..  rubric:: Language items
 
 ======================================================== ===========
 Name                                                     Description
 ======================================================== ===========
+:doc:`Component <component-item>`                        Base type for various dynamic items.
 :doc:`Dimension <dimension-item>`                        Defines a value span within a :class:`Matrix`.
 :doc:`Matrix <matrix-item>`                              Replicates :class:`Testcase` components with different property values.
 :doc:`Project <project-item>`                            Container item for multiple :cpp:class:`Testcase` items.
@@ -30,7 +31,7 @@ Name                                                     Description
 ======================================================== ===========
 
 
-..  rubric:: Convenience Items
+..  rubric:: Convenience items
 
 ======================================================== ===========
 Name                                                     Description
