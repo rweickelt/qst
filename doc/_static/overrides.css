@@ -41,8 +41,22 @@ body {
 }
 
 /* Italic captions */
-span.caption-text {
-    font-style: italic
+div.code-block-cation span.caption-text {
+    font-style: italic;
+}
+
+
+/* Make ugly class label on reference pages invisible.
+   This disables class anchors, but we don't backlink to a class
+   from its own reference page anyway. Links from other pages work. */
+.rst-content dl.class dt:not(.docutils) {
+    display: none;
+}
+
+
+/* Remove indentation of brief class introduction */
+.rst-content dl.class dd:not(.docutils) {
+    margin-left: 0;
 }
 
 /* Classes and functions */
@@ -58,6 +72,11 @@ span.caption-text {
     border-left: none;
     background: #eefae7;
     color: #222;
+}
+
+/* Remove indentation of field lists */
+.rst-content table.field-list th {
+    padding-left: 0;
 }
 
 .rst-content table.field-list td {

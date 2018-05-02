@@ -11,14 +11,14 @@ Matrix Item
 
 ..  cpp:namespace:: Matrix
 
-========================== ==========================
-Possible locations         :cpp:class:`Project`, :cpp:class:`Testcase`, document root
-Possible nested items      :cpp:class:`Dimension`
-========================== ==========================
+:Locations:
+    :cpp:class:`Project`, :cpp:class:`Testcase`, document root
 
-..  rubric:: Properties
+:Nested items:
+    :cpp:class:`Dimension`
 
-- :cpp:member:`testcases`
+:Properties:
+    :cpp:member:`testcases`
 
 
 Detailed Description

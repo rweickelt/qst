@@ -7,19 +7,15 @@ PinProbe Item
 
 ..  cpp:namespace:: PinProbe
 
-..  rubric:: Enumerations
+:Inherits:
+    :qml:item:`Component`
 
-- :cpp:enum:`PullMode`
-- :cpp:enum:`Type`
-- :cpp:enum:`Value`
+:Enumerations:
+    :cpp:enum:`PullMode`, :cpp:enum:`Type`, :cpp:enum:`Value`
 
-..  rubric:: Properties
-
-- :cpp:member:`ioid`
-- :cpp:member:`port`
-- :cpp:member:`pullMode`
-- :cpp:member:`type`
-- :cpp:member:`value`
+:Properties:
+    :cpp:member:`ioid`, :cpp:member:`port`, :cpp:member:`pullMode`,
+    :cpp:member:`type`, :cpp:member:`value`
 
 
 Detailed Description

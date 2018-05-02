@@ -7,9 +7,8 @@ File Service
 
 ..  cpp:namespace:: File
 
-..  rubric:: Methods
-
-- :cpp:func:`exists()`
+:Methods:
+    :cpp:func:`exists()`
 
 
 Detailed Description

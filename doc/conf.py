@@ -79,6 +79,11 @@ pygments_style = 'native'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+rst_prolog = """
+.. role:: qml:item(cpp:class)
+.. role:: qml:prop(cpp:member)
+"""
+
 
 # -- Options for HTML output ----------------------------------------------
 

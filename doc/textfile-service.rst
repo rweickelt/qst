@@ -7,20 +7,13 @@ TextFile Service
 
 ..  cpp:namespace:: TextFile
 
-..  rubric:: Enumerations
+:Enumerations:
+    :cpp:enum:`OpenMode`
 
-- :cpp:enum:`OpenMode`
-
-..  rubric:: Methods
-
-- :cpp:func:`TextFile::TextFile()`
-- :cpp:func:`atEndOfFile()`
-- :cpp:func:`close()`
-- :cpp:func:`readAll()`
-- :cpp:func:`readLine()`
-- :cpp:func:`truncate()`
-- :cpp:func:`write()`
-- :cpp:func:`writeLine()`
+:Methods:
+    :cpp:func:`TextFile::TextFile()`, :cpp:func:`atEndOfFile()`,
+    :cpp:func:`close()`, :cpp:func:`readAll()`, :cpp:func:`readLine()`,
+    :cpp:func:`truncate()`, :cpp:func:`write()`, :cpp:func:`writeLine()`
 
 
 Detailed Description

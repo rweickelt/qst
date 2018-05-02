@@ -7,17 +7,12 @@ Qst Service
 
 ..  cpp:namespace:: Qst
 
-..  rubric:: Properties
+:Properties:
+    :cpp:member:`hostOs`
 
-- :cpp:member:`hostOs`: ``string``
-
-..  rubric:: Methods
-
-- :cpp:func:`compare()`
-- :cpp:func:`error()`
-- :cpp:func:`info()`
-- :cpp:func:`verify()`
-- :cpp:func:`wait()`
+:Methods:
+    :cpp:func:`compare()`, :cpp:func:`error()`, :cpp:func:`info()`,
+    :cpp:func:`verify()`, :cpp:func:`wait()`
 
 
 Detailed Description

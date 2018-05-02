@@ -7,9 +7,8 @@ Dimension Item
 
 ..  cpp:namespace:: Dimension
 
-========================== ==========================
-Possible locations         :cpp:class:`Matrix`
-========================== ==========================
+:Locations:
+    :cpp:class:`Matrix`
 
 
 Detailed Description

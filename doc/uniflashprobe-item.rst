@@ -7,22 +7,18 @@ UniflashProbe Item
 
 ..  cpp:namespace:: UniflashProbe
 
-..  rubric:: Properties
+:Inherits:
+    :qml:item:`Component`
 
-- :cpp:member:`device`
-- :cpp:member:`file`
-- :cpp:member:`installPath`
-- :cpp:member:`programmer`
-- :cpp:member:`serial`
+:Properties:
+    :cpp:member:`device`, :cpp:member:`file`, :cpp:member:`installPath`
+    :cpp:member:`programmer`, :cpp:member:`serial`
 
-..  rubric:: Methods
+:Methods:
+    :cpp:func:`flash()`, :cpp:func:`waitForFinished()`
 
-- :cpp:func:`flash()`
-- :cpp:func:`waitForFinished()`
-
-..  rubric:: Signals
-
-- :cpp:func:`finished()`
+:Signals:
+    :cpp:func:`finished()`
 
 
 Detailed Description

@@ -7,15 +7,13 @@ ValueRangeConstraint Item
 
 ..  cpp:namespace:: ValueRangeConstraint
 
-..  rubric:: Properties
+:Inherits:
+    :qml:item:`Component`
 
-- :cpp:member:`enabled`
-- :cpp:member:`evaluateOnFinished`
-- :cpp:member:`evaluateOnValidation`
-- :cpp:member:`maxValue`
-- :cpp:member:`minValue`
-- :cpp:member:`valid`
-- :cpp:member:`value`
+:Properties:
+    :cpp:member:`enabled`, :cpp:member:`evaluateOnFinished`,
+    :cpp:member:`evaluateOnValidation`, :cpp:member:`maxValue`
+    :cpp:member:`minValue`, :cpp:member:`valid`, :cpp:member:`value`
 
 
 Detailed Description

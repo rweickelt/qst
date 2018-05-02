@@ -7,33 +7,25 @@ ProcessProbe Item
 
 ..  cpp:namespace:: ProcessProbe
 
-..  rubric:: Enumerations
+:Inherits:
+    :qml:item:`Component`
 
-- :cpp:enum:`ProcessError`
-- :cpp:enum:`State`
+:Enumerations:
+    :cpp:enum:`ProcessError`. :cpp:enum:`State`
 
-..  rubric:: Properties
+:Properties:
+    :cpp:member:`arguments`, :cpp:member:`exitCode`, :cpp:member:`program`
+    :cpp:member:`state`, :cpp:member:`workingDirectory`
 
-- :cpp:member:`arguments`
-- :cpp:member:`exitCode`
-- :cpp:member:`program`
-- :cpp:member:`state`
-- :cpp:member:`workingDirectory`
 
-..  rubric:: Methods
+:Methods:
+    :cpp:func:`readAllStandardError()`, :cpp:func:`readAllStandardOutput()`
+    :cpp:func:`start()`, :cpp:func:`terminate()`, :cpp:func:`waitForFinished()`
+    :cpp:func:`waitForStarted()`
 
-- :cpp:func:`readAllStandardError()`
-- :cpp:func:`readAllStandardOutput()`
-- :cpp:func:`start()`
-- :cpp:func:`terminate()`
-- :cpp:func:`waitForFinished()`
-- :cpp:func:`waitForStarted()`
+:Signals:
+    :cpp:func:`errorOccurred()`, :cpp:func:`started()`, :cpp:func:`finished()`
 
-..  rubric:: Signals
-
-- :cpp:func:`errorOccurred()`
-- :cpp:func:`started()`
-- :cpp:func:`finished()`
 
 Detailed Description
 --------------------

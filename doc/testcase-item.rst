@@ -7,26 +7,26 @@ Testcase Item
 
 ..  cpp:namespace:: Testcase
 
-..  rubric:: Enumerations
+:Locations:
+    :qml:item:`Project`, document root
 
-- :cpp:enum:`Result`
+:Nested items:
+    :qml:item:`Component`, :qml:item:`Matrix`
 
-..  rubric:: Properties
+:Enumerations:
+    :cpp:enum:`Result`
 
-- :cpp:member:`elapsedTime`
-- :cpp:member:`name`
-- :cpp:member:`result`
-- :cpp:member:`workingDirectory`
+:Properties:
+    :cpp:member:`elapsedTime`, :cpp:member:`name`, :cpp:member:`result`,
+    :cpp:member:`workingDirectory`
 
-..  rubric:: Methods
+:Methods:
+    :cpp:func:`run()`,
 
-- :cpp:func:`run()`
+:Signals:
+    :cpp:func:`created()`, :cpp:func:`destruction()`, :cpp:func:`finished()`,
+    :cpp:func:`started()`
 
-..  rubric:: Signals
-
-- :cpp:func:`created()`
-- :cpp:func:`finished()`
-- :cpp:func:`started()`
 
 Detailed Description
 --------------------

@@ -5,25 +5,19 @@ SignalProbe Item
 
     Watches signals from other items.
 
-
 ..  cpp:namespace:: SignalProbe
 
-..  rubric:: Properties
+:Inherits:
+    :qml:item:`Component`
 
-- :cpp:member:`condition`
-- :cpp:member:`count`
-- :cpp:member:`signal`
+:Properties:
+    :cpp:member:`condition`, :cpp:member:`count`, :cpp:member:`signal`
 
+:Methods:
+    :cpp:func:`clear()`, :cpp:func:`connect()`
 
-..  rubric:: Methods:
-
-- :cpp:func:`clear()`
-- :cpp:func:`connect()`
-
-
-..  rubric:: Signals:
-
-- :cpp:func:`triggered()`
+:Signals:
+    :cpp:func:`triggered()`
 
 
 Detailed Description

@@ -5,13 +5,17 @@ Project Item
 
     A container item for multiple :cpp:class:`Testcase` items.
 
-..  cpp:namespace:: Testcase
+..  cpp:namespace:: Project
 
-..  rubric:: Properties
+:Locations:
+    document root
 
-- :cpp:member:`name`
-- :cpp:member:`references`
-- :cpp:member:`workingDirectory`
+:Nested items:
+    :qml:item:`Matrix`, :qml:item:`Testcase`
+
+:Properties:
+    :cpp:member:`name`, :cpp:member:`references`,
+    :cpp:member:`workingDirectory`
 
 
 Detailed Description

@@ -7,24 +7,17 @@ DurationConstraint Item
 
 ..  cpp:namespace:: DurationConstraint
 
-..  rubric:: Properties
+:Inherits:
+    :qml:item:`Component`
 
-- :cpp:member:`beginOn`
-- :cpp:member:`duration`
-- :cpp:member:`enabled`
-- :cpp:member:`endOn`
-- :cpp:member:`evaluateOnFinished`
-- :cpp:member:`evaluateOnValidation`
-- :cpp:member:`maxDuration`
-- :cpp:member:`minDuration`
-- :cpp:member:`timedOut`
-- :cpp:member:`valid`
+:Properties:
+    :cpp:member:`beginOn`, :cpp:member:`duration`, :cpp:member:`enabled`
+    :cpp:member:`endOn`, :cpp:member:`evaluateOnFinished`,
+    :cpp:member:`evaluateOnValidation`, :cpp:member:`maxDuration`,
+    :cpp:member:`minDuration`. :cpp:member:`timedOut`, :cpp:member:`valid`
 
-
-..  rubric:: Methods:
-
-- :cpp:func:`begin()`
-- :cpp:func:`end()`
+:Methods:
+    :cpp:func:`begin()`, :cpp:func:`end()`
 
 
 Detailed Description
