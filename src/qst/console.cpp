@@ -40,5 +40,5 @@ void Console::printToStdOut(const QString& text)
 void Console::printToStdError(const QString& text)
 {
     fputs(qPrintable(text), stderr);
-    fputs("\n", stdout);
+    fputs("\n", stderr);
 }
