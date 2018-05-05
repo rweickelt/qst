@@ -1,8 +1,32 @@
+/****************************************************************************
+ **
+ ** Copyright (C) 2018 The Qst project.
+ **
+ ** Contact: https://github.com/rweickelt/qst
+ **
+ ** $BEGIN_LICENSE$
+ **
+ ** This program is free software: you can redistribute it and/or modify
+ ** it under the terms of the GNU General Public License as published by
+ ** the Free Software Foundation, either version 3 of the License, or
+ ** (at your option) any later version.
+
+ ** This program is distributed in the hope that it will be useful,
+ ** but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ ** GNU General Public License for more details.
+
+ ** You should have received a copy of the GNU General Public License
+ ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ **
+ ** $END_LICENSE$
+****************************************************************************/
 
 #include "jobmultiplier.h"
 #include "matrix.h"
 #include "project.h"
 #include "qst.h"
+#include "qstdocument.h"
 #include "testcase.h"
 
 #include <QtCore/QRegularExpression>
@@ -23,15 +47,13 @@ namespace {
         }
         return self;
     }
-
 }
 
-JobMultiplier::JobMultiplier(const QList<Matrix*>& matrices, const QList<Testcase*>& testcases) :
-    m_matrices(matrices)
+JobMultiplier::JobMultiplier(const QList<QstDocument*>& documents)
 {
-    for (const auto& testcase: testcases)
+    for (const auto& document: documents)
     {
-        m_testcases[testcase->name()] = testcase;
+        document->object->accept(this);
     }
 
     // Create tagged jobs for all test cases that
@@ -48,17 +70,6 @@ JobMultiplier::JobMultiplier(const QList<Matrix*>& matrices, const QList<Testcas
             QST_ERROR_AND_EXIT(QString("Matrix defined at %1:%2 doesn't match any testcase.")
                                .arg(context.file()).arg(context.line()));
         }
-
-//        QSet<QString> usedNames = m_jobs.uniqueKeys().toSet();
-//        QSet<QString> overlappingNames = names.toSet().intersect(usedNames);
-//        if (overlappingNames.size() > 0)
-//        {
-//            QmlContext context = qst::qmlDefinitionContext(matrix);
-//            QST_ERROR_AND_EXIT(QString("Testcases ('%1') in matrix defined at %2:%3 occur in multiple matrices. "
-//                                       "Each testcase can only occur in one matrix. Check the 'testcases' property.")
-//                               .arg(overlappingNames.toList().join("', '"))
-//                               .arg(context.file()).arg(context.line()));
-//        }
 
         QMultiMap<QString, TestJob> jobs = combine(names, tags);
         jobs = removeExcluded(jobs, QStringList(), TagLookupTable());
@@ -213,5 +224,15 @@ QMultiMap<QString, TestJob> JobMultiplier::removeExcluded(const QMultiMap<QStrin
     Q_UNUSED(patterns);
     Q_UNUSED(tags);
     return jobs;
+}
+
+void JobMultiplier::visit(Testcase* item)
+{
+    m_testcases[item->name()] = item;
+}
+
+void JobMultiplier::visit(Matrix* item)
+{
+    m_matrices.append(item);
 }
 

@@ -1,25 +1,48 @@
+/****************************************************************************
+ **
+ ** Copyright (C) 2018 The Qst project.
+ **
+ ** Contact: https://github.com/rweickelt/qst
+ **
+ ** $BEGIN_LICENSE$
+ **
+ ** This program is free software: you can redistribute it and/or modify
+ ** it under the terms of the GNU General Public License as published by
+ ** the Free Software Foundation, either version 3 of the License, or
+ ** (at your option) any later version.
+
+ ** This program is distributed in the hope that it will be useful,
+ ** but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ ** GNU General Public License for more details.
+
+ ** You should have received a copy of the GNU General Public License
+ ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ **
+ ** $END_LICENSE$
+****************************************************************************/
+
 #include "dimension.h"
 #include "matrix.h"
 #include "project.h"
-#include "projectresolver.h"
 #include "qst.h"
+#include "qstitemvisitor.h"
+#include "testcase.h"
 
 #include <QtDebug>
 
-Matrix::Matrix(QObject* parent) : QstItem(&Matrix::staticMetaObject, parent)
+Matrix::Matrix(QObject* parent) : QstItem(parent)
 {
-    QstItem::setAllowedParentTypes({&Project::staticMetaObject, &Testcase::staticMetaObject, nullptr});
-    QstItem::setAllowedNestedTypes({&Dimension::staticMetaObject});
+}
+
+void Matrix::callVisitor(QstItemVisitor* visitor)
+{
+    visitor->visit(this);
 }
 
 QList<Dimension*> Matrix::dimensions() const
 {
-    QList<Dimension*> dimensions;
-    for (QObject* dimension: m_children)
-    {
-        dimensions << qobject_cast<Dimension*>(dimension);
-    }
-    return dimensions;
+    return findChildren<Dimension*>(QString(), Qt::FindDirectChildrenOnly);
 }
 
 
@@ -27,9 +50,6 @@ void Matrix::handleParserEvent(QstItem::ParserEvent event)
 {
     switch (event)
     {
-    case QstItem::ClassBegin:
-        ProjectResolver::instance()->registerMatrixComponent(this);
-        break;
     case QstItem::AfterClassBegin:
         if ((this->parent() == nullptr) || (this->parent()->metaObject()->inherits(&Project::staticMetaObject)))
         {

@@ -22,13 +22,33 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
-#include "testjob.h"
+#ifndef QSTITEMVISITOR_H
+#define QSTITEMVISITOR_H
 
-TestJob TestJob::fromTestcase(Testcase* testcase, TagGroupId tagGroupId, TagId tagId)
+#include <QtCore/QtGlobal>
+
+class Component;
+class Dimension;
+class Matrix;
+class Project;
+class QstItem;
+class Testcase;
+
+class QstItemVisitor
 {
-    return TestJob {
-        .testcase = testcase,
-        .tagGroupId = tagGroupId,
-        .tagId = tagId
-    };
-}
+    friend class Component;
+    friend class Dimension;
+    friend class Matrix;
+    friend class Project;
+    friend class QstItem;
+    friend class Testcase;
+
+protected:
+    virtual void visit(Component* item) { Q_UNUSED(item) }
+    virtual void visit(Dimension* item) { Q_UNUSED(item) }
+    virtual void visit(Matrix* item) { Q_UNUSED(item) }
+    virtual void visit(Project* item) { Q_UNUSED(item) }
+    virtual void visit(Testcase* item) { Q_UNUSED(item) }
+};
+
+#endif // QSTITEMVISITOR_H

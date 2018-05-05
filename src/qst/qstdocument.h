@@ -22,13 +22,29 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
-#include "testjob.h"
+#ifndef QSTDOCUMENT_H
+#define QSTDOCUMENT_H
 
-TestJob TestJob::fromTestcase(Testcase* testcase, TagGroupId tagGroupId, TagId tagId)
+#include <QtCore/QPointer>
+#include <QtCore/QString>
+
+class QQmlComponent;
+class QQmlContext;
+class QstItem;
+
+struct QstDocument
 {
-    return TestJob {
-        .testcase = testcase,
-        .tagGroupId = tagGroupId,
-        .tagId = tagId
+    enum State {
+        Undefined = 0,
+        Creating,
+        Finished,
+        Invalid
     };
-}
+
+    QPointer<QQmlContext> context;
+    QPointer<QQmlComponent> factory;
+    QPointer<QstItem> object;
+    State state;
+};
+
+#endif // QSTDOCUMENT_H

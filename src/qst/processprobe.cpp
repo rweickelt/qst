@@ -30,7 +30,7 @@
 #include <QtCore/QEventLoop>
 #include <QtQml/QQmlEngine>
 
-ProcessProbe::ProcessProbe(QObject* parent) : Component(&ProcessProbe::staticMetaObject, parent)
+ProcessProbe::ProcessProbe(QObject* parent) : Component(parent)
 {
     connect(&m_process, &QProcess::errorOccurred, this, &ProcessProbe::onProcessErrorOccurred);
     connect(&m_process, &QProcess::started, this, &ProcessProbe::onProcessStarted);

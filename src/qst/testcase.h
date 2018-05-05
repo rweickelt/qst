@@ -37,12 +37,12 @@
 #include "component.h"
 
 class Project;
+class QstItemVisitor;
 class TestcaseAttached;
 
 class Testcase : public Component
 {
     Q_OBJECT
-    Q_DISABLE_COPY(Testcase)
 
     friend class ProjectResolver;
 
@@ -73,14 +73,10 @@ public:
     Q_PROPERTY(QString workingDirectory READ workingDirectory NOTIFY workingDirectoryChanged)
     Q_PROPERTY(QString message MEMBER m_message)
 
+    virtual const QMetaObject* baseTypeInfo() const final;
     virtual void handleParserEvent(QstItem::ParserEvent event) override;
 
-    template <typename T>
-    QList<T*> childrenByType() const;
-
     Result exec();
-
-    void registerChild(Component* component);
 
     static Testcase* instance();
 
@@ -110,13 +106,13 @@ protected:
     Q_INVOKABLE void waitMilliseconds(int milliseconds, const QString& file, int line);
     Q_INVOKABLE void waitUntilExpression(QJSValue expression, int milliseconds, const QString& file, int line);
 
+    virtual void callVisitor(QstItemVisitor* visitor) final;
+
     Project* project() const;
 
 public:
     Testcase(QObject *parent = 0);
     QString displayName() const;
-    QString errorString() const;
-    bool hasErrors() const;
     qint64 elapsedTime() const;
     Result result() const;
     void setDisplayName(const QString& name);
@@ -139,7 +135,6 @@ private:
     State m_state;
     State m_nextState;
     bool m_transitionPending;
-    QList<Component*> m_nestedComponents;
     QList<QObject*> m_attachedObjects;
 
     int m_callerLine;
@@ -151,31 +146,14 @@ private:
     QString m_workingDirectory;
 
     static QPointer<Testcase> m_currentTestCase;
-    QString m_errorString;
 };
 
 Q_DECLARE_METATYPE(Testcase::State)
 QML_DECLARE_TYPEINFO(Testcase, QML_HAS_ATTACHED_PROPERTIES)
 
-inline QString Testcase::errorString() const { return m_errorString; }
-inline bool Testcase::hasErrors() const { return !m_errorString.isEmpty(); }
+inline const QMetaObject* Testcase::baseTypeInfo() const { return &Testcase::staticMetaObject; }
 inline Testcase::Result Testcase::result() const { return m_result; }
 inline Testcase::State Testcase::state() const { return m_state; }
-inline void Testcase::registerChild(Component* component) { m_nestedComponents.append(component); }
 inline QString Testcase::workingDirectory() const { return m_workingDirectory; }
-
-template <typename T>
-QList<T*> Testcase::childrenByType() const
-{
-    QList<T*> result;
-    for (auto child : m_nestedComponents)
-    {
-        if (child->metaObject()->inherits(&T::staticMetaObject))
-        {
-            result << qobject_cast<T*>(child);
-        }
-    }
-    return result;
-}
 
 #endif // TESTCASE_H

@@ -26,12 +26,7 @@
 
 #include "qstitem.h"
 
-#include <QtCore/QList>
-#include <QtCore/QObject>
-#include <QtCore/QPointer>
 #include <QtCore/QString>
-
-#include <QtQml/QQmlListProperty>
 
 class ProjectResolver;
 class Testcase;
@@ -39,44 +34,35 @@ class Testcase;
 class Component : public QstItem
 {
     Q_OBJECT
-    Q_DISABLE_COPY(Component)
-    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    // Alias for objectName
+    Q_PROPERTY(QString name READ name WRITE setObjectName NOTIFY nameChanged)
 
     friend class ProjectResolver;
     friend class Testcase;
 
 public:
-    explicit Component(const QMetaObject* basetypeInfo = &Component::staticMetaObject, QObject* parent = 0);
-    Testcase* testCase();
-    const Testcase* testCase() const;
+    Component(QObject* parent = nullptr);
+    virtual const QMetaObject* baseTypeInfo() const override;
 
     QString name() const;
     QString filepath() const;
-    void setName(const QString& name);
-    void setFilepath(const QString& filepath);
-    QString typeName() const;
+    Testcase* testCase();
+    const Testcase* testCase() const;
 
 signals:
-    void nameChanged();
+    void nameChanged(const QString &objectName);
 
 protected:
+    virtual void callVisitor(QstItemVisitor* visitor) override;
     virtual void initTestCase() {}
     virtual void initTestFunction() {}
     virtual void cleanupTestCase() {}
     virtual void cleanupTestFunction() {}
 
     virtual void handleParserEvent(QstItem::ParserEvent event) override;
-
-private:
-    QString m_name;
-    QString m_filepath;
-    QString m_typeName;
 };
 
-inline QString Component::filepath() const { return m_filepath; }
-inline QString Component::name() const { return m_name; }
-inline QString Component::typeName() const { return m_typeName; }
-
-inline void Component::setFilepath(const QString& filepath) { m_filepath = filepath; }
+inline const QMetaObject* Component::baseTypeInfo() const { return &Component::staticMetaObject; }
+inline QString Component::name() const { return objectName(); }
 
 #endif // TESTCASEITEM_H

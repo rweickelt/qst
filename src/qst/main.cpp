@@ -152,10 +152,10 @@ void execRunCommand()
     resolver.loadRootFile(options->projectFilepath);
     CHECK_FOR_ERRORS(resolver);
 
-    JobMultiplier expander(resolver.matrices(), resolver.testcases());
-    CHECK_FOR_ERROR(expander);
+    JobMultiplier multiplier(resolver.documents());
+    CHECK_FOR_ERROR(multiplier);
 
-    JobRunner runner(resolver.project(), expander.jobs().values(), expander.tags());
+    JobRunner runner(resolver.project(), multiplier.jobs().values(), multiplier.tags());
     CHECK_FOR_ERROR(runner);
 
     runner.execTestCases();
