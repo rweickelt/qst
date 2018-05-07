@@ -21,8 +21,8 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#ifndef JOBRUNNER_H
-#define JOBRUNNER_H
+#ifndef JOBDISPATCHER_H
+#define JOBDISPATCHER_H
 
 #include "tag.h"
 #include "testcase.h"
@@ -35,11 +35,11 @@
 
 class Project;
 
-class JobRunner
+class JobDispatcher
 {
-    Q_DISABLE_COPY(JobRunner)
+    Q_DISABLE_COPY(JobDispatcher)
 public:
-    JobRunner(Project* project, const QList<TestJob>& testCases, const TagLookupTable& tags);
+    JobDispatcher(Project* project, const TagLookupTable& tags, const QList<TestJob>& jobs = QList<TestJob>());
     QString errorString() const;
     void execTestCases();
     bool hasError() const;
@@ -55,7 +55,7 @@ private:
     TagLookupTable m_tags;
 };
 
-inline QString JobRunner::errorString() const { return m_errorString; }
-inline bool JobRunner::hasError() const { return !m_errorString.isEmpty(); }
+inline QString JobDispatcher::errorString() const { return m_errorString; }
+inline bool JobDispatcher::hasError() const { return !m_errorString.isEmpty(); }
 
 #endif // JOBRUNNER_H

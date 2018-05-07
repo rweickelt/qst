@@ -21,7 +21,7 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#include "jobrunner.h"
+#include "jobdispatcher.h"
 #include "project.h"
 #include "qst.h"
 
@@ -31,14 +31,14 @@
 
 #include <QtDebug>
 
-JobRunner::JobRunner(Project* project, const QList<TestJob>& jobs,
-                     const TagLookupTable& tags):
+JobDispatcher::JobDispatcher(Project* project, const TagLookupTable& tags,
+        const QList<TestJob>& jobs) :
     m_project(project), m_jobs(jobs), m_tags(tags)
 {
     createProjectWorkingDirectory();
 }
 
-void JobRunner::execTestCases()
+void JobDispatcher::execTestCases()
 {
     for (auto& job: m_jobs)
     {
@@ -85,7 +85,7 @@ void JobRunner::execTestCases()
     }
 }
 
-void JobRunner::createProjectWorkingDirectory()
+void JobDispatcher::createProjectWorkingDirectory()
 {
     QString workDirPath = m_project->workingDirectory();
 
@@ -112,7 +112,7 @@ void JobRunner::createProjectWorkingDirectory()
     }
 }
 
-QString JobRunner::createTestcaseWorkingDirectory(const QString& name)
+QString JobDispatcher::createTestcaseWorkingDirectory(const QString& name)
 {
     QDir projectWorkDir(m_project->workingDirectory());
     QDir testcaseWorkDir(projectWorkDir.absoluteFilePath(name));
