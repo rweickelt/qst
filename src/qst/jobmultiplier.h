@@ -27,9 +27,10 @@
 
 #include "dimension.h"
 #include "tag.h"
-#include "testjob.h"
+#include "job.h"
 
 #include <QtCore/QList>
+#include <QtCore/QMap>
 #include <QtCore/QPair>
 #include <QtCore/QVariantMap>
 
@@ -62,7 +63,7 @@ public:
     JobMultiplier(const QList<QstDocument*>& documents);
     QString errorString() const;
     bool hasError() const;
-    QMultiMap<QString, TestJob> jobs() const;
+    JobTable jobs() const;
     TagLookupTable tags() const;
 
 
@@ -74,11 +75,11 @@ private:
     static QStringList match(const QStringList& testcases, const QStringList& patterns);
 
     // Creates a job table from a list of testcases and tags
-    QMultiMap<QString, TestJob> combine(const QStringList& testcases,
+    QMultiMap<QString, Job> combine(const QStringList& testcases,
                                         const QMap<TagId, Tag>& tags);
 
     // Returns a filtered jobs table with all exceptions removed
-    static QMultiMap<QString, TestJob> removeExcluded(const QMultiMap<QString, TestJob>& jobs,
+    static QMultiMap<QString, Job> removeExcluded(const QMultiMap<QString, Job>& jobs,
                                                       const QStringList& patterns,       // = "Excepts" item
                                                       const TagLookupTable& tags); // = "Excepts" item
 
@@ -88,13 +89,13 @@ private:
     QString m_errorString;
     QList<Matrix*> m_matrices;
     QMap<QString, Testcase*> m_testcases;
-    QMultiMap<QString, TestJob> m_jobs;
+    QMultiMap<QString, Job> m_jobs;
     TagLookupTable m_tags;
 };
 
 inline QString JobMultiplier::errorString() const { return m_errorString; }
 inline bool JobMultiplier::hasError() const { return !m_errorString.isEmpty(); }
-inline QMultiMap<QString, TestJob> JobMultiplier::jobs() const { return m_jobs; }
+inline JobTable JobMultiplier::jobs() const { return m_jobs; }
 inline TagLookupTable JobMultiplier::tags() const { return m_tags; }
 
 

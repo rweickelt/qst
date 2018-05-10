@@ -22,39 +22,43 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
-#ifndef QSTITEMVISITOR_H
-#define QSTITEMVISITOR_H
+#ifndef TESTJOB_H
+#define TESTJOB_H
 
-#include <QtCore/QtGlobal>
+#include "tag.h"
 
-class Component;
-class Depends;
-class Dimension;
-class Exports;
-class Matrix;
-class Project;
-class QstItem;
+#include <QtCore/QSharedData>
+#include <QtCore/QSharedDataPointer>
+#include <QtCore/QVariantMap>
+
 class Testcase;
 
-class QstItemVisitor
-{
-    friend class Component;
-    friend class Depends;
-    friend class Exports;
-    friend class Dimension;
-    friend class Matrix;
-    friend class Project;
-    friend class QstItem;
-    friend class Testcase;
+struct Job;
 
-protected:
-    virtual void visit(Component* item) { Q_UNUSED(item) }
-    virtual void visit(Depends* item) { Q_UNUSED(item) }
-    virtual void visit(Dimension* item) { Q_UNUSED(item) }
-    virtual void visit(Exports* item) { Q_UNUSED(item) }
-    virtual void visit(Matrix* item) { Q_UNUSED(item) }
-    virtual void visit(Project* item) { Q_UNUSED(item) }
-    virtual void visit(Testcase* item) { Q_UNUSED(item) }
+using JobTable = QMultiMap<QString, Job>;
+
+
+/* TestJobs are testcase-data tuples created by MatrixExpander
+   and executed by TestRunner.
+ */
+struct JobData : public QSharedData
+{
+    Testcase* testcase;
+    TagGroupId tagGroupId;
+    TagId tagId;
 };
 
-#endif // QSTITEMVISITOR_H
+class Job
+{
+public:
+    Job (Testcase* testcase = nullptr, TagGroupId tagGroupId = InvalidId, TagId tagId = InvalidId);
+    TagGroupId tagGroupId() const { return d->tagGroupId; }
+    TagId tagId() const { return d->tagId; }
+    Testcase* testcase() { return d->testcase; }
+    Testcase* testcase() const { return d->testcase; }
+
+private:
+    QSharedDataPointer<JobData> d;
+};
+
+#endif // TESTJOB_H

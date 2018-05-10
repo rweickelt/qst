@@ -22,39 +22,44 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
-#ifndef QSTITEMVISITOR_H
-#define QSTITEMVISITOR_H
+#ifndef SERIALJOBSCHEDULER_H
+#define SERIALJOBSCHEDULER_H
 
-#include <QtCore/QtGlobal>
+#include "dependencygraph.h"
+#include "job.h"
 
-class Component;
-class Depends;
-class Dimension;
-class Exports;
-class Matrix;
-class Project;
-class QstItem;
-class Testcase;
+#include <QtCore/QList>
+#include <QtCore/QObject>
+#include <QtCore/QSet>
+#include <QtCore/QString>
 
-class QstItemVisitor
+/*
+Creates a job schedule and supervises execution by a dispatcher.
+The schedule is a topological order of the dependency graph.
+
+This scheduler executes jobs one-by-one.
+ */
+class SerialJobScheduler : public QObject
 {
-    friend class Component;
-    friend class Depends;
-    friend class Exports;
-    friend class Dimension;
-    friend class Matrix;
-    friend class Project;
-    friend class QstItem;
-    friend class Testcase;
+    Q_OBJECT
+public:
+    SerialJobScheduler(const JobTable& jobs, const DependencyGraph& dependencies,
+                       QObject* parent = nullptr);
+    void start();
 
-protected:
-    virtual void visit(Component* item) { Q_UNUSED(item) }
-    virtual void visit(Depends* item) { Q_UNUSED(item) }
-    virtual void visit(Dimension* item) { Q_UNUSED(item) }
-    virtual void visit(Exports* item) { Q_UNUSED(item) }
-    virtual void visit(Matrix* item) { Q_UNUSED(item) }
-    virtual void visit(Project* item) { Q_UNUSED(item) }
-    virtual void visit(Testcase* item) { Q_UNUSED(item) }
+public slots:
+    void onJobFinished(const Job& job);
+
+signals:
+    void finished();
+    void jobReady(const Job& job);
+
+private:
+    JobTable m_todo;
+    JobTable m_done;
+    DependencyGraph m_dependencies;
+    QMap<QString, QSet<QString> > m_remainingDependencies;
+    QList<Job> m_readyList;
 };
 
-#endif // QSTITEMVISITOR_H
+#endif // SERIALJOBSCHEDULER_H

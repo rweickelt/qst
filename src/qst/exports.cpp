@@ -22,13 +22,15 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
-#include "testjob.h"
+#include "exports.h"
+#include "qstitemvisitor.h"
 
-TestJob TestJob::fromTestcase(Testcase* testcase, TagGroupId tagGroupId, TagId tagId)
+Exports::Exports(QObject* parent) : QstItem(parent)
 {
-    return TestJob {
-        .testcase = testcase,
-        .tagGroupId = tagGroupId,
-        .tagId = tagId
-    };
+
+}
+
+void Exports::callVisitor(QstItemVisitor* visitor)
+{
+    visitor->visit(this);
 }

@@ -22,39 +22,24 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
-#ifndef QSTITEMVISITOR_H
-#define QSTITEMVISITOR_H
+#include "depends.h"
+#include "qstitemvisitor.h"
 
-#include <QtCore/QtGlobal>
-
-class Component;
-class Depends;
-class Dimension;
-class Exports;
-class Matrix;
-class Project;
-class QstItem;
-class Testcase;
-
-class QstItemVisitor
+Depends::Depends(QObject* parent) : QstItem(parent)
 {
-    friend class Component;
-    friend class Depends;
-    friend class Exports;
-    friend class Dimension;
-    friend class Matrix;
-    friend class Project;
-    friend class QstItem;
-    friend class Testcase;
 
-protected:
-    virtual void visit(Component* item) { Q_UNUSED(item) }
-    virtual void visit(Depends* item) { Q_UNUSED(item) }
-    virtual void visit(Dimension* item) { Q_UNUSED(item) }
-    virtual void visit(Exports* item) { Q_UNUSED(item) }
-    virtual void visit(Matrix* item) { Q_UNUSED(item) }
-    virtual void visit(Project* item) { Q_UNUSED(item) }
-    virtual void visit(Testcase* item) { Q_UNUSED(item) }
-};
+}
 
-#endif // QSTITEMVISITOR_H
+void Depends::callVisitor(QstItemVisitor* visitor)
+{
+    visitor->visit(this);
+}
+
+void Depends::setOn(const QString& on)
+{
+    if (m_on != on)
+    {
+        m_on = on;
+        emit onChanged();
+    }
+}

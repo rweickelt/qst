@@ -26,7 +26,7 @@
 
 #include "tag.h"
 #include "testcase.h"
-#include "testjob.h"
+#include "job.h"
 
 #include <QtCore/QList>
 #include <QtCore/QString>
@@ -35,14 +35,21 @@
 
 class Project;
 
-class JobDispatcher
+class JobDispatcher : public QObject
 {
+    Q_OBJECT
     Q_DISABLE_COPY(JobDispatcher)
 public:
-    JobDispatcher(Project* project, const TagLookupTable& tags, const QList<TestJob>& jobs = QList<TestJob>());
+    JobDispatcher(Project* project, const TagLookupTable& tags);
     QString errorString() const;
-    void execTestCases();
     bool hasError() const;
+    QList<Testcase::Result> results() const;
+
+public slots:
+    void dispatch(const Job& job);
+
+signals:
+    void finished(const Job&);
 
 private:
     void createProjectWorkingDirectory();
@@ -50,12 +57,12 @@ private:
 
     QString m_errorString;
     Project* m_project;
-    QList<TestJob> m_jobs;
     QList<Testcase::Result> m_results;
     TagLookupTable m_tags;
 };
 
 inline QString JobDispatcher::errorString() const { return m_errorString; }
 inline bool JobDispatcher::hasError() const { return !m_errorString.isEmpty(); }
+inline QList<Testcase::Result> JobDispatcher::results() const { return m_results; }
 
 #endif // JOBRUNNER_H

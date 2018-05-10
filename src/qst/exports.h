@@ -22,39 +22,26 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
-#ifndef QSTITEMVISITOR_H
-#define QSTITEMVISITOR_H
+#ifndef EXPORTS_H
+#define EXPORTS_H
 
-#include <QtCore/QtGlobal>
+#include "qstitem.h"
 
-class Component;
-class Depends;
-class Dimension;
-class Exports;
-class Matrix;
-class Project;
-class QstItem;
-class Testcase;
-
-class QstItemVisitor
+class Exports : public QstItem
 {
-    friend class Component;
-    friend class Depends;
-    friend class Exports;
-    friend class Dimension;
-    friend class Matrix;
-    friend class Project;
-    friend class QstItem;
-    friend class Testcase;
+    Q_OBJECT
+
+public:
+    Exports(QObject* parent = nullptr);
+
+    void accept(QstItemVisitor* visitor);
+    virtual const QMetaObject* baseTypeInfo() const final;
 
 protected:
-    virtual void visit(Component* item) { Q_UNUSED(item) }
-    virtual void visit(Depends* item) { Q_UNUSED(item) }
-    virtual void visit(Dimension* item) { Q_UNUSED(item) }
-    virtual void visit(Exports* item) { Q_UNUSED(item) }
-    virtual void visit(Matrix* item) { Q_UNUSED(item) }
-    virtual void visit(Project* item) { Q_UNUSED(item) }
-    virtual void visit(Testcase* item) { Q_UNUSED(item) }
+    virtual void callVisitor(QstItemVisitor* visitor) final;
+    virtual void handleParserEvent(ParserEvent event) final { Q_UNUSED(event); }
+
 };
 
-#endif // QSTITEMVISITOR_H
+inline const QMetaObject* Exports::baseTypeInfo() const { return &Exports::staticMetaObject; }
+#endif // EXPORTS_H

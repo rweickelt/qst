@@ -26,7 +26,10 @@
 #include "commandlineparser.h"
 #include "component.h"
 #include "console.h"
+#include "dependencygraph.h"
+#include "depends.h"
 #include "dimension.h"
+#include "exports.h"
 #include "file.h"
 #include "xds.h"
 #include "plaintextlogger.h"
@@ -39,9 +42,10 @@
 #include "projectresolver.h"
 #include "proxylogger.h"
 #include "qst.h"
+#include "serialjobscheduler.h"
 #include "testcase.h"
 #include "testcaseattached.h"
-#include "jobrunner.h"
+#include "jobdispatcher.h"
 #include "textfile.h"
 
 #include <QtCore/QCoreApplication>
@@ -124,6 +128,8 @@ void execRunCommand()
     qmlRegisterCustomType<Dimension>("qst", 1,0, "Dimension", new DimensionParser());
     qmlRegisterType<Matrix>("qst", 1,0, "Matrix");
     qmlRegisterType<Component>("qst", 1,0, "Component");
+    qmlRegisterType<Depends>("qst", 1,0, "Depends");
+    qmlRegisterType<Exports>("qst", 1,0, "Exports");
     qmlRegisterType<Testcase>("qst", 1,0, "Testcase");
     qmlRegisterType<TestcaseAttached>();
     qmlRegisterType<PinProbe>("qst", 1,0, "PinProbe");
@@ -155,10 +161,26 @@ void execRunCommand()
     JobMultiplier multiplier(resolver.documents());
     CHECK_FOR_ERROR(multiplier);
 
-    JobRunner runner(resolver.project(), multiplier.jobs().values(), multiplier.tags());
+    DependencyResolver dependencyResolver(resolver.documents());
+    DependencyGraph dependencies = (dependencyResolver.dependencies());
+//    dependencies.dump();
+
+    JobDispatcher runner(resolver.project(), multiplier.tags());
     CHECK_FOR_ERROR(runner);
 
-    runner.execTestCases();
+    SerialJobScheduler scheduler(multiplier.jobs(), dependencies);
+    QObject::connect(&scheduler, &SerialJobScheduler::jobReady, &runner, &JobDispatcher::dispatch);
+    QObject::connect(&runner, &JobDispatcher::finished, &scheduler, &SerialJobScheduler::onJobFinished);
+    scheduler.start();
+
+    if (runner.results().contains(Testcase::Fail))
+    {
+        QCoreApplication::exit(qst::ExitTestCaseFailed);
+    }
+    else
+    {
+        QCoreApplication::exit(qst::ExitNormal);
+    }
 }
 
 

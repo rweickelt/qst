@@ -23,7 +23,9 @@
 ****************************************************************************/
 
 #include "component.h"
+#include "depends.h"
 #include "dimension.h"
+#include "exports.h"
 #include "hierarchyvalidator.h"
 #include "matrix.h"
 #include "project.h"
@@ -41,9 +43,17 @@ namespace {
     const TypeList componentParents = TypeList { INFO(Component), INFO(Testcase) };
     const HierarchyValidator::DocumentRootMode componentRootMode = HierarchyValidator::DocumentRootDisallowed;
 
+    const TypeList dependsChildren;
+    const TypeList dependsParents = TypeList { INFO(Testcase) };
+    const HierarchyValidator::DocumentRootMode dependsRootMode = HierarchyValidator::DocumentRootDisallowed;
+
     const TypeList dimensionChildren;
     const TypeList dimensionParents = TypeList { INFO(Matrix) };
     const HierarchyValidator::DocumentRootMode dimensionRootMode = HierarchyValidator::DocumentRootDisallowed;
+
+    const TypeList exportsChildren;
+    const TypeList exportsParents = TypeList { INFO(Testcase) };
+    const HierarchyValidator::DocumentRootMode exportsRootMode = HierarchyValidator::DocumentRootDisallowed;
 
     const TypeList matrixChildren = TypeList { INFO(Dimension) };
     const TypeList matrixParents = TypeList { INFO(Project), INFO(Testcase) };
@@ -157,10 +167,22 @@ void HierarchyValidator::visit(Component* item)
     validateParentAllowed(item, componentParents, componentRootMode);
 }
 
+void HierarchyValidator::visit(Depends* item)
+{
+    validateChildrenAllowed(item, dependsChildren);
+    validateParentAllowed(item, dependsParents, dependsRootMode);
+}
+
 void HierarchyValidator::visit(Dimension* item)
 {
     validateChildrenAllowed(item, dimensionChildren);
     validateParentAllowed(item, dimensionParents, dimensionRootMode);
+}
+
+void HierarchyValidator::visit(Exports* item)
+{
+    validateChildrenAllowed(item, exportsChildren);
+    validateParentAllowed(item, exportsParents, exportsRootMode);
 }
 
 void HierarchyValidator::visit(Matrix* item)

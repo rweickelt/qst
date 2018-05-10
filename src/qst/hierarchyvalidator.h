@@ -39,14 +39,17 @@ public:
     HierarchyValidator(ProjectResolver& resolver);
     void validate(QstItem* rootItem);
 
-    enum DocumentRootMode {
+    enum DocumentRootMode
+    {
         DocumentRootAllowed,
         DocumentRootDisallowed
     };
 
 protected:
     virtual void visit(Component* item) final;
+    virtual void visit(Depends* item) final;
     virtual void visit(Dimension* item) final;
+    virtual void visit(Exports* item) final;
     virtual void visit(Matrix* item) final;
     virtual void visit(Project* item) final;
     virtual void visit(Testcase* item) final;

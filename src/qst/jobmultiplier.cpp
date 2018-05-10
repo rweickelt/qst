@@ -71,7 +71,7 @@ JobMultiplier::JobMultiplier(const QList<QstDocument*>& documents)
                                .arg(context.file()).arg(context.line()));
         }
 
-        QMultiMap<QString, TestJob> jobs = combine(names, tags);
+        QMultiMap<QString, Job> jobs = combine(names, tags);
         jobs = removeExcluded(jobs, QStringList(), TagLookupTable());
 
         m_jobs += jobs;
@@ -94,7 +94,7 @@ JobMultiplier::JobMultiplier(const QList<QstDocument*>& documents)
     for (const auto& name: untaggedNames)
     {
         Q_ASSERT(!m_jobs.contains(name));
-        m_jobs.insert(name, TestJob::fromTestcase(m_testcases[name]));
+        m_jobs.insert(name, Job(m_testcases[name]));
     }
 }
 
@@ -179,9 +179,9 @@ QStringList JobMultiplier::match(const QStringList& testcases, const QStringList
     return matchedNames;
 }
 
-QMultiMap<QString, TestJob> JobMultiplier::combine(const QStringList& testcases, const QMap<TagId, Tag>& tags)
+QMultiMap<QString, Job> JobMultiplier::combine(const QStringList& testcases, const QMap<TagId, Tag>& tags)
 {
-    QMultiMap<QString, TestJob> result;
+    QMultiMap<QString, Job> result;
     for (const auto& name: testcases)
     {
         Testcase* testcase = m_testcases[name];
@@ -206,10 +206,7 @@ QMultiMap<QString, TestJob> JobMultiplier::combine(const QStringList& testcases,
 
         for (const auto& tag: tags)
         {
-            TestJob job;
-            job.testcase = testcase;
-            job.tagGroupId = makeTagGroupId(tag);
-            job.tagId = makeTagId(tag);
+            Job job(testcase, makeTagGroupId(tag), makeTagId(tag));
             result.insert(name, job);
         }
     }
@@ -217,7 +214,7 @@ QMultiMap<QString, TestJob> JobMultiplier::combine(const QStringList& testcases,
 }
 
 
-QMultiMap<QString, TestJob> JobMultiplier::removeExcluded(const QMultiMap<QString, TestJob>& jobs,
+QMultiMap<QString, Job> JobMultiplier::removeExcluded(const QMultiMap<QString, Job>& jobs,
                                                           const QStringList& patterns,
                                                           const TagLookupTable& tags)
 {
