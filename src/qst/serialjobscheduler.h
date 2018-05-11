@@ -55,6 +55,8 @@ signals:
     void jobReady(const Job& job);
 
 private:
+    static QVariantMap parseExports(Exports* item);
+
     JobTable m_todo;
     JobTable m_done;
     DependencyGraph m_dependencies;

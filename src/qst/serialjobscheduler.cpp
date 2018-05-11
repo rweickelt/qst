@@ -23,11 +23,13 @@
 ****************************************************************************/
 
 #include "depends.h"
+#include "exports.h"
 #include "serialjobscheduler.h"
 #include "qstdocument.h"
 #include "qstitemvisitor.h"
 #include "testcase.h"
 
+#include <QtQml/QQmlContext>
 #include <QtDebug>
 
 namespace {
@@ -59,16 +61,33 @@ SerialJobScheduler::SerialJobScheduler(const JobTable& jobs,
 
 void SerialJobScheduler::onJobFinished(const Job& job)
 {
+    QVariantMap exportedValues;
+
     QString name = job.testcase()->name();
     m_done.insert(name, job);
+
+    DependencyNode node = m_dependencies.node(name);
+    if (node->exportItem)
+    {
+        exportedValues = parseExports(node->exportItem);
+    }
 
     QStringList dependents = m_dependencies.children(name);
     for (const auto& dependent: dependents)
     {
+        // Attach exported values
+        if (node->exportItem)
+        {
+            QQmlContext* context = qmlContext(node->testcaseItem)->parentContext();
+            Q_ASSERT(context);
+            context->setContextProperty(name.toLatin1().constData(), exportedValues);
+        }
+
         m_remainingDependencies[dependent].remove(name);
         if (m_remainingDependencies[dependent].isEmpty())
         {
-            m_readyList << m_todo.take(dependent);
+            m_readyList << m_todo.values(dependent);
+            m_todo.remove(dependent);
         }
     }
 
@@ -101,5 +120,27 @@ void SerialJobScheduler::start()
     Q_ASSERT(!m_readyList.isEmpty());
 
     emit jobReady(m_readyList.takeFirst());
+}
+
+
+QVariantMap SerialJobScheduler::parseExports(Exports* item)
+{
+    const static QStringList ignoredProperties{ "objectName", "nestedComponents" };
+    QVariantMap result;
+    const QMetaObject *metaobject = item->metaObject();
+    int count = metaobject->propertyCount();
+    for (int i=0; i<count; ++i) {
+        QMetaProperty metaproperty = metaobject->property(i);
+        const char *name = metaproperty.name();
+
+        if (ignoredProperties.contains(QLatin1String(name)) || (!metaproperty.isReadable()))
+        {
+            continue;
+        }
+
+        QVariant value = item->property(name);
+        result[QLatin1String(name)] = value;
+    }
+    return result;
 }
 

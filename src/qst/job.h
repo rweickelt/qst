@@ -58,7 +58,7 @@ public:
     Testcase* testcase() const { return d->testcase; }
 
 private:
-    QSharedDataPointer<JobData> d;
+    QExplicitlySharedDataPointer<JobData> d;
 };
 
 #endif // TESTJOB_H

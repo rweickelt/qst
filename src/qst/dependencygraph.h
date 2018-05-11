@@ -51,7 +51,7 @@ public:
     const DependencyNodeData* operator->() const { return d.data(); }
 
 private:
-    QSharedDataPointer<DependencyNodeData> d;
+    QExplicitlySharedDataPointer<DependencyNodeData> d;
 };
 
 class DependencyGraph
