@@ -74,16 +74,4 @@ private:
     QMap<QString, DependencyNode> m_nodes;
 };
 
-class DependencyResolver
-{
-public:
-    DependencyResolver(const QList<QstDocument*>& documents);
-    DependencyGraph dependencies();
-
-private:
-    DependencyGraph m_graph;
-};
-
-inline DependencyGraph DependencyResolver::dependencies() { return m_graph; }
-
 #endif // DEPENDENCYGRAPH_H

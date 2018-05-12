@@ -97,8 +97,7 @@ void ProjectResolver::loadRootFile(const QString& rootfilepath)
         return;
     }
 
-    // One test case in a single file.
-    // Create a dummy project item in that case.
+    // One test case in a single file. Create a dummy project item in that case.
     if (rootDocument->object->baseTypeInfo() == &Testcase::staticMetaObject)
     {
         Testcase* testCase = qobject_cast<Testcase*>(rootDocument->object);
@@ -107,92 +106,64 @@ void ProjectResolver::loadRootFile(const QString& rootfilepath)
         QSharedPointer<QstDocument> projectDoc = this->createDefaultProjectComponent();
         m_project = qobject_cast<Project*>(projectDoc->object);
         m_documents.append(projectDoc);
-        m_documents.append(rootDocument);
         rootDocument->context->setContextProperty("test", testCase);
-        rootDocument->context->setContextProperty("project", m_project.data());
-        this->completeCreate(rootDocument);
-        if (this->hasErrors())
-        {
-            return;
-        }
     }
-    // Project item that may reference files with test cases,
-    // but also contain test case items.
+    // A project with (multiple) testcases and file references.
     else if (rootDocument->object->baseTypeInfo() == &Project::staticMetaObject)
     {
         m_project = qobject_cast<Project*>(rootDocument->object);
-        // In-line test cases need project context property
-        rootDocument->context->setContextProperty("project", m_project);
-        m_documents.append(rootDocument);
-        this->completeCreate(rootDocument);
-        if (this->hasErrors())
-        {
-            return;
-        }
+    }
+    else
+    {
+        // beginCreate should have done that for us
+        Q_ASSERT(false);
     }
 
-    // 2. Browse and resolve references in root project item.
+    rootDocument->context->setContextProperty("project", m_project.data());
+    this->completeCreate(rootDocument);
+    if (this->hasErrors())
+    {
+        return;
+    }
+    m_documents.append(rootDocument);
+
+    // 2. Browse and resolve references in project items.
+    // Project items might be recursive.
     QStringList absoluteReferences = makeAbsolute(m_project->references(),
             rootDocument->context->contextProperty("path").toString());
-    for (QStringList unresolved = absoluteReferences; !unresolved.isEmpty();
-         unresolved.removeFirst())
+
+    QSet<QString> resolved{ QFileInfo(rootfilepath).absoluteFilePath() };
+    for (QStringList unresolved = absoluteReferences; !unresolved.isEmpty(); unresolved.removeFirst())
     {
-        if (!QFile::exists(unresolved.first()))
+        const QString& reference = unresolved.first();
+        if (resolved.contains(reference))
         {
-            m_errors.append(QString("File '%1' referenced by project '%2' does not exist.")
-                            .arg(unresolved.first()).arg(rootfilepath));
+            m_errors.append(QString("While resolving Project references: Document %1 is referenced multiple times.")
+                            .arg(reference));
             return;
         }
-        QSharedPointer<QstDocument> document = beginCreate(unresolved.first());
-        if (document->state == QstDocument::Invalid)
-        {
-            return;
-        }
-
-        if (document->object->baseTypeInfo() == &Project::staticMetaObject)
-        {
-            QStringList references = qobject_cast<Project*>(document->object)->references();
-            unresolved.append(makeAbsolute(references,
-                    document->context->contextProperty("path").toString()));
-
-        }
-        else if (document->object->baseTypeInfo() == &Testcase::staticMetaObject)
-        {
-            document->context->setContextProperty("project", m_project);
-            document->context->setContextProperty("test", document->object);
-        }
-
-        // TODO: I's not possible to create more than 9 objects
-        //       partially. QTBUG-47633. We need to finish creation
-        //       here. Thus, resolving dependencies before complete
-        //       creation is impossible.
-        this->completeCreate(document);
-        if (hasErrors())
-        {
-            return;
-        }
-
-        QString name = document->object->property("name").toString();
-        m_documents.append(document);
+        unresolved << resolveProjectReference(reference);
+        resolved.insert(reference);
     }
 
+    // 3. Find duplicate testcases
+    QMap<QString, Testcase*> testcases;
     for (const auto& document: m_documents)
     {
-        QList<Testcase*> testcases = document->object->findChildren<Testcase*>();
+        QList<Testcase*> children = document->object->findChildren<Testcase*>();
         if (document->object->baseTypeInfo() == &Testcase::staticMetaObject)
         {
-            testcases << qobject_cast<Testcase*>(document->object.data());
+            children << qobject_cast<Testcase*>(document->object);
         }
-
-        for (const auto& testcase: testcases)
+        for (const auto& testcase: children)
         {
-            if (!m_testCases.contains(testcase->name()))
+            if (!testcases.contains(testcase->name()))
             {
-                m_testCases.insert(testcase->name(), testcase);
+                testcases.insert(testcase->name(), testcase);
             }
             else
             {
-                QmlContext existing = qst::qmlDefinitionContext(m_testCases.value(testcase->name()));
+                QmlContext existing = qst::qmlDefinitionContext(testcases.value(testcase->name()));
                 QmlContext duplicate = qst::qmlDefinitionContext(testcase);
                 m_errors.append(QString("At %1:%2: A testcase with that name was already defined at %3:%4.")
                                 .arg(duplicate.file()).arg(duplicate.line())
@@ -200,6 +171,51 @@ void ProjectResolver::loadRootFile(const QString& rootfilepath)
             }
         }
     }
+}
+
+QStringList ProjectResolver::resolveProjectReference(const QString& filepath)
+{
+    QStringList unresolvedFiles;
+
+    if (!QFile::exists(filepath))
+    {
+        m_errors.append(QString("File '%1' referenced by project '%2' does not exist.")
+                        .arg(filepath).arg(m_currentDocument.toStrongRef()->factory->url().path()));
+
+        return QStringList();
+    }
+    QSharedPointer<QstDocument> document = beginCreate(filepath);
+    if (document->state == QstDocument::Invalid)
+    {
+        return QStringList();
+    }
+
+    if (document->object->baseTypeInfo() == &Project::staticMetaObject)
+    {
+        QStringList references = qobject_cast<Project*>(document->object)->references();
+        unresolvedFiles.append(makeAbsolute(references,
+                document->context->contextProperty("path").toString()));
+    }
+    else if (document->object->baseTypeInfo() == &Testcase::staticMetaObject)
+    {
+        document->context->setContextProperty("project", m_project);
+        document->context->setContextProperty("test", document->object);
+    }
+
+    // TODO: I's not possible to create more than 9 objects
+    //       partially. QTBUG-47633. We need to finish creation
+    //       here. Thus, resolving dependencies before complete
+    //       creation is impossible.
+    this->completeCreate(document);
+    if (hasErrors())
+    {
+        return QStringList();
+    }
+
+    QString name = document->object->property("name").toString();
+    m_documents.append(document);
+
+    return unresolvedFiles;
 }
 
 // Begins component creation, performs various sanity checks and returns
@@ -291,11 +307,6 @@ QSharedPointer<QstDocument> ProjectResolver::createDefaultProjectComponent()
 
     m_currentDocument = currentDocumentBackup;
     return project;
-}
-
-QList<Testcase*> ProjectResolver::testcases() const
-{
-    return m_testCases.values();
 }
 
 QStringList ProjectResolver::makeAbsolute(const QStringList& paths, const QString& basePath)

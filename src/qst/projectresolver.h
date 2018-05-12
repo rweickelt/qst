@@ -66,7 +66,6 @@ public:
     void loadRootFile(const QString& rootfilepath);
     QList<Matrix*> matrices() const;
     Project* project();
-    QList<Testcase*> testcases() const;
 
     static ProjectResolver* instance();
 
@@ -74,6 +73,8 @@ private:
     QSharedPointer<QstDocument> beginCreate(const QString& filepath);
     void completeCreate(const QSharedPointer<QstDocument>& item);
     QSharedPointer<QstDocument> createDefaultProjectComponent();
+    QStringList resolveProjectReference(const QString& filepath);
+
     Q_INVOKABLE void onQmlEngineWarnings(const QList<QQmlError> &warnings);
 
     static QStringList makeAbsolute(const QStringList& paths, const QString& basePath);
@@ -82,7 +83,6 @@ private:
     QPointer<QQmlEngine> m_engine;
     QStringList m_errors;
     QPointer<Project> m_project;
-    QMap<QString, Testcase*> m_testCases;
     QWeakPointer<QstDocument> m_currentDocument;
 
     friend class QmlEngineWarningScopeGuard;

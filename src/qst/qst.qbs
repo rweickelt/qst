@@ -34,6 +34,8 @@ QtApplication {
         "console.h",
         "dependencygraph.cpp",
         "dependencygraph.h",
+        "dependencyresolver.cpp",
+        "dependencyresolver.h",
         "depends.cpp",
         "depends.h",
         "dimension.cpp",

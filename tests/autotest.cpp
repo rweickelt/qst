@@ -89,19 +89,11 @@ void AutoTest::testCase()
 
 void AutoTest::testCaseName()
 {
-    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("testcase-name/project-missing-name.qml") });
-    if (qstProcess().exitCode() != 0)
-    {
-        QFAIL(qstProcess().readAllStandardError());
-    }
-    VERIFY_PASS(results, "name");
-    VERIFY_PASS(results, "testcase-0");
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("testcase-name/project-missing-name.qml"));
+    VERIFY_PASS(results(), "name");
+    VERIFY_PASS(results(), "testcase-0");
 
-    results = execQstRun(QStringList{ "-f", dataPath("testcase-name/project-duplicate-name.qml") });
-    if (qstProcess().exitCode() != 1)
-    {
-        QFAIL(qstProcess().readAllStandardError());
-    }
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("testcase-name/project-duplicate-name.qml"));
 }
 
 

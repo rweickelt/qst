@@ -22,47 +22,30 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
+#ifndef DEPENDENCYRESOLVER_H
+#define DEPENDENCYRESOLVER_H
+
 #include "dependencygraph.h"
-#include "testcase.h"
+#include "job.h"
 
-#include <QtDebug>
+#include <QtCore/QList>
 
+class QstDocument;
 
-DependencyGraph::DependencyGraph()
+class DependencyResolver
 {
+public:
+    DependencyResolver();
+    void beginResolve(const QList<QstDocument*>& documents);
+    void completeResolve(const JobTable& jobs);
+    DependencyGraph dependencies();
+    QList<Job*> rootJobs() const;
 
-}
+private:
+    DependencyGraph m_graph;
+};
 
-QList<DependencyGraph::NodeId> DependencyGraph::children(const DependencyGraph::NodeId& item) const
-{
-    return m_vertices.values(item);
-}
-
-bool DependencyGraph::isEmpty() const
-{
-    return m_nodes.isEmpty();
-}
-
-
-DependencyNode& DependencyGraph::node(const NodeId& id)
-{
-    Q_ASSERT(m_nodes.contains(id));
-    return m_nodes[id];
-}
-
-QList<DependencyNode> DependencyGraph::nodes() const
-{
-    return m_nodes.values();
-}
+inline DependencyGraph DependencyResolver::dependencies() { return m_graph; }
 
 
-void DependencyGraph::dump()
-{
-    QStringList nodes;
-    for (const auto& node: m_nodes)
-    {
-        nodes << node->testcaseItem->name();
-    }
-    qDebug() << "Nodes: " << nodes;
-    qDebug() << "Vertices: " << m_vertices;
-}
+#endif // DEPENDENCYRESOLVER_H

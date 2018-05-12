@@ -29,6 +29,7 @@
 
 #include <QtCore/QSharedData>
 #include <QtCore/QSharedDataPointer>
+#include <QtCore/QMultiMap>
 #include <QtCore/QVariantMap>
 
 class Testcase;

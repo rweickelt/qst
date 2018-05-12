@@ -27,10 +27,12 @@
 #include "component.h"
 #include "console.h"
 #include "dependencygraph.h"
+#include "dependencyresolver.h"
 #include "depends.h"
 #include "dimension.h"
 #include "exports.h"
 #include "file.h"
+#include "job.h"
 #include "xds.h"
 #include "plaintextlogger.h"
 #include "matrix.h"
@@ -154,26 +156,28 @@ void execRunCommand()
     CHECK_FOR_ERROR(profileLoader);
     engine.rootContext()->setContextProperty("profile", profile);
 
-    ProjectResolver resolver(&engine);
-    resolver.loadRootFile(options->projectFilepath);
-    CHECK_FOR_ERRORS(resolver);
+    ProjectResolver projectResolver(&engine);
+    projectResolver.loadRootFile(options->projectFilepath);
+    CHECK_FOR_ERRORS(projectResolver);
 
-    JobMultiplier multiplier(resolver.documents());
+    JobMultiplier multiplier(projectResolver.documents());
     CHECK_FOR_ERROR(multiplier);
+    JobTable jobs = multiplier.jobs();
+    TagLookupTable tags = multiplier.tags();
 
-    DependencyResolver dependencyResolver(resolver.documents());
-    DependencyGraph dependencies = (dependencyResolver.dependencies());
-//    dependencies.dump();
+    DependencyResolver dependencyResolver;
+    dependencyResolver.beginResolve(projectResolver.documents());
+//    dependencyResolver.completeResolve(jobs);
 
-    JobDispatcher runner(resolver.project(), multiplier.tags());
-    CHECK_FOR_ERROR(runner);
+    JobDispatcher dispatcher(projectResolver.project(), tags);
+    CHECK_FOR_ERROR(dispatcher);
 
-    SerialJobScheduler scheduler(multiplier.jobs(), dependencies);
-    QObject::connect(&scheduler, &SerialJobScheduler::jobReady, &runner, &JobDispatcher::dispatch);
-    QObject::connect(&runner, &JobDispatcher::finished, &scheduler, &SerialJobScheduler::onJobFinished);
+    SerialJobScheduler scheduler(jobs, dependencyResolver.dependencies());
+    QObject::connect(&scheduler, &SerialJobScheduler::jobReady, &dispatcher, &JobDispatcher::dispatch);
+    QObject::connect(&dispatcher, &JobDispatcher::finished, &scheduler, &SerialJobScheduler::onJobFinished);
     scheduler.start();
 
-    if (runner.results().contains(Testcase::Fail))
+    if (dispatcher.results().contains(Testcase::Fail))
     {
         QCoreApplication::exit(qst::ExitTestCaseFailed);
     }

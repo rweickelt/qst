@@ -89,7 +89,7 @@ private:
     QString m_errorString;
     QList<Matrix*> m_matrices;
     QMap<QString, Testcase*> m_testcases;
-    QMultiMap<QString, Job> m_jobs;
+    JobTable m_jobs;
     TagLookupTable m_tags;
 };
 
