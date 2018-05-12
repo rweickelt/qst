@@ -58,12 +58,9 @@ public:
 
     void appendError(const QString& message);
     QList<QstDocument*> documents();
-    void registerMatrixComponent(Matrix* matrix);
-    QstDocument* currentDocument();
     QStringList errors() const;
     bool hasErrors() const;
     void loadRootFile(const QString& rootfilepath);
-    QList<Matrix*> matrices() const;
     Project* project();
 
     static ProjectResolver* instance();
@@ -73,6 +70,7 @@ private:
     QQmlEngine* createEngine();
     void completeCreate(const QSharedPointer<QstDocument>& document);
     QSharedPointer<QstDocument> createDefaultProjectComponent();
+    QstDocument* currentDocument();
     QStringList resolveProjectReference(const QString& filepath);
 
     Q_INVOKABLE void onQmlEngineWarnings(const QList<QQmlError> &warnings);
