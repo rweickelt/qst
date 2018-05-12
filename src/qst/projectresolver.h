@@ -35,7 +35,6 @@
 #include <QtCore/QWeakPointer>
 
 class Matrix;
-class QQmlEngine;
 class QQmlComponent;
 class QQmlContext;
 
@@ -55,7 +54,7 @@ class ProjectResolver : public QObject
     Q_DISABLE_COPY(ProjectResolver)
 
 public:
-    ProjectResolver(QQmlEngine* engine);
+    ProjectResolver(const QVariantMap& profile);
 
     void appendError(const QString& message);
     QList<QstDocument*> documents();
@@ -71,7 +70,8 @@ public:
 
 private:
     QSharedPointer<QstDocument> beginCreate(const QString& filepath);
-    void completeCreate(const QSharedPointer<QstDocument>& item);
+    QQmlEngine* createEngine();
+    void completeCreate(const QSharedPointer<QstDocument>& document);
     QSharedPointer<QstDocument> createDefaultProjectComponent();
     QStringList resolveProjectReference(const QString& filepath);
 
@@ -80,9 +80,9 @@ private:
     static QStringList makeAbsolute(const QStringList& paths, const QString& basePath);
 
     QList<QSharedPointer<QstDocument> > m_documents;
-    QPointer<QQmlEngine> m_engine;
     QStringList m_errors;
     QPointer<Project> m_project;
+    QVariantMap m_profile;
     QWeakPointer<QstDocument> m_currentDocument;
 
     friend class QmlEngineWarningScopeGuard;

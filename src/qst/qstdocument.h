@@ -30,6 +30,7 @@
 
 class QQmlComponent;
 class QQmlContext;
+class QQmlEngine;
 class QstItem;
 
 struct QstDocument
@@ -41,6 +42,7 @@ struct QstDocument
         Invalid
     };
 
+    QPointer<QQmlEngine> engine;
     QPointer<QQmlContext> context;
     QPointer<QQmlComponent> factory;
     QPointer<QstItem> object;

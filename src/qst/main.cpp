@@ -119,13 +119,6 @@ int main(int argc, char *argv[])
 void execRunCommand()
 {
     ApplicationOptions* options = ApplicationOptions::instance();
-    QQmlEngine engine;
-    engine.connect(&engine, &QQmlEngine::quit, QCoreApplication::instance(), QCoreApplication::quit);
-
-    for (const auto& path : options->importPaths)
-    {
-        engine.addImportPath(path);
-    }
 
     qmlRegisterCustomType<Dimension>("qst", 1,0, "Dimension", new DimensionParser());
     qmlRegisterType<Matrix>("qst", 1,0, "Matrix");
@@ -139,7 +132,6 @@ void execRunCommand()
     qmlRegisterType<Project>("qst", 1,0, "Project");
     qmlRegisterType<QstService>("qst", 1, 0, "QstService");
     qmlRegisterUncreatableType<TextFile>("qst", 1, 0, "TextFile", "TextFile can only be created in a JS context");
-    TextFile::registerJSType(&engine);
 
     qRegisterMetaType<Testcase::State>();
     qRegisterMetaType<QmlContext>();
@@ -152,11 +144,10 @@ void execRunCommand()
     ProxyLogger::instance()->registerLogger(&plaintextLogger);
 
     ProfileLoader profileLoader(options->profilePaths);
-    QVariant profile = profileLoader.loadProfile(options->profile);
+    QVariantMap profile = profileLoader.loadProfile(options->profile);
     CHECK_FOR_ERROR(profileLoader);
-    engine.rootContext()->setContextProperty("profile", profile);
 
-    ProjectResolver projectResolver(&engine);
+    ProjectResolver projectResolver(profile);
     projectResolver.loadRootFile(options->projectFilepath);
     CHECK_FOR_ERRORS(projectResolver);
 

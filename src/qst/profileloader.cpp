@@ -33,13 +33,13 @@ ProfileLoader::ProfileLoader(const QStringList& paths)
     setProfileSearchPaths(paths);
 }
 
-QVariant ProfileLoader::loadProfile(QString name)
+QVariantMap ProfileLoader::loadProfile(QString name)
 {
     m_error.clear();
 
     if (name.isEmpty())
     {
-        return QVariant();
+        return QVariantMap();
     }
 
     if (name.endsWith(".json"))
@@ -62,14 +62,14 @@ QVariant ProfileLoader::loadProfile(QString name)
     if (profilePath.isEmpty())
     {
         m_error = QString("Could not find profile document '%1'").arg(fileName);
-        return QVariant();
+        return QVariantMap();
     }
 
     QFile file(profilePath);
     if (!file.open(QIODevice::ReadOnly))
     {
         m_error = QString("Could not open the profile document '%1': %2").arg(fileName).arg(file.errorString());
-        return QVariant();
+        return QVariantMap();
     }
 
     QByteArray content = file.readAll();

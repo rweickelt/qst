@@ -21,12 +21,15 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
+#include "applicationoptions.h"
 #include "hierarchyvalidator.h"
 #include "qstitem.h"
 #include "project.h"
 #include "projectresolver.h"
 #include "qst.h"
+#include "textfile.h"
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 
@@ -61,10 +64,10 @@ namespace {
     ProjectResolver* projectResolver = nullptr;
 }
 
-ProjectResolver::ProjectResolver(QQmlEngine* engine)
+ProjectResolver::ProjectResolver(const QVariantMap& profile)
 {
     m_currentDocument = nullptr;
-    m_engine = engine;
+    m_profile = profile;
     projectResolver = this;
 }
 
@@ -86,10 +89,6 @@ QList<QstDocument*> ProjectResolver::documents()
 
 void ProjectResolver::loadRootFile(const QString& rootfilepath)
 {
-    // Re-route QML error handling only in the scope of this method.
-    // Cope with multiple exit points.
-    QmlEngineWarningScopeGuard guard(this, m_engine.data());
-
     // 1. Create a root object with all const properties.
     QSharedPointer<QstDocument> rootDocument = this->beginCreate(rootfilepath);
     if (hasErrors())
@@ -224,10 +223,17 @@ QSharedPointer<QstDocument> ProjectResolver::beginCreate(const QString& filepath
 {
     QSharedPointer<QstDocument> document = QSharedPointer<QstDocument>(new QstDocument());
     m_currentDocument = document.toWeakRef();
+    document->engine = createEngine();
+
+    // Re-route QML error handling only in the scope of this method.
+    // Cope with multiple exit points.
+    QmlEngineWarningScopeGuard guard(this, document->engine.data());
+
     document->state = QstDocument::Undefined;
-    document->context = new QQmlContext(m_engine->rootContext(), this);
+    document->context = new QQmlContext(document->engine->rootContext(), this);
+    document->context->setContextProperty("profile", m_profile);
     document->context->setContextProperty("path", QFileInfo(filepath).dir().absolutePath());
-    document->factory = new QQmlComponent(m_engine, filepath, this);
+    document->factory = new QQmlComponent(document->engine, filepath, this);
 
     QObject* object = document->factory->beginCreate(document->context);
     document->object = qobject_cast<QstItem*>(object);
@@ -262,23 +268,27 @@ QSharedPointer<QstDocument> ProjectResolver::beginCreate(const QString& filepath
 }
 
 
-void ProjectResolver::completeCreate(const QSharedPointer<QstDocument>& item)
+void ProjectResolver::completeCreate(const QSharedPointer<QstDocument>& document)
 {
-    Q_ASSERT(item->state == QstDocument::Creating);
+    // Re-route QML error handling only in the scope of this method.
+    // Cope with multiple exit points.
+    QmlEngineWarningScopeGuard guard(this, document->engine.data());
+
+    Q_ASSERT(document->state == QstDocument::Creating);
 
     QSharedPointer<QstDocument> currentItemBackup = m_currentDocument;
-    m_currentDocument = item;
+    m_currentDocument = document;
 
-    item->factory->completeCreate();
-    if (item->factory->isError()) \
+    document->factory->completeCreate();
+    if (document->factory->isError()) \
     {
-        for (const auto& error : item->factory->errors())
+        for (const auto& error : document->factory->errors())
         {
             m_errors.append(error.toString());
         }
     }
 
-    QList<QstItem*> children = item->object->findChildren<QstItem*>() << item->object;
+    QList<QstItem*> children = document->object->findChildren<QstItem*>() << document->object;
     for (const auto& child: children)
     {
         child->afterComponentComplete();
@@ -294,9 +304,10 @@ QSharedPointer<QstDocument> ProjectResolver::createDefaultProjectComponent()
     QSharedPointer<QstDocument> project(new QstDocument());
     m_currentDocument = project;
 
-    project->factory = new QQmlComponent(m_engine, this);
+    project->engine = createEngine();
+    project->factory = new QQmlComponent(project->engine, this);
     project->factory->setData("import qst 1.0\n Project {}", QUrl());
-    project->object = qobject_cast<QstItem*>(project->factory->beginCreate(m_engine->rootContext()));
+    project->object = qobject_cast<QstItem*>(project->factory->beginCreate(project->engine->rootContext()));
     qobject_cast<Project*>(project->object)->afterClassBegin();
     project->factory->completeCreate();
     qobject_cast<Project*>(project->object)->afterComponentComplete();
@@ -341,7 +352,6 @@ void ProjectResolver::onQmlEngineWarnings(const QList<QQmlError> &warnings)
             .arg(error.line())
             .arg(error.description());
     QST_ERROR_AND_EXIT(message);
-
 }
 
 QstDocument* ProjectResolver::currentDocument()
@@ -359,4 +369,19 @@ ProjectResolver* ProjectResolver::instance()
 Project* ProjectResolver::project()
 {
     return m_project.data();
+}
+
+QQmlEngine* ProjectResolver::createEngine()
+{
+    QQmlEngine* engine = new QQmlEngine(this);
+    QObject::connect(engine, &QQmlEngine::quit, QCoreApplication::instance(), &QCoreApplication::quit);
+
+    for (const auto& path : ApplicationOptions::instance()->importPaths)
+    {
+        engine->addImportPath(path);
+    }
+
+    TextFile::registerJSType(engine);
+
+    return engine;
 }
