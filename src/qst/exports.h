@@ -36,6 +36,7 @@ public:
 
     void accept(QstItemVisitor* visitor);
     virtual const QMetaObject* baseTypeInfo() const final;
+    QVariantMap toVariantMap() const;
 
 protected:
     virtual void callVisitor(QstItemVisitor* visitor) final;

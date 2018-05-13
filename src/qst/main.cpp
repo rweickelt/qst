@@ -143,26 +143,41 @@ void execRunCommand()
     PlaintextLogger plaintextLogger;
     ProxyLogger::instance()->registerLogger(&plaintextLogger);
 
+    // Eventually load the profile first.
     ProfileLoader profileLoader(options->profilePaths);
     QVariantMap profile = profileLoader.loadProfile(options->profile);
     CHECK_FOR_ERROR(profileLoader);
 
+    // Create all components, but do not resolve bindings yet
+    // If other documents are referenced, load them as well.
     ProjectResolver projectResolver(profile);
-    projectResolver.loadRootFile(options->projectFilepath);
+    projectResolver.beginLoad(options->projectFilepath);
     CHECK_FOR_ERRORS(projectResolver);
 
+    // Resolve basic dependency relations between test cases
+    // and attach Exports items so that bindings will work.
+    DependencyResolver dependencyResolver;
+    dependencyResolver.beginResolve(projectResolver.documents());
+
+    // Finally resolve bindings
+    projectResolver.completeLoad();
+    CHECK_FOR_ERRORS(projectResolver);
+
+    // Create an overview over tags if defined and prepare
+    // executable jobs.
     JobMultiplier multiplier(projectResolver.documents());
     CHECK_FOR_ERROR(multiplier);
     JobTable jobs = multiplier.jobs();
     TagLookupTable tags = multiplier.tags();
 
-    DependencyResolver dependencyResolver;
-    dependencyResolver.beginResolve(projectResolver.documents());
-//    dependencyResolver.completeResolve(jobs);
+    // Do more fine-grained dependency resolution, taking tags into account.
+    // dependencyResolver.completeResolve(jobs);
 
+    //Does the dirty work
     JobDispatcher dispatcher(projectResolver.project(), tags);
     CHECK_FOR_ERROR(dispatcher);
 
+    // Schedules jobs one-by-one, taking dependency relations into account.
     SerialJobScheduler scheduler(jobs, dependencyResolver.dependencies());
     QObject::connect(&scheduler, &SerialJobScheduler::jobReady, &dispatcher, &JobDispatcher::dispatch);
     QObject::connect(&dispatcher, &JobDispatcher::finished, &scheduler, &SerialJobScheduler::onJobFinished);

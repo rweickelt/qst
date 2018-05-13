@@ -33,6 +33,7 @@
 #include <QtCore/QHash>
 
 #include <QtQml/QQmlContext>
+#include <QtQml/QQmlExpression>
 #include <QtQml/QQmlEngine>
 
 Project::Project(QObject *parent) : QstItem(parent)
@@ -65,4 +66,18 @@ void Project::handleParserEvent(ParserEvent event)
             m_workingDirectory = QDir().absoluteFilePath(workDirName);
         }
     }
+}
+
+#include <QtDebug>
+
+QStringList Project::references()
+{
+    QQmlExpression expression(m_references);
+    bool valueIsUndefined = false;
+    QVariant result = expression.evaluate(&valueIsUndefined);
+    Q_ASSERT(!valueIsUndefined);
+
+//    qDebug() << result.toStringList();
+
+    return result.toStringList();
 }

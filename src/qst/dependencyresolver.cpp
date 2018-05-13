@@ -24,6 +24,7 @@
 
 #include "dependencyresolver.h"
 #include "depends.h"
+#include "exports.h"
 #include "job.h"
 #include "qstdocument.h"
 #include "qstitemvisitor.h"
@@ -101,6 +102,7 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
         document->object->accept(&visitor);
     }
 
+    // Build dependency structure Testcase -> Dependent testaces
     for (auto& node: m_graph.m_nodes.values())
     {
         QString dependentName = node->testcaseItem->name();
@@ -116,6 +118,32 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
             m_graph.m_vertices.insert(QString(), dependentName);
         }
     }
+
+    // Attach preliminary exports item to dependents
+    for (auto& node: m_graph.nodes())
+    {
+        if (node->exportItem != nullptr)
+        {
+            QVariantMap exportMap = node->exportItem->toVariantMap();
+            QList<DependencyNode> dependents;
+            for (const auto& dependentName: m_graph.m_vertices.values(node->testcaseItem->name()))
+            {
+                dependents << m_graph.m_nodes.values(dependentName);
+            }
+            for (auto& dependent: dependents)
+            {
+                int index = dependent->dependencies.indexOf(node->testcaseItem->name());
+                // Is not implement yet.
+//                QString targetName = dependent->targetNames.at(index);
+                QString targetName = node->testcaseItem->name();
+                QQmlContext* context = qmlContext(dependent->testcaseItem)->parentContext();
+                context->setContextProperty(targetName.toLatin1(), exportMap);
+            }
+        }
+    }
+
+
+
 }
 
 QList<Job*> DependencyResolver::rootJobs() const

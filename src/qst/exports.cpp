@@ -25,6 +25,8 @@
 #include "exports.h"
 #include "qstitemvisitor.h"
 
+#include <QtCore/QMetaProperty>
+
 Exports::Exports(QObject* parent) : QstItem(parent)
 {
 
@@ -33,4 +35,27 @@ Exports::Exports(QObject* parent) : QstItem(parent)
 void Exports::callVisitor(QstItemVisitor* visitor)
 {
     visitor->visit(this);
+}
+
+QVariantMap Exports::toVariantMap() const
+{
+    QVariantMap result;
+
+    const static QStringList ignoredProperties{ "objectName", "nestedComponents" };
+    const QMetaObject* metaobject = this->metaObject();
+    int count = metaobject->propertyCount();
+    for (int i = 0; i < count; i++)
+    {
+        QMetaProperty metaproperty = metaobject->property(i);
+        const char* name = metaproperty.name();
+
+        if (ignoredProperties.contains(QLatin1String(name)) || (!metaproperty.isReadable()))
+        {
+            continue;
+        }
+
+        QVariant value = this->property(name);
+        result[QLatin1String(name)] = value;
+    }
+    return result;
 }

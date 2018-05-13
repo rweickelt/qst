@@ -32,6 +32,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
+#include <QtCore/QGlobalStatic>
 
 #include <QtQml/QQmlComponent>
 #include <QtQml/QQmlContext>
@@ -60,15 +61,9 @@ private:
     QQmlEngine* m_engine;
 };
 
-namespace {
-    ProjectResolver* projectResolver = nullptr;
-}
-
 ProjectResolver::ProjectResolver(const QVariantMap& profile)
 {
-    m_currentDocument = nullptr;
     m_profile = profile;
-    projectResolver = this;
 }
 
 void ProjectResolver::appendError(const QString& message)
@@ -87,7 +82,7 @@ QList<QstDocument*> ProjectResolver::documents()
 }
 
 
-void ProjectResolver::loadRootFile(const QString& rootfilepath)
+void ProjectResolver::beginLoad(const QString& rootfilepath)
 {
     // 1. Create a root object with all const properties.
     QSharedPointer<QstDocument> rootDocument = this->beginCreate(rootfilepath);
@@ -119,11 +114,6 @@ void ProjectResolver::loadRootFile(const QString& rootfilepath)
     }
 
     rootDocument->context->setContextProperty("project", m_project.data());
-    this->completeCreate(rootDocument);
-    if (this->hasErrors())
-    {
-        return;
-    }
     m_documents.append(rootDocument);
 
     // 2. Browse and resolve references in project items.
@@ -172,6 +162,18 @@ void ProjectResolver::loadRootFile(const QString& rootfilepath)
     }
 }
 
+void ProjectResolver::completeLoad()
+{
+    for (const auto& document: m_documents)
+    {
+        completeCreate(document);
+        if (this->hasErrors())
+        {
+            return;
+        }
+    }
+}
+
 QStringList ProjectResolver::resolveProjectReference(const QString& filepath)
 {
     QStringList unresolvedFiles;
@@ -180,7 +182,6 @@ QStringList ProjectResolver::resolveProjectReference(const QString& filepath)
     {
         m_errors.append(QString("File '%1' referenced by project '%2' does not exist.")
                         .arg(filepath).arg(m_currentDocument.toStrongRef()->factory->url().path()));
-
         return QStringList();
     }
     QSharedPointer<QstDocument> document = beginCreate(filepath);
@@ -199,16 +200,6 @@ QStringList ProjectResolver::resolveProjectReference(const QString& filepath)
     {
         document->context->setContextProperty("project", m_project);
         document->context->setContextProperty("test", document->object);
-    }
-
-    // TODO: I's not possible to create more than 9 objects
-    //       partially. QTBUG-47633. We need to finish creation
-    //       here. Thus, resolving dependencies before complete
-    //       creation is impossible.
-    this->completeCreate(document);
-    if (hasErrors())
-    {
-        return QStringList();
     }
 
     QString name = document->object->property("name").toString();
@@ -309,9 +300,7 @@ QSharedPointer<QstDocument> ProjectResolver::createDefaultProjectComponent()
     project->factory->setData("import qst 1.0\n Project {}", QUrl());
     project->object = qobject_cast<QstItem*>(project->factory->beginCreate(project->engine->rootContext()));
     qobject_cast<Project*>(project->object)->afterClassBegin();
-    project->factory->completeCreate();
-    qobject_cast<Project*>(project->object)->afterComponentComplete();
-    project->state = QstDocument::Finished;
+    project->state = QstDocument::Creating;
 
     Q_ASSERT(!project->factory->isError());
     Q_ASSERT(!project->object.isNull());
@@ -354,18 +343,6 @@ void ProjectResolver::onQmlEngineWarnings(const QList<QQmlError> &warnings)
     QST_ERROR_AND_EXIT(message);
 }
 
-QstDocument* ProjectResolver::currentDocument()
-{
-    Q_ASSERT(!m_currentDocument.isNull());
-    return m_currentDocument.data();
-}
-
-ProjectResolver* ProjectResolver::instance()
-{
-    Q_ASSERT(projectResolver != nullptr);
-    return projectResolver;
-}
-
 Project* ProjectResolver::project()
 {
     return m_project.data();
@@ -373,15 +350,18 @@ Project* ProjectResolver::project()
 
 QQmlEngine* ProjectResolver::createEngine()
 {
-    QQmlEngine* engine = new QQmlEngine(this);
-    QObject::connect(engine, &QQmlEngine::quit, QCoreApplication::instance(), &QCoreApplication::quit);
+    static QQmlEngine* engine = nullptr;
 
-    for (const auto& path : ApplicationOptions::instance()->importPaths)
+    if (engine == nullptr)
     {
-        engine->addImportPath(path);
+        engine = new QQmlEngine(this);
+        QObject::connect(engine, &QQmlEngine::quit, QCoreApplication::instance(), &QCoreApplication::quit);
+        for (const auto& path : ApplicationOptions::instance()->importPaths)
+        {
+            engine->addImportPath(path);
+        }
+        TextFile::registerJSType(engine);
     }
-
-    TextFile::registerJSType(engine);
 
     return engine;
 }

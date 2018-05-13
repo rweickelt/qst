@@ -52,25 +52,24 @@ class ProjectResolver : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(ProjectResolver)
+    friend class HierarchyValidator;
 
 public:
     ProjectResolver(const QVariantMap& profile);
-
-    void appendError(const QString& message);
     QList<QstDocument*> documents();
     QStringList errors() const;
     bool hasErrors() const;
-    void loadRootFile(const QString& rootfilepath);
     Project* project();
 
-    static ProjectResolver* instance();
+    void beginLoad(const QString& rootfilepath);
+    void completeLoad();
 
 private:
+    void appendError(const QString& message);
     QSharedPointer<QstDocument> beginCreate(const QString& filepath);
     QQmlEngine* createEngine();
     void completeCreate(const QSharedPointer<QstDocument>& document);
     QSharedPointer<QstDocument> createDefaultProjectComponent();
-    QstDocument* currentDocument();
     QStringList resolveProjectReference(const QString& filepath);
 
     Q_INVOKABLE void onQmlEngineWarnings(const QList<QQmlError> &warnings);
