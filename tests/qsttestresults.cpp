@@ -77,6 +77,8 @@ QstTestResults QstTestResults::fromQstOutput(const QByteArray& text)
             {
                 Q_ASSERT(false);
             }
+
+            results.m_names.append(newEntry.name);
         }
         else
         {
@@ -119,6 +121,16 @@ bool QstTestResults::hasPassed(const QString &name) const
     {
         return false;
     }
+}
+
+int QstTestResults::indexOf(const QString& name) const
+{
+    return m_names.indexOf(name);
+}
+
+QStringList QstTestResults::names() const
+{
+    return m_names;
 }
 
 const QstOutput QstTestResults::output(const QString& name) const

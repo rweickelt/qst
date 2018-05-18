@@ -48,6 +48,8 @@ public:
     bool hasFailed(const QString& name) const;
     bool hasPassed(const QString& name) const;
     bool contains(const QString& name) const;
+    int indexOf(const QString& name) const;
+    QStringList names() const;
     const QstOutput output(const QString& name) const;
     QByteArray stdOut() const;
 
@@ -57,6 +59,7 @@ public:
 private:
     QHash<QString, QstOutput>  m_data;
     QMultiHash<QString, QstOutput> m_info;
+    QStringList m_names;
     quint32 m_failCount;
     quint32 m_passCount;
     QByteArray m_stdOut;
