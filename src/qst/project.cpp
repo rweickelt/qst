@@ -33,6 +33,7 @@
 #include <QtCore/QHash>
 
 #include <QtQml/QQmlContext>
+#include <QtQml/QQmlError>
 #include <QtQml/QQmlExpression>
 #include <QtQml/QQmlEngine>
 
@@ -68,16 +69,25 @@ void Project::handleParserEvent(ParserEvent event)
     }
 }
 
-#include <QtDebug>
-
 QStringList Project::references()
 {
-    QQmlExpression expression(m_references);
+    QQmlExpression expression(m_references, qmlContext(this), this);
     bool valueIsUndefined = false;
     QVariant result = expression.evaluate(&valueIsUndefined);
-    Q_ASSERT(!valueIsUndefined);
+    if (expression.hasError())
+    {
+        QQmlError error = expression.error();
+        QST_ERROR_AND_EXIT(QString("At %1:%2: %3")
+                           .arg(error.url().path())
+                           .arg(error.line())
+                           .arg(error.description())
+        );
+    }
 
-//    qDebug() << result.toStringList();
+    if (valueIsUndefined)
+    {
+        return QStringList();
+    }
 
     return result.toStringList();
 }
