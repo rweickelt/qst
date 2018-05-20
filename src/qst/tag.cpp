@@ -26,7 +26,7 @@
 
 #include <QtCore/QHash>
 
-TagGroupId makeTagGroupId(const Tag& tag)
+TagGroupId makeTagGroupId(const TagSet& tag)
 {
     QString text;
     for (const auto& key: tag.keys())
@@ -36,7 +36,7 @@ TagGroupId makeTagGroupId(const Tag& tag)
     return qHash(text);
 }
 
-TagId makeTagId(const Tag& tag)
+TagId makeTagId(const TagSet& tag)
 {
     QString text;
     for (const auto& value: tag.values())

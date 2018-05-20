@@ -60,7 +60,7 @@ JobMultiplier::JobMultiplier(const QList<QstDocument*>& documents)
     // are part of a matrix.
     for (const auto& matrix: m_matrices)
     {
-        QMap<TagId, Tag> tags = expand(matrix);
+        QMap<TagId, TagSet> tags = expand(matrix);
         QStringList patterns = matrix->testcases();
         QStringList names = match(m_testcases.keys(), patterns);
 
@@ -107,7 +107,7 @@ JobMultiplier::JobMultiplier(const QList<QstDocument*>& documents)
 
    We assume that dimensions always have at least 1 entry.
 */
-QMap<TagId, Tag> JobMultiplier::expand(const Matrix* matrix)
+QMap<TagId, TagSet> JobMultiplier::expand(const Matrix* matrix)
 {
     QList<int> lengths;
     QList<int> dividers;
@@ -135,10 +135,10 @@ QMap<TagId, Tag> JobMultiplier::expand(const Matrix* matrix)
         tagnames += dimensionTagnames;
     }
 
-    QMap<TagId, Tag> expandedTags;
+    QMap<TagId, TagSet> expandedTags;
     for (int i = 0; i < dividers.last() * lengths.last(); i++)
     {
-        Tag tag;
+        TagSet tag;
 
         for (int j = 0; j < matrix->dimensions().length(); j++)
         {
@@ -179,7 +179,7 @@ QStringList JobMultiplier::match(const QStringList& testcases, const QStringList
     return matchedNames;
 }
 
-QMultiMap<QString, Job> JobMultiplier::combine(const QStringList& testcases, const QMap<TagId, Tag>& tags)
+QMultiMap<QString, Job> JobMultiplier::combine(const QStringList& testcases, const QMap<TagId, TagSet>& tags)
 {
     QMultiMap<QString, Job> result;
     for (const auto& name: testcases)

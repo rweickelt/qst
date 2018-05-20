@@ -69,14 +69,14 @@ public:
 
 private:
     // Expands matrix with n dimensions into 1-dimensional vector with n columns
-    static QMap<TagId, Tag> expand(const Matrix* matrix);
+    static QMap<TagId, TagSet> expand(const Matrix* matrix);
 
     // Matches existing testcases against wildcard patterns
     static QStringList match(const QStringList& testcases, const QStringList& patterns);
 
     // Creates a job table from a list of testcases and tags
     QMultiMap<QString, Job> combine(const QStringList& testcases,
-                                        const QMap<TagId, Tag>& tags);
+                                        const QMap<TagId, TagSet>& tags);
 
     // Returns a filtered jobs table with all exceptions removed
     static QMultiMap<QString, Job> removeExcluded(const QMultiMap<QString, Job>& jobs,

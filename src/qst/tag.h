@@ -29,16 +29,16 @@
 #include <QtCore/QString>
 #include <QtCore/QVariantMap>
 
-typedef QVariantMap Tag;
+typedef QVariantMap TagSet;
 typedef uint TagGroupId; // Hash of tag names (property names)
 typedef uint TagId;      // Hash of tag values (property values)
-typedef QMap<TagGroupId, QMap<TagId, Tag> > TagLookupTable;
+typedef QMap<TagGroupId, QMap<TagId, TagSet> > TagLookupTable;
 
 enum {
     InvalidId = static_cast<uint>(-1)
 };
 
-TagGroupId makeTagGroupId(const Tag& tag);
-TagId makeTagId(const Tag& tag);
+TagGroupId makeTagGroupId(const TagSet& tag);
+TagId makeTagId(const TagSet& tag);
 
 #endif // TAG_H
