@@ -39,7 +39,7 @@ struct Job;
 using JobTable = QMultiMap<QString, Job>;
 
 
-/* TestJobs are testcase-data tuples created by MatrixExpander
+/* TestJobs are testcase-data tuples created by JobMultiplier
    and executed by TestRunner.
  */
 struct JobData : public QSharedData

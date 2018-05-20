@@ -62,12 +62,6 @@ void DependencyVisitor::visit(Depends* item)
 
     QString name = item->on();
     (*m_currentNode)->dependencies.append(name);
-
-    // Set a dummy object to satisfy bindings referencing the dependency.
-    // The object will be updated later by the result of "Exports".
-//    QQmlContext* context = qmlContext((*m_currentNode)->testcaseItem)->parentContext();
-//    Q_ASSERT(context);
-//    context->setContextProperty(name.toLatin1().constData(), QVariantMap());
 }
 
 void DependencyVisitor::visit(Exports* item)
