@@ -60,7 +60,7 @@ JobMultiplier::JobMultiplier(const QList<QstDocument*>& documents)
     // are part of a matrix.
     for (const auto& matrix: m_matrices)
     {
-        QMap<TagId, TagSet> tags = expand(matrix);
+        QList<TagList> tags = expand(matrix);
         QStringList patterns = matrix->testcases();
         QStringList names = match(m_testcases.keys(), patterns);
 
@@ -72,18 +72,9 @@ JobMultiplier::JobMultiplier(const QList<QstDocument*>& documents)
         }
 
         QMultiMap<QString, Job> jobs = combine(names, tags);
-        jobs = removeExcluded(jobs, QStringList(), TagLookupTable());
+        jobs = removeExcluded(jobs, QStringList(), TagList());
 
         m_jobs += jobs;
-        TagGroupId groupId = makeTagGroupId(tags.first());
-        if (m_tags.contains(groupId))
-        {
-            m_tags[groupId] += tags;
-        }
-        else
-        {
-            m_tags[groupId] = tags;
-        }
     }
 
     QSet<QString> allNames = m_testcases.keys().toSet();
@@ -94,7 +85,7 @@ JobMultiplier::JobMultiplier(const QList<QstDocument*>& documents)
     for (const auto& name: untaggedNames)
     {
         Q_ASSERT(!m_jobs.contains(name));
-        m_jobs.insert(name, Job(m_testcases[name]));
+        m_jobs.insert(name, Job::create(m_testcases[name]));
     }
 }
 
@@ -107,7 +98,7 @@ JobMultiplier::JobMultiplier(const QList<QstDocument*>& documents)
 
    We assume that dimensions always have at least 1 entry.
 */
-QMap<TagId, TagSet> JobMultiplier::expand(const Matrix* matrix)
+QList<TagList> JobMultiplier::expand(const Matrix* matrix)
 {
     QList<int> lengths;
     QList<int> dividers;
@@ -135,20 +126,20 @@ QMap<TagId, TagSet> JobMultiplier::expand(const Matrix* matrix)
         tagnames += dimensionTagnames;
     }
 
-    QMap<TagId, TagSet> expandedTags;
+    QList<TagList> expandedTags;
     for (int i = 0; i < dividers.last() * lengths.last(); i++)
     {
-        TagSet tag;
-
+        TagList tagsPerJob;
         for (int j = 0; j < matrix->dimensions().length(); j++)
         {
             const Dimension* dimension = matrix->dimensions()[j];
-            tag += dimension->data()[(i / dividers[j]) % lengths[j]];
+            QVariantMap data = dimension->data()[(i / dividers[j]) % lengths[j]];
+            for (const auto& key: data.keys())
+            {
+                tagsPerJob << Tag::create(key, data.value(key).toString());
+            }
         }
-
-        TagId id = makeTagId(tag);
-        Q_ASSERT(!expandedTags.contains(id));
-        expandedTags[id] = tag;
+        expandedTags << tagsPerJob;
     }
 
     return expandedTags;
@@ -179,34 +170,39 @@ QStringList JobMultiplier::match(const QStringList& testcases, const QStringList
     return matchedNames;
 }
 
-QMultiMap<QString, Job> JobMultiplier::combine(const QStringList& testcases, const QMap<TagId, TagSet>& tags)
+QMultiMap<QString, Job> JobMultiplier::combine(const QStringList& testcases, const QList<TagList>& tags)
 {
     QMultiMap<QString, Job> result;
     for (const auto& name: testcases)
     {
         Testcase* testcase = m_testcases[name];
 
-        for (const auto& name: tags.first().keys())
+        // We assume that every TagList in tags has identical
+        // tag keys. Thus it is safe to test compatibility
+        // with the first TagList only.
+        Q_ASSERT(tags.length() > 0);
+        for (const auto& representative: tags.first())
         {
-            QQmlProperty property(testcase, name);
+            QString label = representative.label();
+            QQmlProperty property(testcase, label);
             if (!property.isProperty())
             {
                 QmlContext context = qst::qmlDefinitionContext(testcase);
                 QST_ERROR_AND_EXIT(QString("Testcase defined at %1:%2 does not have a property with name '%3'")
-                                   .arg(context.file()).arg(context.line()).arg(name));
+                                   .arg(context.file()).arg(context.line()).arg(label));
             }
             if (!property.isWritable())
             {
                 QmlContext context = qst::qmlDefinitionContext(testcase);
                 QST_ERROR_AND_EXIT(QString("Property '%3' of Testcase '%4' at %1:%2 is not writable.")
-                                   .arg(context.file()).arg(context.line()).arg(name)
-                                   .arg(testcase->name()));
+                                   .arg(context.file()).arg(context.line()).arg(label)
+                                   .arg(name));
             }
         }
 
-        for (const auto& tag: tags)
+        for (const auto& tagsPerJob: tags)
         {
-            Job job(testcase, makeTagGroupId(tag), makeTagId(tag));
+            Job job = Job::create(testcase, tagsPerJob);
             result.insert(name, job);
         }
     }
@@ -216,7 +212,7 @@ QMultiMap<QString, Job> JobMultiplier::combine(const QStringList& testcases, con
 
 QMultiMap<QString, Job> JobMultiplier::removeExcluded(const QMultiMap<QString, Job>& jobs,
                                                           const QStringList& patterns,
-                                                          const TagLookupTable& tags)
+                                                          const TagList& tags)
 {
     Q_UNUSED(patterns);
     Q_UNUSED(tags);

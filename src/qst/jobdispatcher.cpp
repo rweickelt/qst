@@ -23,6 +23,7 @@
 ****************************************************************************/
 #include "jobdispatcher.h"
 #include "project.h"
+#include "tag.h"
 #include "qst.h"
 
 #include <QtCore/QCoreApplication>
@@ -31,8 +32,8 @@
 
 #include <QtDebug>
 
-JobDispatcher::JobDispatcher(Project* project, const TagLookupTable& tags)
-    : m_project(project), m_tags(tags)
+JobDispatcher::JobDispatcher(Project* project)
+    : m_project(project)
 {
     createProjectWorkingDirectory();
 }
@@ -43,26 +44,28 @@ void JobDispatcher::dispatch(const Job& job)
     QString displayName = name;
     QString workingDirectoryName = name;
 
-    if (job.tagGroupId() != InvalidId)
+    if (job.tags().length() > 0)
     {
-        const auto& taglist = m_tags[job.tagGroupId()][job.tagId()];
+        QStringList tagsStrings;
+        for (const auto& tag: job.tags())
+        {
+            const auto strings = tag.toPair();
+            tagsStrings << strings.second;
+
+            QQmlProperty property(job.testcase(), strings.first);
+            Q_ASSERT(property.isProperty());
+            Q_ASSERT(property.isWritable());
+            property.write(strings.second);
+        }
 
         displayName = QString("%1 %2 [ %3 ]")
                 .arg(name)
-                .arg(job.tagId(), 7, 36, QChar('0'))
-                .arg(QVariant(taglist.values()).toStringList().join(" "));
+                .arg(job.id(), 7, 36, QChar('0'))
+                .arg(tagsStrings.join(" "));
 
         workingDirectoryName = QString("%1-%2")
                 .arg(name)
-                .arg(job.tagId(), 7, 36, QChar('0'));
-
-        for (const auto& key: taglist.keys())
-        {
-            QQmlProperty property(job.testcase(), key);
-            Q_ASSERT(property.isProperty());
-            Q_ASSERT(property.isWritable());
-            property.write(taglist[key]);
-        }
+                .arg(job.id(), 7, 36, QChar('0'));
     }
 
     QString workingDirectory = createTestcaseWorkingDirectory(workingDirectoryName);

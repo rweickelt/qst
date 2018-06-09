@@ -25,13 +25,16 @@
 #ifndef SERIALJOBSCHEDULER_H
 #define SERIALJOBSCHEDULER_H
 
-#include "dependencygraph.h"
+#include "dependency.h"
+#include "directedgraph.h"
 #include "job.h"
 
 #include <QtCore/QList>
 #include <QtCore/QObject>
 #include <QtCore/QSet>
 #include <QtCore/QString>
+
+class Exports;
 
 /*
 Creates a job schedule and supervises execution by a dispatcher.
@@ -43,8 +46,7 @@ class SerialJobScheduler : public QObject
 {
     Q_OBJECT
 public:
-    SerialJobScheduler(const JobTable& jobs, const DependencyGraph& dependencies,
-                       QObject* parent = nullptr);
+    SerialJobScheduler(const DirectedGraph<Job, Dependency>& jobs, QObject* parent = nullptr);
     void start();
 
 public slots:
@@ -57,11 +59,11 @@ signals:
 private:
     static QVariantMap parseExports(Exports* item);
 
-    JobTable m_todo;
-    JobTable m_done;
-    DependencyGraph m_dependencies;
-    QMap<QString, QSet<QString> > m_remainingDependencies;
-    QList<Job> m_readyList;
+    JobList m_todo;
+    JobList m_done;
+    DirectedGraph<Job, Dependency> m_dependencies;
+    QMap<Job, uint> m_dependencyCounts;
+    JobList m_readyList;
 };
 
 #endif // SERIALJOBSCHEDULER_H

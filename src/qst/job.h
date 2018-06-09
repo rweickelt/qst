@@ -27,6 +27,7 @@
 
 #include "tag.h"
 
+#include <QtCore/QList>
 #include <QtCore/QSharedData>
 #include <QtCore/QSharedDataPointer>
 #include <QtCore/QMultiMap>
@@ -36,30 +37,49 @@ class Testcase;
 
 struct Job;
 
+using JobLookupTable = QMultiMap<QString, Job>;
+using JobList = QList<Job>;
 using JobTable = QMultiMap<QString, Job>;
-
 
 /* TestJobs are testcase-data tuples created by JobMultiplier
    and executed by TestRunner.
  */
-struct JobData : public QSharedData
+struct JobData
 {
     Testcase* testcase;
-    TagGroupId tagGroupId;
-    TagId tagId;
+    TagList tags;
 };
 
 class Job
 {
 public:
-    Job (Testcase* testcase = nullptr, TagGroupId tagGroupId = InvalidId, TagId tagId = InvalidId);
-    TagGroupId tagGroupId() const { return d->tagGroupId; }
-    TagId tagId() const { return d->tagId; }
-    Testcase* testcase() { return d->testcase; }
-    Testcase* testcase() const { return d->testcase; }
+    using Id = int;
+    enum { InvalidId = -1 };
+
+    bool isValid() const;
+    Id id() const;
+    TagList tags() const;
+    Testcase* testcase();
+    Testcase* testcase() const;
+
+    bool operator==(const Job& other) const;
+    bool operator<(const Job& other) const;
+
+    static Job create(Testcase* testcase, const TagList& tags = TagList());
+
+    static QList<Job> find(const QString& name, const QList<Tag>& tags);
 
 private:
-    QExplicitlySharedDataPointer<JobData> d;
+    Id m_id = InvalidId;
 };
+
+uint qHash(const Job& job);
+
+inline bool Job::isValid() const { return m_id != InvalidId; }
+inline Job::Id Job::id() const { return m_id; }
+inline bool Job::operator==(const Job& other) const { return (m_id == other.m_id); }
+inline bool Job::operator<(const Job& other) const { return (m_id < other.m_id); }
+
+inline uint qHash(const Job& job) { return job.id(); }
 
 #endif // TESTJOB_H

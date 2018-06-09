@@ -24,6 +24,7 @@
 #include "testcase.h"
 #include "testcaseattached.h"
 #include "console.h"
+#include "exports.h"
 #include "proxylogger.h"
 #include "project.h"
 #include "qst.h"
@@ -47,6 +48,7 @@ Testcase::Testcase(QObject *parent) : Component(parent)
     m_result = Unfinished;
     m_executionTime = 0;
     m_transitionPending = false;
+    m_exports = nullptr;
 }
 
 void Testcase::callVisitor(QstItemVisitor* visitor)
@@ -326,6 +328,13 @@ void Testcase::waitUntilExpression(QJSValue expression, int milliseconds, const 
 
         QCoreApplication::processEvents(QEventLoop::AllEvents, milliseconds);
     }
+}
+
+Exports* Testcase::exportsItem() const
+{
+    QList<Exports*> result = findChildren<Exports*>(QString(), Qt::FindDirectChildrenOnly);
+    Q_ASSERT(result.length() <= 1);
+    return result.value(0, nullptr);
 }
 
 qint64 Testcase::elapsedTime() const

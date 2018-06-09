@@ -26,31 +26,35 @@
 #define DEPENDS_H
 
 #include "qstitem.h"
+#include "tag.h"
+
+#include <QtCore/QList>
 
 class Depends : public QstItem
 {
     Q_OBJECT
-    Q_PROPERTY(QString on READ on WRITE setOn NOTIFY onChanged)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 
 public:
     Depends(QObject* parent = nullptr);
 
     void accept(QstItemVisitor* visitor);
     virtual const QMetaObject* baseTypeInfo() const final;
-    QString on() const;
-    void setOn(const QString& on);
+    QString name() const;
+    void setName(const QString& name);
+    QList<Tag> tags() const;
 
 signals:
-    void onChanged();
+    void nameChanged();
 
 protected:
     virtual void callVisitor(QstItemVisitor* visitor) final;
     virtual void handleParserEvent(ParserEvent event) final { Q_UNUSED(event); }
 
 private:
-    QString m_on;
+    QString m_name;
 };
 
 inline const QMetaObject* Depends::baseTypeInfo() const { return &Depends::staticMetaObject; }
-inline QString Depends::on() const { return m_on; }
+inline QString Depends::name() const { return m_name; }
 #endif // DEPENDS_H

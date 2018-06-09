@@ -24,10 +24,49 @@
 
 #include "job.h"
 
-Job::Job(Testcase* testcase, TagGroupId tagGroupId, TagId tagId)
+#include <QtCore/QVector>
+
+namespace {
+//    class JobTable
+//    {
+
+//    public:
+//        void insert(const Job& job);
+//        Job value(const QString& name, const QList<Tag>& tags);
+//        QList<Job> values(const QString& name, const QList<Tag>& tags);
+
+//    private:
+//        QVector<Job> m_jobs;
+//    };
+
+//    JobTable jobs;
+
+    QVector<JobData> jobs;
+}
+
+TagList Job::tags() const
 {
-    d = new JobData();
-    d->testcase = testcase;
-    d->tagGroupId = tagGroupId;
-    d->tagId = tagId;
+    return jobs[m_id].tags;
+}
+
+Testcase* Job::testcase()
+{
+    return jobs[m_id].testcase;
+}
+
+Testcase* Job::testcase() const
+{
+    return jobs[m_id].testcase;
+}
+
+Job Job::create(Testcase* testcase, const QList<Tag>& tags)
+{
+    JobData data;
+    data.testcase = testcase;
+    data.tags = tags;
+    jobs.append(data);
+
+    Job job;
+    job.m_id = jobs.length() - 1;
+    return job;
 }

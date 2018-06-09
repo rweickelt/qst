@@ -35,11 +35,16 @@ void Depends::callVisitor(QstItemVisitor* visitor)
     visitor->visit(this);
 }
 
-void Depends::setOn(const QString& on)
+void Depends::setName(const QString& on)
 {
-    if (m_on != on)
+    if (m_name != on)
     {
-        m_on = on;
-        emit onChanged();
+        m_name = on;
+        emit nameChanged();
     }
+}
+
+QList<Tag> Depends::tags() const
+{
+    return QList<Tag>();
 }

@@ -36,6 +36,7 @@
 
 #include "component.h"
 
+class Exports;
 class Project;
 class QstItemVisitor;
 class TestcaseAttached;
@@ -44,6 +45,7 @@ class Testcase : public Component
 {
     Q_OBJECT
 
+    friend class DependencyVisitor;
     friend class ProjectResolver;
 
 public:
@@ -120,6 +122,8 @@ public:
     State state() const;
     QString workingDirectory() const;
 
+    Exports* exportsItem() const;
+
     static TestcaseAttached* qmlAttachedProperties(QObject *);
 
 private:
@@ -144,6 +148,8 @@ private:
     qint64 m_executionTime;
     QString m_displayName;
     QString m_workingDirectory;
+
+    Exports* m_exports;
 
     static QPointer<Testcase> m_currentTestCase;
 };

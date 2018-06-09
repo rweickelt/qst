@@ -26,7 +26,6 @@
 #include "commandlineparser.h"
 #include "component.h"
 #include "console.h"
-#include "dependencygraph.h"
 #include "dependencyresolver.h"
 #include "depends.h"
 #include "dimension.h"
@@ -167,18 +166,17 @@ void execRunCommand()
     // executable jobs.
     JobMultiplier multiplier(projectResolver.documents());
     CHECK_FOR_ERROR(multiplier);
-    JobTable jobs = multiplier.jobs();
-    TagLookupTable tags = multiplier.tags();
+    JobLookupTable jobs = multiplier.jobs();
 
     // Do more fine-grained dependency resolution, taking tags into account.
-    // dependencyResolver.completeResolve(jobs);
+    dependencyResolver.completeResolve(jobs);
 
     //Does the dirty work
-    JobDispatcher dispatcher(projectResolver.project(), tags);
+    JobDispatcher dispatcher(projectResolver.project());
     CHECK_FOR_ERROR(dispatcher);
 
     // Schedules jobs one-by-one, taking dependency relations into account.
-    SerialJobScheduler scheduler(jobs, dependencyResolver.dependencies());
+    SerialJobScheduler scheduler(dependencyResolver.jobGraph());
     QObject::connect(&scheduler, &SerialJobScheduler::jobReady, &dispatcher, &JobDispatcher::dispatch);
     QObject::connect(&dispatcher, &JobDispatcher::finished, &scheduler, &SerialJobScheduler::onJobFinished);
     scheduler.start();

@@ -33,61 +33,52 @@
 #include <QtDebug>
 
 namespace {
-    QStringList readylistToString(QList<Job> jobs)
-    {
-        QStringList names;
-        for (const auto& job: jobs)
-        {
-            names << job.testcase()->name();
-        }
-        return names;
-    }
+//    QStringList readylistToString(QList<Job> jobs)
+//    {
+//        QStringList names;
+//        for (const auto& job: jobs)
+//        {
+//            names << job.testcase()->name();
+//        }
+//        return names;
+//    }
 }
 
 
-SerialJobScheduler::SerialJobScheduler(const JobTable& jobs,
-                                       const DependencyGraph& dependencies,
-                                       QObject* parent)
+SerialJobScheduler::SerialJobScheduler(const DirectedGraph<Job, Dependency>& jobs, QObject* parent)
     : QObject(parent)
 {
-    m_dependencies = dependencies;
-    m_todo = jobs;
-
-    for (const auto& node: m_dependencies.nodes())
-    {
-        m_remainingDependencies.insert(node->testcaseItem->name(), node->dependencies.toSet());
-    }
+    m_dependencies = jobs;
 }
 
-void SerialJobScheduler::onJobFinished(const Job& job)
+void SerialJobScheduler::onJobFinished(const Job& finishedJob)
 {
+    QString name = finishedJob.testcase()->name();
+    m_done.append(finishedJob);
+
     QVariantMap exportedValues;
-
-    QString name = job.testcase()->name();
-    m_done.insert(name, job);
-
-    DependencyNode node = m_dependencies.node(name);
-    if (node->exportItem)
+    if (finishedJob.testcase()->exportsItem())
     {
-        exportedValues = parseExports(node->exportItem);
+        exportedValues = parseExports(finishedJob.testcase()->exportsItem());
     }
 
-    QStringList dependents = m_dependencies.children(name);
+    JobList dependents = m_dependencies.successors(finishedJob);
     for (const auto& dependent: dependents)
     {
         // Attach exported values
-        if (node->exportItem)
+        if (finishedJob.testcase()->exportsItem())
         {
-            QQmlContext* context = qmlContext(node->testcaseItem)->parentContext();
+            QQmlContext* context = qmlContext(dependent.testcase())->parentContext();
             Q_ASSERT(context);
+            // Todo: may have custom name through "as" property
             context->setContextProperty(name.toLatin1().constData(), exportedValues);
         }
 
-        m_remainingDependencies[dependent].remove(name);
-        if (m_remainingDependencies[dependent].isEmpty())
+        m_dependencyCounts[dependent] -= 1;
+        if (m_dependencyCounts[dependent] == 0)
         {
-            m_readyList << m_todo.values(dependent);
-            m_todo.remove(dependent);
+            m_dependencyCounts.remove(dependent);
+            m_readyList << m_todo.takeAt(m_todo.indexOf(dependent));
         }
     }
 
@@ -110,13 +101,21 @@ void SerialJobScheduler::start()
         return;
     }
 
-    QStringList names = m_dependencies.children(QString());
+    Q_ASSERT(!m_dependencies.roots().isEmpty());
 
-    for (const auto& name: names)
+    m_done.clear();
+    m_todo = m_dependencies.nodes();
+
+    for (const auto& job: m_dependencies.roots())
     {
-        m_readyList << m_todo.values(name);
-        m_todo.remove(name);
+        m_readyList << m_todo.takeAt(m_todo.indexOf(job));
     }
+
+    for (const auto& job: m_dependencies.nodes())
+    {
+        m_dependencyCounts.insert(job, m_dependencies.predecessors(job).length());
+    }
+
     Q_ASSERT(!m_readyList.isEmpty());
 
     emit jobReady(m_readyList.takeFirst());

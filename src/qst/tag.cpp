@@ -24,24 +24,46 @@
 
 #include "tag.h"
 
-#include <QtCore/QHash>
+#include <QtCore/QMap>
 
-TagGroupId makeTagGroupId(const TagSet& tag)
-{
-    QString text;
-    for (const auto& key: tag.keys())
-    {
-        text += key;
-    }
-    return qHash(text);
+namespace {
+    QMap<Tag::Id, QPair<QString, QString> > stringTable;
 }
 
-TagId makeTagId(const TagSet& tag)
+Tag Tag::create(const QString& label, const QString& value)
 {
-    QString text;
-    for (const auto& value: tag.values())
+    Tag::Id id = qHash(label) + qHash(value);
+    if (stringTable.contains(id))
     {
-        text += value.toString();
+        const QPair<QString, QString>& other = stringTable[id];
+        // If this fails, we have to come up with a more clever storage and look-up.
+        Q_ASSERT((other.first == label) && (other.second == value));
     }
-    return qHash(text);
+    stringTable[id] = { label, value };
+
+    Tag tag;
+    tag.m_id = id;
+    return tag;
 }
+
+QString Tag::label() const
+{
+    return stringTable[m_id].first;
+}
+
+QString Tag::value() const
+{
+    return stringTable[m_id].second;
+}
+
+QPair<QString, QString> Tag::toPair() const
+{
+    return stringTable[m_id];
+}
+
+QString Tag::toString() const
+{
+    QPair<QString, QString> tag = stringTable[m_id];
+    return QString("%1:%2").arg(tag.first).arg(tag.second);
+}
+

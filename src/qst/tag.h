@@ -25,20 +25,34 @@
 #ifndef TAG_H
 #define TAG_H
 
-#include <QtCore/QMap>
+#include <QtCore/QList>
+#include <QtCore/QPair>
 #include <QtCore/QString>
-#include <QtCore/QVariantMap>
 
-typedef QVariantMap TagSet;
-typedef uint TagGroupId; // Hash of tag names (property names)
-typedef uint TagId;      // Hash of tag values (property values)
-typedef QMap<TagGroupId, QMap<TagId, TagSet> > TagLookupTable;
+class Tag {
+public:
+    using Id = int;
 
-enum {
-    InvalidId = static_cast<uint>(-1)
+    Id id() const;
+    QString label() const;
+    QString value() const;
+
+    static Tag create(const QString& label, const QString& value);
+    QPair<QString, QString> toPair() const;
+    QString toString() const;
+
+    bool operator==(const Tag& other) const;
+
+private:
+    Id m_id = -1;
 };
 
-TagGroupId makeTagGroupId(const TagSet& tag);
-TagId makeTagId(const TagSet& tag);
+uint qHash(const Tag& tag);
+
+inline Tag::Id Tag::id() const { return m_id; }
+inline bool Tag::operator==(const Tag& other) const { return m_id == other.m_id; }
+inline uint qHash(const Tag& tag) { return tag.id(); }
+
+using TagList = QList<Tag>;
 
 #endif // TAG_H

@@ -25,11 +25,14 @@
 #ifndef DEPENDENCYRESOLVER_H
 #define DEPENDENCYRESOLVER_H
 
-#include "dependencygraph.h"
+#include "dependency.h"
+#include "directedgraph.h"
 #include "job.h"
 
+#include <QtCore/QHash>
 #include <QtCore/QList>
 
+class Exports;
 class QstDocument;
 
 class DependencyResolver
@@ -37,15 +40,19 @@ class DependencyResolver
 public:
     DependencyResolver();
     void beginResolve(const QList<QstDocument*>& documents);
-    void completeResolve(const JobTable& jobs);
-    DependencyGraph dependencies();
-    QList<Job*> rootJobs() const;
+    void completeResolve(const JobLookupTable& jobs);
+    DirectedGraph<Job, Dependency> jobGraph();
 
 private:
-    DependencyGraph m_graph;
+    friend class DependencyVisitor;
+
+    QHash<QString, Testcase*> m_testcases;
+    DirectedGraph<QString, Depends*> m_testcaseGraph;
+    DirectedGraph<Job, Dependency> m_jobGraph;
+    QMap<Testcase*, Exports*> m_exports;
 };
 
-inline DependencyGraph DependencyResolver::dependencies() { return m_graph; }
+inline DirectedGraph<Job, Dependency> DependencyResolver::jobGraph() { return m_jobGraph; }
 
 
 #endif // DEPENDENCYRESOLVER_H

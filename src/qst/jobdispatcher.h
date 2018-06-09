@@ -24,7 +24,6 @@
 #ifndef JOBDISPATCHER_H
 #define JOBDISPATCHER_H
 
-#include "tag.h"
 #include "testcase.h"
 #include "job.h"
 
@@ -40,7 +39,7 @@ class JobDispatcher : public QObject
     Q_OBJECT
     Q_DISABLE_COPY(JobDispatcher)
 public:
-    JobDispatcher(Project* project, const TagLookupTable& tags);
+    JobDispatcher(Project* project);
     QString errorString() const;
     bool hasError() const;
     QList<Testcase::Result> results() const;
@@ -58,7 +57,6 @@ private:
     QString m_errorString;
     Project* m_project;
     QList<Testcase::Result> m_results;
-    TagLookupTable m_tags;
 };
 
 inline QString JobDispatcher::errorString() const { return m_errorString; }

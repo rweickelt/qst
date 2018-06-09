@@ -63,25 +63,24 @@ public:
     JobMultiplier(const QList<QstDocument*>& documents);
     QString errorString() const;
     bool hasError() const;
-    JobTable jobs() const;
-    TagLookupTable tags() const;
+    JobLookupTable jobs() const;
 
 
 private:
     // Expands matrix with n dimensions into 1-dimensional vector with n columns
-    static QMap<TagId, TagSet> expand(const Matrix* matrix);
+    static QList<TagList> expand(const Matrix* matrix);
 
     // Matches existing testcases against wildcard patterns
     static QStringList match(const QStringList& testcases, const QStringList& patterns);
 
     // Creates a job table from a list of testcases and tags
     QMultiMap<QString, Job> combine(const QStringList& testcases,
-                                        const QMap<TagId, TagSet>& tags);
+                                        const QList<TagList>& tags);
 
     // Returns a filtered jobs table with all exceptions removed
     static QMultiMap<QString, Job> removeExcluded(const QMultiMap<QString, Job>& jobs,
                                                       const QStringList& patterns,       // = "Excepts" item
-                                                      const TagLookupTable& tags); // = "Excepts" item
+                                                      const TagList& tags); // = "Excepts" item
 
     virtual void visit(Matrix* item) final;
     virtual void visit(Testcase* item) final;
@@ -89,14 +88,12 @@ private:
     QString m_errorString;
     QList<Matrix*> m_matrices;
     QMap<QString, Testcase*> m_testcases;
-    JobTable m_jobs;
-    TagLookupTable m_tags;
+    JobLookupTable m_jobs;
 };
 
 inline QString JobMultiplier::errorString() const { return m_errorString; }
 inline bool JobMultiplier::hasError() const { return !m_errorString.isEmpty(); }
-inline JobTable JobMultiplier::jobs() const { return m_jobs; }
-inline TagLookupTable JobMultiplier::tags() const { return m_tags; }
+inline JobLookupTable JobMultiplier::jobs() const { return m_jobs; }
 
 
 #endif // MATRIXEXPANDER_H
