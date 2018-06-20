@@ -2,8 +2,8 @@ import qst 1.0
 
 Project {
     property string prefix: {
-        console.log(path + "/../../../doc/code/usage/")
-        return path + "/../../../doc/code/usage/"
+        console.log(path + "/../../../../../doc/code/usage/")
+        return path + "/../../../../../doc/code/usage/"
     }
 
     references: [

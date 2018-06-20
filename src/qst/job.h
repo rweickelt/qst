@@ -47,7 +47,7 @@ using JobTable = QMultiMap<QString, Job>;
 struct JobData
 {
     Testcase* testcase;
-    TagList tags;
+    TagSet tags;
 };
 
 class Job
@@ -58,14 +58,14 @@ public:
 
     bool isValid() const;
     Id id() const;
-    TagList tags() const;
+    TagSet tags() const;
     Testcase* testcase();
     Testcase* testcase() const;
 
     bool operator==(const Job& other) const;
     bool operator<(const Job& other) const;
 
-    static Job create(Testcase* testcase, const TagList& tags = TagList());
+    static Job create(Testcase* testcase, const TagSet& tags = TagSet());
 
     static QList<Job> find(const QString& name, const QList<Tag>& tags);
 

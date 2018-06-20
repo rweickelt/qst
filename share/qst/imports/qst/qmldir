@@ -1,4 +1,5 @@
 module qst
+typeinfo qst.qmltypes
 
 DurationConstraint      1.0 DurationConstraint.qml
 SignalProbe             1.0 SignalProbe.qml

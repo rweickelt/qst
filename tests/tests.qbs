@@ -3,6 +3,10 @@ import qbs
 Project {
     condition : { return qbs.architecture.startsWith("x86") }
 
+    references: [
+        "auto/auto.qbs"
+    ]
+
     StaticLibrary {
         name: "qsttestlib"
 
@@ -28,31 +32,6 @@ Project {
     }
 
     QtApplication {
-        type: [ "application", "autotest" ]
-
-        name : "auto"
-        targetName: "qst-auto-test"
-        destinationDirectory: "bin"
-
-        Depends { name : "Qt.testlib" }
-        Depends { name: "qsttestlib" }
-        Depends { name: "testdata" }
-
-        consoleApplication: true
-
-        files : [
-            "autotest.cpp",
-            "autotest.h",
-        ]
-
-        Group {
-            fileTagsFilter: product.type
-            qbs.install: project.installTests
-            qbs.installDir : "bin"
-        }
-    }
-
-    QtApplication {
         type: [ "application" ]
         name : "launchpad-probe-test"
         targetName: "qst-launchpad-probe-test"
@@ -73,12 +52,6 @@ Project {
             qbs.install: project.installTests
             qbs.installDir : "bin"
         }
-    }
-
-    Product {
-        type: ["resources"]
-        name: "testdata"
-        files: ["testdata/**/*"]
     }
 
     AutotestRunner {

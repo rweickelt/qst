@@ -2,6 +2,7 @@ import qbs
 
 Product {
     files: [
+        "imports/QstAutoTest.qbs",
         "modules/simplelink/SimpleLinkModule.qbs",
         "modules/simplelink/device.js",
         "modules/simplelink/board/board.qbs",

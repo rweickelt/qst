@@ -60,7 +60,7 @@ JobMultiplier::JobMultiplier(const QList<QstDocument*>& documents)
     // are part of a matrix.
     for (const auto& matrix: m_matrices)
     {
-        QList<TagList> tags = expand(matrix);
+        QList<TagSet> tags = expand(matrix);
         QStringList patterns = matrix->testcases();
         QStringList names = match(m_testcases.keys(), patterns);
 
@@ -72,7 +72,7 @@ JobMultiplier::JobMultiplier(const QList<QstDocument*>& documents)
         }
 
         QMultiMap<QString, Job> jobs = combine(names, tags);
-        jobs = removeExcluded(jobs, QStringList(), TagList());
+        jobs = removeExcluded(jobs, QStringList(), TagSet());
 
         m_jobs += jobs;
     }
@@ -98,7 +98,7 @@ JobMultiplier::JobMultiplier(const QList<QstDocument*>& documents)
 
    We assume that dimensions always have at least 1 entry.
 */
-QList<TagList> JobMultiplier::expand(const Matrix* matrix)
+QList<TagSet> JobMultiplier::expand(const Matrix* matrix)
 {
     QList<int> lengths;
     QList<int> dividers;
@@ -126,10 +126,10 @@ QList<TagList> JobMultiplier::expand(const Matrix* matrix)
         tagnames += dimensionTagnames;
     }
 
-    QList<TagList> expandedTags;
+    QList<TagSet> expandedTags;
     for (int i = 0; i < dividers.last() * lengths.last(); i++)
     {
-        TagList tagsPerJob;
+        TagSet tagsPerJob;
         for (int j = 0; j < matrix->dimensions().length(); j++)
         {
             const Dimension* dimension = matrix->dimensions()[j];
@@ -170,7 +170,7 @@ QStringList JobMultiplier::match(const QStringList& testcases, const QStringList
     return matchedNames;
 }
 
-QMultiMap<QString, Job> JobMultiplier::combine(const QStringList& testcases, const QList<TagList>& tags)
+QMultiMap<QString, Job> JobMultiplier::combine(const QStringList& testcases, const QList<TagSet>& tags)
 {
     QMultiMap<QString, Job> result;
     for (const auto& name: testcases)
@@ -212,7 +212,7 @@ QMultiMap<QString, Job> JobMultiplier::combine(const QStringList& testcases, con
 
 QMultiMap<QString, Job> JobMultiplier::removeExcluded(const QMultiMap<QString, Job>& jobs,
                                                           const QStringList& patterns,
-                                                          const TagList& tags)
+                                                          const TagSet& tags)
 {
     Q_UNUSED(patterns);
     Q_UNUSED(tags);

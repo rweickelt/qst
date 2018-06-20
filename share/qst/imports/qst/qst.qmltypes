@@ -1,0 +1,19 @@
+import QtQuick.tooling 1.1
+
+// This file is WIP.
+Module {
+    Component {
+        name: "Depends"
+        exports: [ "qst/Depends 1.0" ]
+        exportMetaObjectRevisions: [0]
+
+        Property { name: "name"; type: "string" }
+        Property { name: "alias"; type: "string" }
+    }
+
+    Component {
+        name: "Dimension"
+        exports: "qst/Dimension 1.0"
+        exportMetaObjectRevisions: [0]
+    }
+}

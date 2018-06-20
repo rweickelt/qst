@@ -44,7 +44,7 @@ namespace {
     QVector<JobData> jobs;
 }
 
-TagList Job::tags() const
+TagSet Job::tags() const
 {
     return jobs[m_id].tags;
 }
@@ -59,7 +59,7 @@ Testcase* Job::testcase() const
     return jobs[m_id].testcase;
 }
 
-Job Job::create(Testcase* testcase, const QList<Tag>& tags)
+Job Job::create(Testcase* testcase, const TagSet& tags)
 {
     JobData data;
     data.testcase = testcase;

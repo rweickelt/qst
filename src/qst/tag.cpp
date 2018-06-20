@@ -67,3 +67,18 @@ QString Tag::toString() const
     return QString("%1:%2").arg(tag.first).arg(tag.second);
 }
 
+bool TagSet::matches(const TagSet& other) const
+{
+    return *this == other;
+}
+
+QStringList TagSet::toStringList() const
+{
+    QStringList result;
+    for (const auto& tag: *this)
+    {
+        result << tag.toString();
+    }
+    return result;
+}
+

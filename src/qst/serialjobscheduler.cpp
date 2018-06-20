@@ -70,8 +70,11 @@ void SerialJobScheduler::onJobFinished(const Job& finishedJob)
         {
             QQmlContext* context = qmlContext(dependent.testcase())->parentContext();
             Q_ASSERT(context);
-            // Todo: may have custom name through "as" property
-            context->setContextProperty(name.toLatin1().constData(), exportedValues);
+            Dependency dependency = m_dependencies.edge(finishedJob, dependent);
+
+            QString alias = dependency.alias().isEmpty() ? dependency.name() : dependency.alias();
+            qDebug() << "Setting context property " << alias << " to " << dependency.name() << exportedValues;
+            context->setContextProperty(alias.toLatin1().constData(), exportedValues);
         }
 
         m_dependencyCounts[dependent] -= 1;

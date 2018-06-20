@@ -31,6 +31,7 @@
 
 #include <QtCore/QHash>
 #include <QtCore/QList>
+#include <QtCore/QStringList>
 
 class Exports;
 class QstDocument;
@@ -43,13 +44,19 @@ public:
     void completeResolve(const JobLookupTable& jobs);
     DirectedGraph<Job, Dependency> jobGraph();
 
-private:
+    QStringList errors() const { return m_errors; }
+    bool hasErrors() const { return !m_errors.isEmpty(); }
+
+private:    
     friend class DependencyVisitor;
 
-    QHash<QString, Testcase*> m_testcases;
+    QMap<QString, Testcase*> m_testcases;
+//    QMultiMap<QString, Depends*> m_dependencies;
+    QHash<QString, Exports*> m_exports;
+
     DirectedGraph<QString, Depends*> m_testcaseGraph;
     DirectedGraph<Job, Dependency> m_jobGraph;
-    QMap<Testcase*, Exports*> m_exports;
+    QStringList m_errors;
 };
 
 inline DirectedGraph<Job, Dependency> DependencyResolver::jobGraph() { return m_jobGraph; }

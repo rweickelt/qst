@@ -21,6 +21,7 @@ Product {
             "SignalProbe.qml",
             "ValueRangeConstraint.qml",
             "qmldir",
+            "qst.qmltypes",
             "qst_internal.js",
         ]
 

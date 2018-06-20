@@ -119,10 +119,10 @@ void execRunCommand()
 {
     ApplicationOptions* options = ApplicationOptions::instance();
 
-    qmlRegisterCustomType<Dimension>("qst", 1,0, "Dimension", new DimensionParser());
+    qmlRegisterCustomType<Dimension>("qst", 1,0, "Dimension", new DimensionParser);
     qmlRegisterType<Matrix>("qst", 1,0, "Matrix");
     qmlRegisterType<Component>("qst", 1,0, "Component");
-    qmlRegisterType<Depends>("qst", 1,0, "Depends");
+    qmlRegisterCustomType<Depends>("qst", 1,0, "Depends", new DependsParser);
     qmlRegisterType<Exports>("qst", 1,0, "Exports");
     qmlRegisterType<Testcase>("qst", 1,0, "Testcase");
     qmlRegisterType<TestcaseAttached>();
@@ -157,6 +157,7 @@ void execRunCommand()
     // and attach Exports items so that bindings will work.
     DependencyResolver dependencyResolver;
     dependencyResolver.beginResolve(projectResolver.documents());
+    CHECK_FOR_ERRORS(dependencyResolver);
 
     // Finally resolve bindings
     projectResolver.completeLoad();

@@ -41,6 +41,7 @@ public:
     void insertNode(const NodeT& node);
 
     EdgeT edge(const NodeT& predecessor, const NodeT& successor) const;
+    QList<EdgeT> edges() const;
     QList<NodeT> nodes() const;
     QList<NodeT> roots() const;
 
@@ -83,6 +84,12 @@ template <typename NodeT, typename EdgeT>
 EdgeT DirectedGraph<NodeT, EdgeT>::edge(const NodeT& predecessor, const NodeT& successor) const
 {
     return m_edges.value(EdgeId(id(predecessor), id(successor)));
+}
+
+template <typename NodeT, typename EdgeT>
+QList<EdgeT> DirectedGraph<NodeT, EdgeT>::edges() const
+{
+    return m_edges.values();
 }
 
 template <typename NodeT, typename EdgeT>

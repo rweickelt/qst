@@ -24,18 +24,20 @@ public:
 
     inline QString name() const { return d->name; }
     inline void setName(const QString& name) { d->name = name; }
-    inline QString target() const { return d->name; }
-    inline void setTarget(const QString& target) { d->target = target; }
+    inline QString alias() const { return d->alias; }
+    inline void setAlias(const QString& alias) { d->alias = alias; }
+    inline QList<TagSet> tags() const { return d->tags; }
+    inline void setTags(const QList<TagSet>& tags) const { d->tags = tags; }
     inline Type type() const { return d->type; }
-    inline void setTarget(Dependency::Type type) { d->type = type; }
+    inline void setAlias(Dependency::Type type) { d->type = type; }
 
 private:
 
     struct DependencyData : public QSharedData {
         Type type;
         QString name;
-        QString target;
-        TagList tags;
+        QString alias;
+        QList<TagSet> tags;
     };
 
     QExplicitlySharedDataPointer<DependencyData> d;

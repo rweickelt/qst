@@ -44,7 +44,7 @@ void JobDispatcher::dispatch(const Job& job)
     QString displayName = name;
     QString workingDirectoryName = name;
 
-    if (job.tags().length() > 0)
+    if (job.tags().size() > 0)
     {
         QStringList tagsStrings;
         for (const auto& tag: job.tags())

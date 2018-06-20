@@ -22,16 +22,39 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
-#include "autotest.h"
-#include <qsttestresults.h>
-
-
-#include <QtCore/QDir>
-#include <QtCore/QRegularExpression>
-#include <qtest.h>
+#include <qsttest.h>
 #include <qst.h>
+#include <QtCore/QDebug>
 
-void AutoTest::project()
+class test_misc : public QstTest
+{
+    Q_OBJECT
+public:
+    QString dataPath(const QString &fileName) const;
+
+private slots:
+    void project();
+    void testCase();
+    void testCaseName();
+    void errorHandling();
+    void processProbe();
+    void workingDirectory_data();
+    void workingDirectory();
+    void signalProbe();
+    void durationConstraint();
+    void valueRangeConstraint();
+    void profile();
+    void matrix();
+    void codeSnippets();
+};
+
+QString test_misc::dataPath(const QString &fileName) const
+{
+    const static QString dirPath = QString::fromUtf8("%1/%2").arg(SOURCE_DIR).arg("testdata");
+    return QDir(dirPath).absoluteFilePath(fileName);
+}
+
+void test_misc::project()
 {
     QstTestResults results = execQstRun(QStringList{ "-f", dataPath("project/project-no-errors.qml") });
     if (qstProcess().exitCode() != 0)
@@ -64,7 +87,7 @@ void AutoTest::project()
     QVERIFY(stdError.contains("inline-2 run"));
 }
 
-void AutoTest::testCase()
+void test_misc::testCase()
 {
     QstTestResults results = execQstRun(QStringList{ "-f", dataPath("testcase/project.qml") });
     if (qstProcess().exitCode() != 2)
@@ -87,7 +110,7 @@ void AutoTest::testCase()
     VERIFY_PASS(results, "wait");
 }
 
-void AutoTest::testCaseName()
+void test_misc::testCaseName()
 {
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("testcase-name/project-missing-name.qml"));
     VERIFY_PASS(results(), "name");
@@ -97,7 +120,7 @@ void AutoTest::testCaseName()
 }
 
 
-void AutoTest::errorHandling()
+void test_misc::errorHandling()
 {
     QstTestResults results = execQstRun(QStringList{ "-f", dataPath("error-handling/project.qml")} );
     if (qstProcess().exitCode() != 2)
@@ -108,7 +131,7 @@ void AutoTest::errorHandling()
     VERIFY_FAIL(results, "error-in-signal-handler", "error-in-signal-handler.qml:10");
 }
 
-void AutoTest::processProbe()
+void test_misc::processProbe()
 {
     QstTestResults results = execQstRun(QStringList{ "-f", dataPath("processprobe/project.qml")} );
     if (qstProcess().exitCode() != 0)
@@ -119,7 +142,7 @@ void AutoTest::processProbe()
     VERIFY_PASS(results, "onErrorOccured");
 }
 
-void AutoTest::workingDirectory_data()
+void test_misc::workingDirectory_data()
 {
     QTest::addColumn<QString>("projectFilepath");
     QTest::addColumn<bool>("overrideWorkingDir");
@@ -148,7 +171,7 @@ void AutoTest::workingDirectory_data()
             << QString(".project-default-%1").arg(qHash(projectDir.absoluteFilePath("project-without-name.qml")), 0, 16);
 }
 
-void AutoTest::workingDirectory()
+void test_misc::workingDirectory()
 {
     QFETCH(QString, projectFilepath);
     QFETCH(bool, overrideWorkingDir);
@@ -180,7 +203,7 @@ void AutoTest::workingDirectory()
     QVERIFY(workDir.exists("testcase"));
 }
 
-void AutoTest::signalProbe()
+void test_misc::signalProbe()
 {
     QstTestResults results = execQstRun(QStringList{ "-f", dataPath("signalprobe/project.qml")} );
     if (qstProcess().exitCode() != 2)
@@ -191,7 +214,7 @@ void AutoTest::signalProbe()
     VERIFY_FAIL(results, "nonexisting-signal", "SignalProbe.qml:33");
 }
 
-void AutoTest::durationConstraint()
+void test_misc::durationConstraint()
 {
     QstTestResults results = execQstRun(QStringList{ "-f", dataPath("durationconstraint/project.qml")} );
     if (qstProcess().exitCode() != 2)
@@ -217,7 +240,7 @@ void AutoTest::durationConstraint()
     }
 }
 
-void AutoTest::valueRangeConstraint()
+void test_misc::valueRangeConstraint()
 {
     QstTestResults results = execQstRun(QStringList{ "-f", dataPath("valuerangeconstraint/project.qml")} );
     if (qstProcess().exitCode() != 2)
@@ -229,7 +252,7 @@ void AutoTest::valueRangeConstraint()
     QVERIFY(qstProcess().readAllStandardError().contains("checkpoint passed"));
 }
 
-void AutoTest::profile()
+void test_misc::profile()
 {
     QstTestResults results;
     QByteArray stdErr;
@@ -304,7 +327,7 @@ void AutoTest::profile()
     VERIFY_FAIL(results, "non-existing-profile-properties-run", "non-existing-profile-properties-run.qml:9");
 }
 
-void AutoTest::matrix()
+void test_misc::matrix()
 {
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/project-ok.qml"));
     VERIFY_PASS(results(), "testcase 0000003 [ dog white ]");
@@ -361,7 +384,7 @@ void AutoTest::matrix()
     QVERIFY(stdError().contains("matrix-inside-testcase-protected-testcases.qml:9"));
 }
 
-void AutoTest::codeSnippets()
+void test_misc::codeSnippets()
 {
     RUN_AND_EXPECT(qst::ExitTestCaseFailed, "-f", dataPath("code-snippets/usage.qml"));
     VERIFY_PASS(results(), "simple-passing-test");
@@ -370,18 +393,18 @@ void AutoTest::codeSnippets()
     VERIFY_PASS(results(), "test-lib-build");
     VERIFY_FAIL(results(), "simple-failing-test", "simple-failing-test.qml:8");
 
-    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("../../doc/code/reference/matrix-project.qml"));
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("../../../../doc/code/reference/matrix-project.qml"));
     VERIFY_PASS(results(), "tagged-test 0000003 [ dog bites ]");
     VERIFY_PASS(results(), "tagged-test 0000002 [ cat bites ]");
     VERIFY_PASS(results(), "tagged-test 0000001 [ dog moans ]");
     VERIFY_PASS(results(), "tagged-test 0000000 [ cat moans ]");
 
-    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("../../doc/code/reference/dimension-with-references.qml"));
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("../../../../doc/code/reference/dimension-with-references.qml"));
     VERIFY_PASS(results(), "testcase 0000003 [ dog white ]");
     VERIFY_PASS(results(), "testcase 0000002 [ cat white ]");
     VERIFY_PASS(results(), "testcase 0000001 [ dog brown ]");
     VERIFY_PASS(results(), "testcase 0000000 [ cat brown ]");
-
 }
 
-QTEST_GUILESS_MAIN(AutoTest)
+QTEST_GUILESS_MAIN(test_misc)
+#include "test-misc.moc"

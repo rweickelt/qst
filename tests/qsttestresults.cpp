@@ -89,12 +89,12 @@ QstTestResults QstTestResults::fromQstOutput(const QByteArray& text)
     return results;
 }
 
-quint32 QstTestResults::failCount() const
+int QstTestResults::failCount() const
 {
     return m_failCount;
 }
 
-quint32 QstTestResults::passCount() const
+int QstTestResults::passCount() const
 {
     return m_passCount;
 }

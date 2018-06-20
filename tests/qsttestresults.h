@@ -53,15 +53,15 @@ public:
     const QstOutput output(const QString& name) const;
     QByteArray stdOut() const;
 
-    quint32 failCount() const;
-    quint32 passCount() const;
+    int failCount() const;
+    int passCount() const;
 
 private:
     QHash<QString, QstOutput>  m_data;
     QMultiHash<QString, QstOutput> m_info;
     QStringList m_names;
-    quint32 m_failCount;
-    quint32 m_passCount;
+    int m_failCount;
+    int m_passCount;
     QByteArray m_stdOut;
 };
 
