@@ -3,7 +3,7 @@ import qst 1.0
 Component {
     id : root
 
-    property string installPath : "/opt/ti/uniflash_4.2"
+    property string installPath : "/opt/ti/uniflash_4.4.0"
     property string programmer
     property string serial
     property string device
@@ -78,6 +78,14 @@ Component {
         }
     }
 
+    // 2-wire option is available on CC13xx and CC26xx boards
+    readonly property bool jtag2wireEnabled: device.lastIndexOf("cc1") === 0
+    readonly property string jtag2wireOption: '<property Type="choicelist" Value="4" id="SWD Mode Settings">
+                                                <choice Name="cJTAG (1149.7) 2-pin advanced modes" value="enable">
+                                                    <property Type="choicelist" Value="1" id="XDS110 Aux Port"/>
+                                                </choice>
+                                            </property>'
+
     readonly property string xmlconfig :
         '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
             <configurations XML_version="1.2" id="configurations_0">
@@ -87,11 +95,7 @@ Component {
                 <instance XML_version="1.2" href="drivers/tixds510icepick_c.xml" id="drivers" xml="tixds510icepick_c.xml" xmlpath="drivers"/>
             <instance XML_version="1.2" href="drivers/tixds510cs_dap.xml" id="drivers" xml="tixds510cs_dap.xml" xmlpath="drivers"/>
             <instance XML_version="1.2" href="drivers/tixds510cortexM.xml" id="drivers" xml="tixds510cortexM.xml" xmlpath="drivers"/>
-            <property Type="choicelist" Value="4" id="SWD Mode Settings">
-                <choice Name="cJTAG (1149.7) 2-pin advanced modes" value="enable">
-                    <property Type="choicelist" Value="1" id="XDS110 Aux Port"/>
-                </choice>
-            </property>
+            ' + (jtag2wireEnabled === true ? jtag2wireOption: "") + '
             <property Type="choicelist" Value="1" id="Debug Probe Selection">
                 <choice Name="Select by serial number" value="0">
                     <property Type="stringfield" Value="' + root.serial + '" id="-- Enter the serial number"/>
