@@ -1,12 +1,14 @@
 import qbs
 
 Project {
-    condition : { return qbs.architecture.startsWith("x86") }
+    condition : qbs.architecture.lastIndexOf("x86") === 0
 
     StaticLibrary {
         name: "qsttestlib"
 
         Depends { name: "Qt.core" }
+        Depends { name: "Qt.testlib" }
+
         Depends { name: "qst-application" }
 
         files: [

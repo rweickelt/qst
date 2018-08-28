@@ -6,8 +6,8 @@ import qbs.FileInfo
 Product {
     name: "distribute"
     type: "installable"
-    condition : { return qbs.architecture.startsWith("x86") }
-    builtByDefault: qbs.buildVariant === "release"
+    condition : qbs.architecture.contains("x86")
+    builtByDefault: qbs.buildVariant.contains("release")
 
     Depends { name: "cpp" }
     Depends { name: "Qt.core" }
@@ -63,13 +63,7 @@ Product {
                 );
             }
 
-            if (qbs.targetOS.contains("windows")) {
-                if (Qt.core.versionMinor < 7) {
-                    list.push("icuin54.dll",
-                              "icuuc54.dll",
-                              "icudt54.dll");
-                }
-            } else if (qbs.targetOS.contains("linux")) {
+            if (qbs.targetOS.contains("linux")) {
                 list = addQtVersions(list);
                 if (File.exists(prefix + "icudata.so.56")) {
                     list.push("icudata.so.56", "icudata.so.56.1");
@@ -77,7 +71,6 @@ Product {
                     list.push("icuuc.so.56", "icuuc.so.56.1");
                 }
             }
-
             return list;
         }
         qbs.install: true
@@ -85,35 +78,37 @@ Product {
     }
 
     Group {
-        name: "Runtime DLLs"
+        name: "Runtime DLLs - MinGW on Windows"
         condition: qbs.targetOS.contains("windows")
+                        && qbs.hostOS.contains("windows")
+                        && qbs.toolchain.contains("mingw")
 
-        prefix: {
-            if (qbs.toolchain.contains("mingw"))
-                return "/usr/lib/gcc/x86_64-w64-mingw32/5.3-win32/"
-            else if (qbs.architecture === "x86_64")
-                return "C:/windows/system32/"
-            else
-                return "C:/windows/SysWOW64/"
-        }
-        files: {
-            if (qbs.toolchain.contains("mingw")) {
-                return [
-//                    "libgcc_s_dw2-1.dll",
-                    "libgcc_s_seh-1.dll",
-                    "libstdc++-6.dll",
-//                    "libwinpthread-1.dll",
-                ]
-            } else {
-                return [
-                    "MSVCP120.DLL",
-                    "MSVCR120.DLL",
-                ]
-            }
-        }
+        prefix: cpp.toolchainInstallPath + "/"
+
+        files: [
+            "libgcc_s_dw2-1.dll",
+            "libstdc++-6.dll",
+            "libwinpthread-1.dll",
+        ]
         qbs.install: true
         qbs.installDir: "bin"
     }
+
+    Group {
+        name: "Runtime DLLs - MinGW on Linux"
+        condition: qbs.targetOS.contains("windows")
+                        && qbs.hostOS.contains("linux")
+
+        files: [
+            "/usr/lib/gcc/x86_64-w64-mingw32/5.3-win32/libgcc_s_seh-1.dll",
+            "/usr/lib/gcc/x86_64-w64-mingw32/5.3-win32/libstdc++-6.dll",
+            "/usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll",
+        ]
+
+        qbs.install: true
+        qbs.installDir: "bin"
+    }
+
 
     Group {
         name: "Misc Files"
