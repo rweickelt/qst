@@ -38,7 +38,7 @@ JobDispatcher::JobDispatcher(Project* project)
     createProjectWorkingDirectory();
 }
 
-void JobDispatcher::dispatch(const Job& job)
+void JobDispatcher::dispatch(Job job)
 {
     QString name = job.testcase()->name();
     QString displayName = name;

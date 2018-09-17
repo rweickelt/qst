@@ -44,6 +44,16 @@ namespace {
     QVector<JobData> jobs;
 }
 
+QVariantMap Job::exports() const
+{
+    return jobs[m_id].exports;
+}
+
+void Job::setExports(const QVariantMap& data)
+{
+    jobs[m_id].exports = data;
+}
+
 TagSet Job::tags() const
 {
     return jobs[m_id].tags;

@@ -41,6 +41,7 @@ public:
     void insertNode(const NodeT& node);
 
     EdgeT edge(const NodeT& predecessor, const NodeT& successor) const;
+    QList<EdgeT> edges(const NodeT& predecessor, const NodeT& successor) const;
     QList<EdgeT> edges() const;
     QList<NodeT> nodes() const;
     QList<NodeT> roots() const;
@@ -55,7 +56,7 @@ private:
     QMultiMap<NodeId, NodeId> m_successors;
     QMultiMap<NodeId, NodeId> m_predecessors;
     QMap<NodeId, NodeT> m_nodes;
-    QMap<EdgeId, EdgeT> m_edges;
+    QMultiMap<EdgeId, EdgeT> m_edges;
 };
 
 template <typename NodeT, typename EdgeT>
@@ -84,6 +85,12 @@ template <typename NodeT, typename EdgeT>
 EdgeT DirectedGraph<NodeT, EdgeT>::edge(const NodeT& predecessor, const NodeT& successor) const
 {
     return m_edges.value(EdgeId(id(predecessor), id(successor)));
+}
+
+template <typename NodeT, typename EdgeT>
+QList<EdgeT> DirectedGraph<NodeT, EdgeT>::edges(const NodeT& predecessor, const NodeT& successor) const
+{
+    return m_edges.values(EdgeId(id(predecessor), id(successor)));
 }
 
 template <typename NodeT, typename EdgeT>

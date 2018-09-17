@@ -33,6 +33,7 @@
 #include <QtQml/QJSValue>
 #include <QtQml/QQmlError>
 #include <QtQml/QQmlComponent>
+#include <QtQml/QQmlPropertyMap>
 
 #include "component.h"
 
@@ -74,6 +75,7 @@ public:
     Q_PROPERTY(State state READ state)
     Q_PROPERTY(QString workingDirectory READ workingDirectory NOTIFY workingDirectoryChanged)
     Q_PROPERTY(QString message MEMBER m_message)
+    Q_PROPERTY(QObject* dependencies READ dependencies CONSTANT)
 
     virtual const QMetaObject* baseTypeInfo() const final;
     virtual void handleParserEvent(QstItem::ParserEvent event) override;
@@ -114,6 +116,7 @@ protected:
 
 public:
     Testcase(QObject *parent = 0);
+    QObject* dependencies();
     QString displayName() const;
     qint64 elapsedTime() const;
     Result result() const;
@@ -122,6 +125,7 @@ public:
     State state() const;
     QString workingDirectory() const;
 
+    void attachDependencyExport(const QString& name, const QVariant& values);
     Exports* exportsItem() const;
 
     static TestcaseAttached* qmlAttachedProperties(QObject *);
@@ -149,6 +153,7 @@ private:
     QString m_displayName;
     QString m_workingDirectory;
 
+    QQmlPropertyMap m_dependencies;
     Exports* m_exports;
 
     static QPointer<Testcase> m_currentTestCase;
@@ -158,6 +163,7 @@ Q_DECLARE_METATYPE(Testcase::State)
 QML_DECLARE_TYPEINFO(Testcase, QML_HAS_ATTACHED_PROPERTIES)
 
 inline const QMetaObject* Testcase::baseTypeInfo() const { return &Testcase::staticMetaObject; }
+inline QObject* Testcase::dependencies() { return &m_dependencies; }
 inline Testcase::Result Testcase::result() const { return m_result; }
 inline Testcase::State Testcase::state() const { return m_state; }
 inline QString Testcase::workingDirectory() const { return m_workingDirectory; }

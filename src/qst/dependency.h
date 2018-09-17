@@ -22,6 +22,8 @@ public:
     Dependency(const Dependency& other);
     Dependency& operator=(const Dependency& other);
 
+    inline int count() const { return d->count; }
+    inline void incrementCount() { d->count++; }
     inline QString name() const { return d->name; }
     inline void setName(const QString& name) { d->name = name; }
     inline QString alias() const { return d->alias; }
@@ -34,10 +36,11 @@ public:
 private:
 
     struct DependencyData : public QSharedData {
-        Type type;
+        Type type = Type::Undefined;
         QString name;
         QString alias;
         QList<TagSet> tags;
+        quint32 count = 0;
     };
 
     QExplicitlySharedDataPointer<DependencyData> d;

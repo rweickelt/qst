@@ -31,12 +31,11 @@ Project {
     Testcase {
         property string tag
         name: "level2"
+
         Depends { name: "level1" }
 
-        property int bla
-
         function run() {
-            Qst.compare(level1.value, 47)
+            Qst.compare(dependencies.level1.value, 47)
         }
     }
 

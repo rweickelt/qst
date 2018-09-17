@@ -8,8 +8,8 @@ Project {
         Depends { name: "level2" }
 
         function run() {
-            Qst.compare(level1b.value, 47)
-            Qst.compare(level2.value, 47)
+            Qst.compare(dependencies.level1b.value, 47)
+            Qst.compare(dependencies.level2.value, 47)
         }
     }
 
@@ -23,7 +23,7 @@ Project {
         }
 
         function run() {
-            Qst.compare(level1a.value, 47)
+            Qst.compare(dependencies.level1a.value, 47)
             exports2.value = 47
         }
     }

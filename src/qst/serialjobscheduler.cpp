@@ -51,32 +51,18 @@ SerialJobScheduler::SerialJobScheduler(const DirectedGraph<Job, Dependency>& job
     m_dependencies = jobs;
 }
 
-void SerialJobScheduler::onJobFinished(const Job& finishedJob)
+void SerialJobScheduler::onJobFinished(Job finishedJob)
 {
     QString name = finishedJob.testcase()->name();
     m_done.append(finishedJob);
 
-    QVariantMap exportedValues;
-    if (finishedJob.testcase()->exportsItem())
+    if (Exports* exports = finishedJob.testcase()->exportsItem())
     {
-        exportedValues = parseExports(finishedJob.testcase()->exportsItem());
+        finishedJob.setExports(parseExports(exports));
     }
 
-    JobList dependents = m_dependencies.successors(finishedJob);
-    for (const auto& dependent: dependents)
+    for (const auto& dependent: m_dependencies.successors(finishedJob))
     {
-        // Attach exported values
-        if (finishedJob.testcase()->exportsItem())
-        {
-            QQmlContext* context = qmlContext(dependent.testcase())->parentContext();
-            Q_ASSERT(context);
-            Dependency dependency = m_dependencies.edge(finishedJob, dependent);
-
-            QString alias = dependency.alias().isEmpty() ? dependency.name() : dependency.alias();
-            qDebug() << "Setting context property " << alias << " to " << dependency.name() << exportedValues;
-            context->setContextProperty(alias.toLatin1().constData(), exportedValues);
-        }
-
         m_dependencyCounts[dependent] -= 1;
         if (m_dependencyCounts[dependent] == 0)
         {
@@ -87,7 +73,41 @@ void SerialJobScheduler::onJobFinished(const Job& finishedJob)
 
     if (!m_readyList.isEmpty())
     {
-        emit jobReady(m_readyList.takeFirst());
+        Job nextJob = m_readyList.takeFirst();
+
+        QMap<QString, QVariant> singleDependencies;
+        QMultiMap<QString, QVariant> multiDependencies;
+
+        for (const auto& predecessor: m_dependencies.predecessors(nextJob))
+        {
+            if (!predecessor.testcase()->exportsItem())
+            {
+                continue;
+            }
+
+            Dependency dependency = m_dependencies.edge(predecessor, nextJob);
+            QString alias = dependency.alias().isEmpty() ? dependency.name() : dependency.alias();
+            if (dependency.count() > 1)
+            {
+                multiDependencies.insert(alias, predecessor.exports());
+            }
+            else
+            {
+                singleDependencies.insert(alias, predecessor.exports());
+            }
+        }
+
+        for (const auto& alias: singleDependencies.keys())
+        {
+            nextJob.testcase()->attachDependencyExport(alias, singleDependencies.value(alias));
+        }
+
+        for (const auto& alias: multiDependencies.keys())
+        {
+            nextJob.testcase()->attachDependencyExport(alias, multiDependencies.values(alias));
+        }
+
+        emit jobReady(nextJob);
         return;
     }
     else

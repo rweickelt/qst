@@ -38,7 +38,6 @@ class Testcase;
 struct Job;
 
 using JobLookupTable = QMultiMap<QString, Job>;
-using JobList = QList<Job>;
 using JobTable = QMultiMap<QString, Job>;
 
 /* TestJobs are testcase-data tuples created by JobMultiplier
@@ -48,6 +47,7 @@ struct JobData
 {
     Testcase* testcase;
     TagSet tags;
+    QVariantMap exports;
 };
 
 class Job
@@ -61,6 +61,8 @@ public:
     TagSet tags() const;
     Testcase* testcase();
     Testcase* testcase() const;
+    QVariantMap exports() const;
+    void setExports(const QVariantMap& data);
 
     bool operator==(const Job& other) const;
     bool operator<(const Job& other) const;

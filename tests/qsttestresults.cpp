@@ -37,6 +37,8 @@ QstTestResults QstTestResults::fromQstOutput(const QByteArray& text)
     QstTestResults results;
 
     results.m_stdOut = text;
+    results.m_passCount = 0;
+    results.m_failCount = 0;
 
     QStringList lines = QString::fromLatin1(text).trimmed().split('\n');
     QRegularExpression parser(

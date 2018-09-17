@@ -45,10 +45,10 @@ public:
     QList<Testcase::Result> results() const;
 
 public slots:
-    void dispatch(const Job& job);
+    void dispatch(Job job);
 
 signals:
-    void finished(const Job&);
+    void finished(Job);
 
 private:
     void createProjectWorkingDirectory();

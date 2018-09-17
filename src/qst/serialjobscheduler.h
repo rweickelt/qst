@@ -50,20 +50,20 @@ public:
     void start();
 
 public slots:
-    void onJobFinished(const Job& job);
+    void onJobFinished(Job job);
 
 signals:
     void finished();
-    void jobReady(const Job& job);
+    void jobReady(Job job);
 
 private:
     static QVariantMap parseExports(Exports* item);
 
-    JobList m_todo;
-    JobList m_done;
+    QList<Job> m_todo;
+    QList<Job> m_done;
     DirectedGraph<Job, Dependency> m_dependencies;
     QMap<Job, uint> m_dependencyCounts;
-    JobList m_readyList;
+    QList<Job> m_readyList;
 };
 
 #endif // SERIALJOBSCHEDULER_H

@@ -11,7 +11,7 @@ Project {
         }
 
         testcases: [
-            "level1*"
+            "level1"
         ]
     }
 
@@ -29,6 +29,7 @@ Project {
         }
     }
 
+    /* Multiple Depends items pointing to single job each */
     Testcase {
         property string tag
         name: "level2a"
@@ -36,24 +37,36 @@ Project {
         Depends {
             name: "level1"
             tag: "tag1"
+            alias: "level1a"
         }
-
-        function run() {
-            Qst.compare(dependencies.level1.value, "tag1")
-        }
-    }
-
-    Testcase {
-        property string tag
-        name: "level2b"
 
         Depends {
             name: "level1"
             tag: "tag2"
+            alias: "level1b"
         }
 
         function run() {
-            Qst.compare(dependencies.level1.value, "tag2")
+            Qst.compare(dependencies.level1a.value, "tag1")
+            Qst.compare(dependencies.level1b.value, "tag2")
         }
     }
+
+    /* Single depends item pointing to multiple jobs */
+    Testcase {
+        name: "level2b"
+
+        Depends {
+            name: "level1"
+        }
+
+        function run() {
+            var values = []
+            values.push(dependencies.level1[0].value)
+            values.push(dependencies.level1[1].value)
+            Qst.verify(values.indexOf("tag1") > -1)
+            Qst.verify(values.indexOf("tag2") > -1)
+        }
+    }
+
 }
