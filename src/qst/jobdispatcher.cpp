@@ -26,6 +26,7 @@
 #include "tag.h"
 #include "qst.h"
 
+#include <algorithm>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtQml/QQmlProperty>
@@ -43,11 +44,13 @@ void JobDispatcher::dispatch(Job job)
     QString name = job.testcase()->name();
     QString displayName = name;
     QString workingDirectoryName = name;
+    QList<Tag> tags = job.tags().toList();
+    std::sort(tags.begin(), tags.end());
 
     if (job.tags().size() > 0)
     {
         QStringList tagsStrings;
-        for (const auto& tag: job.tags())
+        for (const auto& tag: tags)
         {
             const auto strings = tag.toPair();
             tagsStrings << strings.second;

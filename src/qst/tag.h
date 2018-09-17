@@ -43,6 +43,7 @@ public:
     QString toString() const;
 
     bool operator==(const Tag& other) const;
+    bool operator<(const Tag& other) const;
 
 private:
     Id m_id = -1;
@@ -51,6 +52,7 @@ private:
 uint qHash(const Tag& tag);
 
 inline Tag::Id Tag::id() const { return m_id; }
+
 inline bool Tag::operator==(const Tag& other) const { return m_id == other.m_id; }
 inline uint qHash(const Tag& tag) { return tag.id(); }
 

@@ -82,3 +82,8 @@ QStringList TagSet::toStringList() const
     return result;
 }
 
+bool Tag::operator<(const Tag& other) const
+{
+    return stringTable[m_id].first < stringTable[other.m_id].first;
+}
+
