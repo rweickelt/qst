@@ -1,5 +1,4 @@
 import qst 1.0
-import QtQuick 2.0
 
 Project {
     Matrix {
@@ -29,7 +28,7 @@ Project {
         }
     }
 
-    /* Multiple Depends items pointing to single job each */
+    /* Multiple Depends items explicitly pointing to single job each */
     Testcase {
         property string tag
         name: "level2a"
@@ -52,7 +51,7 @@ Project {
         }
     }
 
-    /* Single depends item pointing to multiple jobs */
+    /* Single Depends item implicitly pointing to multiple jobs. */
     Testcase {
         name: "level2b"
 

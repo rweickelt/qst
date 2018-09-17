@@ -36,7 +36,6 @@ Project {
         Depends { name: "level1" }
 
         function run() {
-            Qst.info("tag: " + tag + ", level1.tagValue: " + dependencies.level1.tagValue)
             Qst.compare(dependencies.level1.tagValue, tag)
         }
     }

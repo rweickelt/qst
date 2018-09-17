@@ -94,7 +94,6 @@ int main(int argc, char *argv[])
     if (cli.hasErrors())
     {
         Console::printError(QString("Error: %1").arg(cli.errorString()));
-        Console::printToStdOut(cli.helpText());
         return qst::ExitApplicationError;
     }
 

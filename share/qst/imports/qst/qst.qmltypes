@@ -4,6 +4,7 @@ import QtQuick.tooling 1.1
 Module {
     Component {
         name: "Depends"
+        prototype: "QObject"
         exports: [ "qst/Depends 1.0" ]
         exportMetaObjectRevisions: [0]
 
@@ -13,6 +14,7 @@ Module {
 
     Component {
         name: "Dimension"
+        prototype: "QObject"
         exports: "qst/Dimension 1.0"
         exportMetaObjectRevisions: [0]
     }

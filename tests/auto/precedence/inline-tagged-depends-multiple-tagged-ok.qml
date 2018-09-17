@@ -5,12 +5,13 @@ Project {
         Dimension {
             tag: [
                 "tag1",
-                "tag2"
+                "tag2",
+                "tag3"
             ]
         }
 
         testcases: [
-            "level1*"
+            "*"
         ]
     }
 
@@ -30,29 +31,24 @@ Project {
 
     Testcase {
         property string tag
-        name: "level2a"
+        name: "level2"
 
         Depends {
             name: "level1"
-            tag: "tag1"
+            tag: [
+                "tag1",
+                "tag2"
+            ]
+            alias: "level1"
         }
 
         function run() {
-            Qst.compare(dependencies.level1.value, "tag1")
-        }
-    }
-
-    Testcase {
-        property string tag
-        name: "level2b"
-
-        Depends {
-            name: "level1"
-            tag: "tag2"
-        }
-
-        function run() {
-            Qst.compare(dependencies.level1.value, "tag2")
+            var values = []
+            values.push(dependencies.level1[0].value)
+            values.push(dependencies.level1[1].value)
+            Qst.compare(dependencies.level1.length, 2)
+            Qst.verify(values.indexOf("tag1") > -1)
+            Qst.verify(values.indexOf("tag2") > -1)
         }
     }
 }
