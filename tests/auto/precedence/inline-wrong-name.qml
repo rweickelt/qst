@@ -8,7 +8,7 @@ Project {
 
     Testcase {
         name: "level-2"
-        Depends { name: "wrong" }
+        Depends { name: "does-not-exist" }
         function run() {}
     }
 }

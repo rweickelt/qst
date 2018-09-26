@@ -32,15 +32,15 @@ public:
     QString dataPath(const QString &fileName) const;
 
 private slots:
-    void inlineNontaggedDependsNonTagged();
-    void inlineNontaggedDependsSingleTagged();
-    void inlineNontaggedDependsMultipleTagged();
-    void inlineNontaggedDependsNontaggedWrongName();
-    void inlineTaggedDependsNontagged();
-    void inlineTaggedDependsSingleMatchingTagged();
-    void inlineTaggedDependsMultipleTagged();
-    void inlineNontaggedExportsIllegalName();
-    void inlineCycle();
+    void inlineNontaggedDependsNonTaggedOk();
+    void inlineNontaggedDependsSingleTaggedOk();
+    void inlineNontaggedDependsMultipleTaggedOk();
+    void inlineNontaggedDependsNontaggedWrongNameOk();
+    void inlineTaggedDependsNontaggedOk();
+    void inlineTaggedDependsSingleMatchingTaggedOk();
+    void inlineTaggedDependsMultipleTaggedOk();
+    void dependsIllegalNameOrAliasError();
+    void inlineCycleError();
 };
 
 QString test_precedence::dataPath(const QString &fileName) const
@@ -48,32 +48,32 @@ QString test_precedence::dataPath(const QString &fileName) const
     return QDir(QString(SOURCE_DIR)).absoluteFilePath(fileName);
 }
 
-void test_precedence::inlineNontaggedDependsNonTagged()
+void test_precedence::inlineNontaggedDependsNonTaggedOk()
 {
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("inline-nontagged-depends-nontagged-ok.qml"));
     QCOMPARE(results().passCount(), 4);
 }
 
-void test_precedence::inlineNontaggedDependsSingleTagged()
+void test_precedence::inlineNontaggedDependsSingleTaggedOk()
 {
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("inline-nontagged-depends-single-tagged-ok.qml"));
     QCOMPARE(results().passCount(), 4);
 }
 
-void test_precedence::inlineNontaggedDependsMultipleTagged()
+void test_precedence::inlineNontaggedDependsMultipleTaggedOk()
 {
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("inline-nontagged-depends-multiple-tagged-ok.qml"));
     QCOMPARE(results().passCount(), 4);
 }
 
-void test_precedence::inlineNontaggedDependsNontaggedWrongName()
+void test_precedence::inlineNontaggedDependsNontaggedWrongNameOk()
 {
     RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("inline-wrong-name.qml"));
     QVERIFY(stdError().contains("inline-wrong-name.qml:11"));
 }
 
 
-void test_precedence::inlineTaggedDependsNontagged()
+void test_precedence::inlineTaggedDependsNontaggedOk()
 {
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("inline-tagged-depends-nontagged-ok.qml"));
     QCOMPARE(results().passCount(), 4);
@@ -82,7 +82,7 @@ void test_precedence::inlineTaggedDependsNontagged()
     VERIFY_EXECUTION_ORDER({"level1", "level2 0000002 [ tag3 ]"});
 }
 
-void test_precedence::inlineTaggedDependsSingleMatchingTagged()
+void test_precedence::inlineTaggedDependsSingleMatchingTaggedOk()
 {
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("inline-tagged-depends-single-matching-tagged-ok.qml"));
     QCOMPARE(results().passCount(), 4);
@@ -90,18 +90,27 @@ void test_precedence::inlineTaggedDependsSingleMatchingTagged()
     VERIFY_EXECUTION_ORDER({"level1 0000001 [ tag2 ]", "level2 0000003 [ tag2 ]"});
 }
 
-void test_precedence::inlineTaggedDependsMultipleTagged()
+void test_precedence::inlineTaggedDependsMultipleTaggedOk()
 {
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("inline-tagged-depends-single-matching-tagged-ok.qml"));
 }
 
 
-void test_precedence::inlineNontaggedExportsIllegalName()
+void test_precedence::dependsIllegalNameOrAliasError()
 {
-    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("inline-nontagged-exports-illegal-name.qml"));
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("depends-illegal-name-or-alias.qml"));
+    QVERIFY(stdError().contains("depends-illegal-name-or-alias.qml:12:"));
+    QVERIFY(stdError().contains("depends-illegal-name-or-alias.qml:18:"));
+    QVERIFY(stdError().contains("depends-illegal-name-or-alias.qml:24:"));
+    QVERIFY(stdError().contains("depends-illegal-name-or-alias.qml:31:"));
+    QVERIFY(stdError().contains("depends-illegal-name-or-alias.qml:38:"));
+    QVERIFY(stdError().contains("depends-illegal-name-or-alias.qml:44:"));
+    QVERIFY(stdError().contains("depends-illegal-name-or-alias.qml:50:"));
+    QVERIFY(stdError().contains("depends-illegal-name-or-alias.qml:56:"));
+    QVERIFY(stdError().contains("depends-illegal-name-or-alias.qml:63:"));
 }
 
-void test_precedence::inlineCycle()
+void test_precedence::inlineCycleError()
 {
     QSKIP("not implemented yet");
 //    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("inline-cycle.qml"));

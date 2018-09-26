@@ -32,10 +32,15 @@
 #include "qstitemvisitor.h"
 #include "testcase.h"
 
+#include <QtCore/QRegularExpression>
 #include <QtCore/QVariantMap>
 #include <QtCore/QSet>
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlEngine>
+
+namespace {
+    QRegularExpression jsIdentifierPattern = QRegularExpression("^[A-Za-z][\\w]*$");
+}
 
 class DependencyVisitor : public QstItemVisitor
 {
@@ -63,7 +68,6 @@ void DependencyVisitor::visit(Depends* item)
 {
     Q_ASSERT(!item->name().isEmpty());
 
-//    m_resolver.m_dependencies.insert(m_currentTestcase, item);
     m_resolver.m_testcaseGraph.insertEdge(item->name(), m_currentTestcase->name(), item);
 }
 
@@ -99,15 +103,32 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
 
     QSet<QString> tcNames = m_testcaseGraph.nodes().toSet();
 
-    // Check for Depends items pointing to non-existing testcases.
-    for (const auto& dependsItem: m_testcaseGraph.edges())
+    // Basic sanity checks on Depends item
+    for (const auto& depends: m_testcaseGraph.edges())
     {
-        if (!tcNames.contains(dependsItem->name()))
+        if ((!depends->alias().isEmpty()) && (!jsIdentifierPattern.match(depends->alias()).hasMatch()))
         {
-            QmlContext context = qst::qmlDefinitionContext(dependsItem);
-            QString message = QString("At %1:%2: Name '%3' is not an existing testcase.")
+            QmlContext context = qst::qmlDefinitionContext(depends);
+            QString message = QString("%2:%3: The alias '%1' must be a valid JavaScript identifier.")
+                    .arg(depends->alias())
+                    .arg(context.file()).arg(context.line());
+            m_errors << message;
+        }
+        else if ((depends->alias().isEmpty()) && (!jsIdentifierPattern.match(depends->name()).hasMatch()))
+        {
+            QmlContext context = qst::qmlDefinitionContext(depends);
+            QString message = QString("%2:%3: The name '%1' must be a valid JavaScript identifier when no alias is defined.")
+                    .arg(depends->name())
+                    .arg(context.file()).arg(context.line());
+            m_errors << message;
+        }
+
+        if (!tcNames.contains(depends->name()))
+        {
+            QmlContext context = qst::qmlDefinitionContext(depends);
+            QString message = QString("%1:%2: The name '%3' is not an existing testcase.")
                     .arg(context.file()).arg(context.line())
-                    .arg(dependsItem->name());
+                    .arg(depends->name());
             m_errors << message;
         }
     }

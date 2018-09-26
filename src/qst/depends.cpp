@@ -39,6 +39,11 @@ void Depends::callVisitor(QstItemVisitor* visitor)
     visitor->visit(this);
 }
 
+void Depends::handleParserEvent(ParserEvent event)
+{
+    Q_UNUSED(event);
+}
+
 void DependsParser::verifyBindings(const QV4::CompiledData::Unit* qmlUnit, const QList<const QV4::CompiledData::Binding*>& props)
 {
     QSet<QString> names;

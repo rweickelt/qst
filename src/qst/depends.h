@@ -50,7 +50,7 @@ public:
 
 protected:
     virtual void callVisitor(QstItemVisitor* visitor) final;
-    virtual void handleParserEvent(ParserEvent event) final { Q_UNUSED(event); }
+    virtual void handleParserEvent(ParserEvent event) final;
 
 private:
     friend class DependsParser;
