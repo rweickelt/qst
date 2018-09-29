@@ -66,8 +66,6 @@ DependencyVisitor::DependencyVisitor(DependencyResolver& resolver)
 
 void DependencyVisitor::visit(Depends* item)
 {
-    Q_ASSERT(!item->name().isEmpty());
-
     m_resolver.m_testcaseGraph.insertEdge(item->name(), m_currentTestcase->name(), item);
 }
 
@@ -106,7 +104,14 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
     // Basic sanity checks on Depends item
     for (const auto& depends: m_testcaseGraph.edges())
     {
-        if ((!depends->alias().isEmpty()) && (!jsIdentifierPattern.match(depends->alias()).hasMatch()))
+        if (depends->name().isEmpty())
+        {
+            QmlContext context = qst::qmlDefinitionContext(depends);
+            QString message = QString("%1:%2: The name must not be empty.")
+                    .arg(context.file()).arg(context.line());
+            m_errors << message;
+        }
+        else if ((!depends->alias().isEmpty()) && (!jsIdentifierPattern.match(depends->alias()).hasMatch()))
         {
             QmlContext context = qst::qmlDefinitionContext(depends);
             QString message = QString("%2:%3: The alias '%1' must be a valid JavaScript identifier.")
@@ -122,8 +127,7 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
                     .arg(context.file()).arg(context.line());
             m_errors << message;
         }
-
-        if (!tcNames.contains(depends->name()))
+        else if (!tcNames.contains(depends->name()))
         {
             QmlContext context = qst::qmlDefinitionContext(depends);
             QString message = QString("%1:%2: The name '%3' is not an existing testcase.")
@@ -141,7 +145,7 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
     // Cycle-checking depth-first search lambda function
     QSet<QString> visitedNodes;
     std::function<Depends*(const QString&, const QString&, QSet<QString>&)> cyclicDependency =
-            [&](const QString& successor, const QString& node, QSet<QString>& markedNodes) -> Depends*
+            [&cyclicDependency, &visitedNodes, this](const QString& successor, const QString& node, QSet<QString>& markedNodes) -> Depends*
             {
                 if (markedNodes.contains(node))
                 {

@@ -113,8 +113,8 @@ void test_precedence::dependsIllegalNameOrAliasError()
 void test_precedence::inlineCycleError()
 {
     RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("inline-cycle.qml"));
-//    QVERIFY(stdError().contains("inline-cycle.qml:6"));
-//    QVERIFY(stdError().contains("inline-cycle.qml:12"));
+    QVERIFY(stdError().contains("inline-cycle.qml:12"));
+    QVERIFY(stdError().contains("inline-cycle.qml:18"));
 }
 
 QTEST_MAIN(test_precedence)
