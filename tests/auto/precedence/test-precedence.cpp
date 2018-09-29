@@ -112,8 +112,7 @@ void test_precedence::dependsIllegalNameOrAliasError()
 
 void test_precedence::inlineCycleError()
 {
-    QSKIP("not implemented yet");
-//    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("inline-cycle.qml"));
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("inline-cycle.qml"));
 //    QVERIFY(stdError().contains("inline-cycle.qml:6"));
 //    QVERIFY(stdError().contains("inline-cycle.qml:12"));
 }

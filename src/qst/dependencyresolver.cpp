@@ -132,6 +132,53 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
             m_errors << message;
         }
     }
+
+    if (hasErrors())
+    {
+        return;
+    }
+
+    // Cycle-checking depth-first search lambda function
+    QSet<QString> visitedNodes;
+    std::function<Depends*(const QString&, const QString&, QSet<QString>&)> cyclicDependency =
+            [&](const QString& successor, const QString& node, QSet<QString>& markedNodes) -> Depends*
+            {
+                if (markedNodes.contains(node))
+                {
+                    return m_testcaseGraph.edge(node, successor);
+                }
+
+                markedNodes << node;
+
+                if (visitedNodes.contains(node))
+                {
+                    return nullptr;
+                }
+
+                visitedNodes << node;
+
+                for (const auto& nextNode: m_testcaseGraph.predecessors(node))
+                {
+                    return cyclicDependency(node, nextNode, markedNodes);
+                }
+
+                return nullptr;
+            };
+
+    // Test graph for cycles.
+    for (const auto& node: m_testcaseGraph.nodes())
+    {
+        QSet<QString> markedNodes;
+        Depends* dependsItem = cyclicDependency(QString(), node, markedNodes);
+        if (dependsItem != nullptr)
+        {
+            QmlContext context = qst::qmlDefinitionContext(dependsItem);
+            QString message = QString("%2:%3: Cyclic dependency detected.")
+                    .arg(context.file()).arg(context.line());
+            m_errors << message;
+        }
+    }
+
     if (hasErrors())
     {
         return;
@@ -213,10 +260,6 @@ void DependencyResolver::completeResolve(const JobLookupTable& jobs)
                             TagSet precedingTags = precedingJob.tags();
                             if (ourTags == precedingTags)
                             {
-//                                qDebug() << "Matching " <<
-//                                            precedingJob.testcase()->name() << precedingJob.tags().toStringList()
-//                                         << " and " <<
-//                                            currentJob.testcase()->name() << ourTags.toStringList() ;
                                 dependency.incrementCount();
                                 m_jobGraph.insertEdge(precedingJob, currentJob, dependency);
                                 matched = true;

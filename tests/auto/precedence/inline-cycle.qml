@@ -12,4 +12,10 @@ Project {
         Depends { name: "ying" }
         function run() {}
     }
+
+    Testcase {
+        name: "elon_musk"
+        Depends { name: "elon_musk" }
+        function run() {}
+    }
 }
