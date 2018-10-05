@@ -47,7 +47,7 @@ public:
     QStringList errors() const { return m_errors; }
     bool hasErrors() const { return !m_errors.isEmpty(); }
 
-private:    
+private:
     friend class DependencyVisitor;
 
     QMap<QString, Testcase*> m_testcases;

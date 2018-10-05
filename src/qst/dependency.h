@@ -9,6 +9,14 @@
 
 class Depends;
 
+/*
+Contains information about a job dependency as plain data types.
+This is necessary because Depends items are shared between jobs
+and their content might change based on the tags that are currently
+applied to the testcase.
+
+Dependency objects instead are owned by a single job only.
+*/
 class Dependency
 {
 public:

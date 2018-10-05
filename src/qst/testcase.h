@@ -36,6 +36,7 @@
 #include <QtQml/QQmlPropertyMap>
 
 #include "component.h"
+#include "tag.h"
 
 class Exports;
 class Project;
@@ -115,6 +116,7 @@ protected:
     Project* project() const;
 
 public:
+    void setTags(const TagSet& tags);
     Testcase(QObject *parent = 0);
     QObject* dependencies();
     QString displayName() const;

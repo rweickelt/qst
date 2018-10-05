@@ -11,6 +11,7 @@ QstAutoTest {
         "inline-tagged-depends-multiple-tagged-ok.qml",
         "inline-tagged-depends-nontagged-ok.qml",
         "inline-tagged-depends-single-matching-tagged-ok.qml",
+        "inline-tagged-depends-single-matching-tagged2-ok.qml",
         "inline-wrong-name.qml",
         "test-precedence.cpp",
     ]

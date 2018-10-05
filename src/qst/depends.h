@@ -43,6 +43,8 @@ public:
 
     virtual const QMetaObject* baseTypeInfo() const final;
     void accept(QstItemVisitor* visitor);
+    bool specifiesTags() const;
+    void evaluateTags();
 
     QString alias() const;
     QString name() const;
@@ -58,11 +60,14 @@ private:
     QString m_alias;
     QString m_name;
     QList<TagSet> m_tags;
+    QMap<QString, QQmlExpression*> m_tagExpressions;
 };
 
 inline const QMetaObject* Depends::baseTypeInfo() const { return &Depends::staticMetaObject; }
 inline QString Depends::alias() const { return m_alias; }
 inline QString Depends::name() const { return m_name; }
+inline bool Depends::specifiesTags() const { return !m_tagExpressions.isEmpty(); }
+
 inline QList<TagSet> Depends::tags() const { return m_tags; }
 
 class DependsParser : public QQmlCustomParser

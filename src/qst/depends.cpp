@@ -44,6 +44,73 @@ void Depends::handleParserEvent(ParserEvent event)
     Q_UNUSED(event);
 }
 
+void Depends::evaluateTags()
+{
+    QMap<QString, QVariantList> values;
+    QMap<QString, int> arrayLengths;
+
+    for (const auto& propName: m_tagExpressions.keys())
+    {
+        QQmlExpression* expression = m_tagExpressions.value(propName);
+        bool undefined = false;
+        QVariant result = expression->evaluate(&undefined);
+
+        if (!result.isValid() || undefined)
+        {
+            QString file = QUrl(expression->sourceFile()).fileName();
+            int line = expression->lineNumber();
+            QST_ERROR_AND_EXIT(QString("%1:%2: Unable to parse value. Only basic types and lists of basic types can be used as tags.")
+                               .arg(file).arg(line));
+        }
+
+        switch (result.type())
+        {
+        case QMetaType::Bool:
+        case QMetaType::Int:
+        case QMetaType::QString:
+            values[propName] << result;
+            break;
+        case QMetaType::User: // qMetaTypeId<QJSValue>() does not work here for unknown reasons
+        {
+            QJSValue jsValue = result.value<QJSValue>();
+            // Fails of this assert are unexpected and should be investigated.
+            Q_ASSERT(jsValue.isArray());
+            QVariantList array = jsValue.toVariant().toList();
+            values[propName] = array;
+            arrayLengths[propName] = array.length();
+        }
+            break;
+        default:
+            // Fails of this assert are unexpected and should be investigated.
+            Q_ASSERT(false);
+            break;
+        }
+    }
+
+    if (arrayLengths.values().toSet().size() > 1)
+    {
+        QmlContext context = qst::qmlDefinitionContext(this);
+        QST_ERROR_AND_EXIT(QString("The tag arrays (%1) defined at %2:%3 must have equal length.")
+                           .arg(arrayLengths.keys().join(", "))
+                           .arg(context.file()).arg(context.line()));
+    }
+
+    /* Transform map of arrays into an array of maps.
+     * If the array contains only one value, duplicate it.
+     */
+    QVector<TagSet> tags(arrayLengths.values().value(0, 1));
+    for (int i = 0; i < tags.length(); i++)
+    {
+        for (const auto& name: values.keys())
+        {
+            const auto& array = values[name];
+            tags[i].insert(Tag::create(name, array.value(i, array.first()).toString()));
+        }
+    }
+
+    m_tags = tags.toList();
+}
+
 void DependsParser::verifyBindings(const QV4::CompiledData::Unit* qmlUnit, const QList<const QV4::CompiledData::Binding*>& props)
 {
     QSet<QString> names;
@@ -63,6 +130,7 @@ void DependsParser::verifyBindings(const QV4::CompiledData::Unit* qmlUnit, const
         if (binding->type == QV4::CompiledData::Binding::Type_Script)
         {
             QString script = binding->valueAsScriptString(qmlUnit);
+            qDebug() << "Finding script " << script;
             if (definesEmptyList(script))
             {
                 error(binding, "List must not be empty.");
@@ -77,98 +145,25 @@ void DependsParser::verifyBindings(const QV4::CompiledData::Unit* qmlUnit, const
     }
 }
 
+/*
+Just store the QML expressions. Evaluation happens later when DependencyResolver
+applies tags to the surrounding testcase.
+*/
 void DependsParser::applyBindings(QObject* object, QV4::CompiledData::CompilationUnit* compilationUnit, const QList<const QV4::CompiledData::Binding*>& bindings)
 {
     Depends* depends = qobject_cast<Depends*>(object);
-    QV4::ExecutionEngine* v4 = compilationUnit->engine;
-    QV4::Scope scope(v4);
 
     QMap<QString, QVariantList> values;
     QMap<QString, const QV4::CompiledData::Binding*> bindingsByName;
-    QMap<QString, int> arrayLengths;
 
-    for (const auto& binding: bindings) {
+    for (const auto& binding: bindings)
+    {
         QString propName = compilationUnit->stringAt(binding->propertyNameIndex);
-        bindingsByName[propName] = binding;
+        QString script = binding->valueAsScriptString(compilationUnit->data);
 
-        QQmlBinding::Identifier id = binding->value.compiledScriptIndex;
-        Q_ASSERT(id != QQmlBinding::Invalid);
-
-        if (binding->type == QV4::CompiledData::Binding::Type_Boolean)
-        {
-            values[propName] << binding->valueAsBoolean();
-        }
-        else if (binding->type == QV4::CompiledData::Binding::Type_Number)
-        {
-            values[propName] << binding->valueAsNumber();
-        }
-        else if (binding->type == QV4::CompiledData::Binding::Type_String)
-        {
-            values[propName] << binding->valueAsString(compilationUnit->data);
-        }
-        else if (binding->type == QV4::CompiledData::Binding::Type_Script)
-        {
-            QString script = binding->valueAsScriptString(compilationUnit->data);
-            QQmlExpression expression(qmlContext(depends), nullptr, script);
-
-            bool undefined = false;
-            QVariant result = expression.evaluate(&undefined);
-
-            if (!result.isValid() || undefined)
-            {
-                QString file = QUrl(compilationUnit->fileName()).path();
-                int line = binding->location.line;
-                QST_ERROR_AND_EXIT(QString("Unable to parse value at %1:%2. Only basic types and lists of basic types can be used as tags.")
-                                   .arg(file).arg(line));
-            }
-
-            switch (result.type())
-            {
-            case QMetaType::Bool:
-            case QMetaType::Int:
-            case QMetaType::QString:
-                values[propName] << result;
-                break;
-            case QMetaType::User: // qMetaTypeId<QJSValue>() does not work here for unknown reasons
-            {
-                QJSValue jsValue = result.value<QJSValue>();
-                // Fails of this assert are unexpected and should be investigated.
-                Q_ASSERT(jsValue.isArray());
-                QVariantList array = jsValue.toVariant().toList();
-                values[propName] = array;
-                arrayLengths[propName] = array.length();
-            }
-                break;
-            default:
-                // Fails of this assert are unexpected and should be investigated.
-                Q_ASSERT(false);
-                break;
-            }
-        }
+        QQmlExpression* expression = new QQmlExpression(qmlContext(depends), nullptr, script, qmlEngine(depends));
+        depends->m_tagExpressions[propName] = expression;
     }
-
-    if (arrayLengths.values().toSet().size() > 1)
-    {
-        QmlContext context = qst::qmlDefinitionContext(depends);
-        QST_ERROR_AND_EXIT(QString("The tag arrays (%1) defined at %2:%3 must have equal length.")
-                           .arg(arrayLengths.keys().join(", "))
-                           .arg(context.file()).arg(context.line()));
-    }
-
-    /* Transform map of arrays into an array of maps.
-     * If the array contains only one value, duplicate it.
-     */
-    QVector<TagSet> tags(arrayLengths.values().value(0, 1));
-    for (int i = 0; i < tags.length(); i++)
-    {
-        for (const auto& name: values.keys())
-        {
-            const auto& array = values[name];
-            tags[i].insert(Tag::create(name, array.value(i, array.first()).toString()));
-        }
-    }
-
-    depends->m_tags = tags.toList();
 }
 
 bool DependsParser::definesEmptyList(const QString& script)

@@ -88,6 +88,11 @@ void test_precedence::inlineTaggedDependsSingleMatchingTaggedOk()
     QCOMPARE(results().passCount(), 4);
     VERIFY_EXECUTION_ORDER({"level1 0000000 [ tag1 ]", "level2 0000002 [ tag1 ]"});
     VERIFY_EXECUTION_ORDER({"level1 0000001 [ tag2 ]", "level2 0000003 [ tag2 ]"});
+
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("inline-tagged-depends-single-matching-tagged2-ok.qml"));
+    QCOMPARE(results().passCount(), 4);
+    VERIFY_EXECUTION_ORDER({"level1 0000000 [ tag1 ]", "level2 0000002 [ tag1 ]"});
+    VERIFY_EXECUTION_ORDER({"level1 0000001 [ tag2 ]", "level2 0000003 [ tag2 ]"});
 }
 
 void test_precedence::inlineTaggedDependsMultipleTaggedOk()

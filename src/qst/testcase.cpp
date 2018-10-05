@@ -35,6 +35,7 @@
 #include <QtCore/QEventLoop>
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlEngine>
+#include <QtQml/QQmlProperty>
 
 #include <private/qv4engine_p.h>
 #include <private/qv8engine_p.h>
@@ -450,4 +451,17 @@ void Testcase::attachDependencyExport(const QString& name, const QVariant& value
         m_dependencies.clear(name);
     }
     m_dependencies.insert(name, values);
+}
+
+void Testcase::setTags(const TagSet& tags)
+{
+    for (const auto& tag: tags)
+    {
+        const auto strings = tag.toPair();
+
+        QQmlProperty property(this, strings.first);
+        Q_ASSERT(property.isProperty());
+        Q_ASSERT(property.isWritable());
+        property.write(strings.second);
+    }
 }

@@ -216,6 +216,34 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
     }
 }
 
+/*
+1. We have a dependency tree m_testcaseGraph that specifies generic
+   dependencies between testcases (job classes).
+
+2. We have a job table with all job instances and their
+   respective tags.
+
+Now we need to find out which job instance depends on which other job.
+Therefore, we need to go through all jobs and:
+
+3. Apply its assigned tags to reevaluate bindings in that job.
+   That is necessary because Depends item may change content
+   based on the tags.
+
+4. Find one or more matching jobs for that dependency and
+   set up a dependency relation in the job dependency tree.
+
+There are exceptions for jobs not explicitly speciying tags
+in the Depends item:
+
+- a nontagged job depending on a tagged one matches all job instances
+
+- a tagged job depending on a tagged one matches all job
+  instances with equal tags.
+
+The term job class means: all jobs with equal name.
+
+*/
 void DependencyResolver::completeResolve(const JobLookupTable& jobs)
 {
     for (const auto& job: jobs.values())
@@ -226,11 +254,19 @@ void DependencyResolver::completeResolve(const JobLookupTable& jobs)
     for (auto& currentJob: jobs.values())
     {
         TagSet ourTags = currentJob.tags();
-        QList<Testcase> dependencies;
-        for (const auto& dependencyName: m_testcaseGraph.predecessors(currentJob.testcase()->name()).toSet())
+        currentJob.testcase()->setTags(ourTags);
+
+        // All job classes we are depending on
+        QSet<QString> dependencyNames = m_testcaseGraph.predecessors(currentJob.testcase()->name()).toSet();
+        for (const auto& dependencyName: dependencyNames)
         {
-            for (const auto& dependsItem: m_testcaseGraph.edges(dependencyName, currentJob.testcase()->name()))
+            // All Depends items pointing to our job class
+            QList<Depends*> dependsItems = m_testcaseGraph.edges(dependencyName, currentJob.testcase()->name());
+            for (const auto& dependsItem: dependsItems)
             {
+                // Make the Depends item reevaluate its bindings based on the tags set further up
+                dependsItem->evaluateTags();
+
                 QList<Job> precedingJobs = jobs.values(dependencyName);
                 // When failing, something went wrong in jobmultiplier
                 Q_ASSERT(precedingJobs.length() > 0);
@@ -242,11 +278,13 @@ void DependencyResolver::completeResolve(const JobLookupTable& jobs)
 
                 bool weAreTagged = !ourTags.isEmpty();
                 bool dependencyIsTagged = (precedingJobs.length() > 1);
-                bool dependsItemSpecifiesTags = !dependency.tags().isEmpty();
+                bool dependencySpecifiesTags = dependsItem->specifiesTags();
 
-                if (!dependsItemSpecifiesTags)
+                // Default behavior of Depends item, match all preceding jobs
+                // no matter whether they are tagged or not
+                if (!dependencySpecifiesTags)
                 {
-                    // Default behavior of Depends item, match all tags
+                    // Don't care about tags, just match any job with the dependency name.
                     if (!weAreTagged || !dependencyIsTagged)
                     {
                         for (const auto& precedingJob: precedingJobs)
@@ -255,9 +293,11 @@ void DependencyResolver::completeResolve(const JobLookupTable& jobs)
                             m_jobGraph.insertEdge(precedingJob, currentJob, dependency);
                         }
                     }
+                    // Either we are tagged or the dependency is tagged.
+                    // Use our tags and try to match other jobs 1:1.
+                    // If our job is not tagged, we will match every dependency job.
                     else
                     {
-                        // Use our tags and try to match other jobs 1:1
                         bool matched = false;
                         for (const auto& precedingJob: precedingJobs)
                         {
@@ -290,9 +330,9 @@ void DependencyResolver::completeResolve(const JobLookupTable& jobs)
                         }
                     }
                 }
+                // Match tags from Depends item with tags from depend jobs
                 else
                 {
-                    // Match tags from Depends item with tags from depend jobs
                     for (const auto& tagSet: dependency.tags())
                     {
                         for (const auto& precedingJob: precedingJobs)
