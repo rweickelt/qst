@@ -11,14 +11,15 @@ Testcase Item
     :qml:item:`Project`, document root
 
 :Nested items:
-    :qml:item:`Component`, :qml:item:`Matrix`
+    :qml:item:`Component`, :qml:item:`Depends`, :qml:item:`Exports`,
+    :qml:item:`Matrix`
 
 :Enumerations:
     :cpp:enum:`Result`
 
 :Properties:
-    :cpp:member:`elapsedTime`, :cpp:member:`name`, :cpp:member:`result`,
-    :cpp:member:`workingDirectory`
+    :cpp:member:`dependencies`, :cpp:member:`elapsedTime`, :cpp:member:`name`,
+    :cpp:member:`result`, :cpp:member:`workingDirectory`
 
 :Methods:
     :cpp:func:`run()`,
@@ -89,6 +90,23 @@ Enumerations
 
 Properties
 ----------
+
+..  cpp:member:: var dependencies
+
+    When the test case contains a :qml:item:`Depends` items, this property
+    makes exported values for every dependency :qml:prop:`name
+    <Depends::name>` or
+    :qml:prop:`alias <Depends::alias>` accessible. Data forwarded by
+    :qml:item:`Exports` can be accessed in bindings and code. Dependencies are
+    always attached in list form beause a test case might be represented by
+    multiple jobs:
+
+    ..  literalinclude:: code/reference/simple-exports.qml
+        :caption: `simple-exports.qml`
+        :lines: 21-23,25-27
+
+    This property is read-only.
+
 
 ..  cpp:member:: uint64 elapsedTime
 
