@@ -63,7 +63,9 @@ namespace {
     const TypeList projectParents = TypeList {};
     const HierarchyValidator::DocumentRootMode projectRootMode = HierarchyValidator::DocumentRootAllowed;
 
-    const TypeList testcaseChildren = TypeList { INFO(Component), INFO(Matrix), INFO(QObject) };
+    const TypeList testcaseChildren = TypeList {
+            INFO(Component), INFO(Depends), INFO(Exports), INFO(Matrix), INFO(QObject)
+    };
     const TypeList testcaseParents = TypeList { INFO(Project) };
     const HierarchyValidator::DocumentRootMode testcaseRootMode = HierarchyValidator::DocumentRootAllowed;
 }

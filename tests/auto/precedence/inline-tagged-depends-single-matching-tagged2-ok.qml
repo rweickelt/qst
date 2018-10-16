@@ -33,7 +33,11 @@ Project {
         property string tag
         name: "level2"
 
-        Depends { name: "level1" }
+        // tagged dependency with binding
+        Depends {
+            name: "level1"
+            tag: level2.tag
+        }
 
         function run() {
             Qst.compare(dependencies.level1[0].tagValue, tag)

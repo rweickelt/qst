@@ -130,7 +130,6 @@ void DependsParser::verifyBindings(const QV4::CompiledData::Unit* qmlUnit, const
         if (binding->type == QV4::CompiledData::Binding::Type_Script)
         {
             QString script = binding->valueAsScriptString(qmlUnit);
-            qDebug() << "Finding script " << script;
             if (definesEmptyList(script))
             {
                 error(binding, "List must not be empty.");

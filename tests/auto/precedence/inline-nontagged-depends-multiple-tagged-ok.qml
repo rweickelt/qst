@@ -46,8 +46,8 @@ Project {
         }
 
         function run() {
-            Qst.compare(dependencies.level1a.value, "tag1")
-            Qst.compare(dependencies.level1b.value, "tag2")
+            Qst.compare(dependencies.level1a[0].value, "tag1")
+            Qst.compare(dependencies.level1b[0].value, "tag2")
         }
     }
 

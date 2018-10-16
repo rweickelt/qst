@@ -35,7 +35,7 @@ Project {
         Depends { name: "level1" }
 
         function run() {
-            Qst.compare(dependencies.level1.value, 47)
+            Qst.compare(dependencies.level1[0].value, 47)
         }
     }
 

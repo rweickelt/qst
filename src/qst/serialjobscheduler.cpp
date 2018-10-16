@@ -75,7 +75,6 @@ void SerialJobScheduler::onJobFinished(Job finishedJob)
     {
         Job nextJob = m_readyList.takeFirst();
 
-        QMap<QString, QVariant> singleDependencies;
         QMultiMap<QString, QVariant> multiDependencies;
 
         for (const auto& predecessor: m_dependencies.predecessors(nextJob))
@@ -87,19 +86,7 @@ void SerialJobScheduler::onJobFinished(Job finishedJob)
 
             Dependency dependency = m_dependencies.edge(predecessor, nextJob);
             QString alias = dependency.alias().isEmpty() ? dependency.name() : dependency.alias();
-            if (dependency.count() > 1)
-            {
-                multiDependencies.insert(alias, predecessor.exports());
-            }
-            else
-            {
-                singleDependencies.insert(alias, predecessor.exports());
-            }
-        }
-
-        for (const auto& alias: singleDependencies.keys())
-        {
-            nextJob.testcase()->attachDependencyExport(alias, singleDependencies.value(alias));
+            multiDependencies.insert(alias, predecessor.exports());
         }
 
         for (const auto& alias: multiDependencies.keys())
