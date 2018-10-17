@@ -143,20 +143,6 @@ QList<NodeT> DirectedGraph<NodeT, EdgeT>::roots() const
     return result;
 }
 
-//template <typename NodeT, typename EdgeT>
-//void Dag<NodeT, EdgeT>::markAsRoot(const NodeT& node, bool enabled)
-//{
-//    if (enabled)
-//    {
-//        Q_ASSERT(!m_successors.contains(id(node)));
-//        m_successors.insert(id(NodeT()), id(node));
-//    }
-//    else
-//    {
-//        m_successors.remove(id(NodeT()), id(node));
-//    }
-//}
-
 template <typename NodeT, typename EdgeT>
 void DirectedGraph<NodeT, EdgeT>::dump()
 {

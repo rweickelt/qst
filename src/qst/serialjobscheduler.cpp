@@ -32,19 +32,6 @@
 #include <QtQml/QQmlContext>
 #include <QtDebug>
 
-namespace {
-//    QStringList readylistToString(QList<Job> jobs)
-//    {
-//        QStringList names;
-//        for (const auto& job: jobs)
-//        {
-//            names << job.testcase()->name();
-//        }
-//        return names;
-//    }
-}
-
-
 SerialJobScheduler::SerialJobScheduler(const DirectedGraph<Job, Dependency>& jobs, QObject* parent)
     : QObject(parent)
 {
