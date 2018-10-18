@@ -71,7 +71,8 @@ matching type is always unambiguous and is especially useful when a non-tagged
 test case depends only on certain jobs of a tagged one. Example:
 
 ..  literalinclude:: code/reference/explicit.qml
-    :caption: `explicit.qml`
+    :caption: `explicit.qml` (not tagged) depends only on some
+              instances of ``A``
     :name: explicit
     :emphasize-lines: 7-14
 
@@ -85,7 +86,6 @@ test case depends only on certain jobs of a tagged one. Example:
     INFO, explicit, , explicit.qml:21, depends on board-1-debug.elf board-2-debug.elf
     PASS, explicit,,,
 
-
 Implicit matching
 #################
 
@@ -94,8 +94,8 @@ this case, the matching behavior depends on whether the test case and the
 dependency are tagged or not. Non-tagged example:
 
 ..  literalinclude:: code/reference/implicit.qml
-    :caption: `implicit.qml` The test case implicit (not tagged) depends on
-              ``A`` (tagged).
+    :caption: `implicit.qml` The test case ``implicit`` (not tagged) depends on
+              all instances of ``A`` (tagged).
     :name: implicit
     :emphasize-lines: 10-12
 
@@ -117,12 +117,9 @@ dependency are tagged or not. Non-tagged example:
     PASS, implicit 0000007 [ board-2 release ],,,
 
 
-:``B`` (tagged) depends on ``A`` (tagged):
+:``B`` (not tagged) depends on ``A`` (not tagged):
 
-  Every job instance of ``B`` matches all jobs
-  of ``A`` that have at least the same tags as
-  ``B``. If ``A`` and ``B`` are in the same matrix,
-  then the resulting relationship is usually 1:1.
+  There is only a single instance of ``A`` and ``B``.
 
 :``B`` (not tagged) depends on ``A`` (tagged):
 
@@ -134,9 +131,12 @@ dependency are tagged or not. Non-tagged example:
   Every job instance of ``B`` matches the
   same single instance of ``A``.
 
-:``B`` (not tagged) depends on ``A`` (not tagged):
+:``B`` (tagged) depends on ``A`` (tagged):
 
-  There is only a single instance ``A`` and ``B``.
+  Every job instance of ``B`` matches all jobs
+  of ``A`` that have at least the same tags as
+  ``B``. If ``A`` and ``B`` are in the same matrix,
+  then the resulting relationship is usually 1:1.
 
 
 Properties
