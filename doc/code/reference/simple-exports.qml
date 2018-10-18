@@ -11,7 +11,7 @@ Project {
         }
 
         function run() {
-            exports.someResult = "excellent"
+            exports.result = "excellent"
         }
     }
 

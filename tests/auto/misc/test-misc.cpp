@@ -45,7 +45,6 @@ private slots:
     void valueRangeConstraint();
     void profile();
     void matrix();
-    void codeSnippets();
 };
 
 QString test_misc::dataPath(const QString &fileName) const
@@ -382,28 +381,6 @@ void test_misc::matrix()
 
     RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/matrix-inside-testcase-protected-testcases.qml"));
     QVERIFY(stdError().contains("matrix-inside-testcase-protected-testcases.qml:9"));
-}
-
-void test_misc::codeSnippets()
-{
-    RUN_AND_EXPECT(qst::ExitTestCaseFailed, "-f", dataPath("code-snippets/usage.qml"));
-    VERIFY_PASS(results(), "simple-passing-test");
-    VERIFY_PASS(results(), "makefile-test-simple");
-    VERIFY_PASS(results(), "test-app-build");
-    VERIFY_PASS(results(), "test-lib-build");
-    VERIFY_FAIL(results(), "simple-failing-test", "simple-failing-test.qml:8");
-
-    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("../../../../doc/code/reference/matrix-project.qml"));
-    VERIFY_PASS(results(), "tagged-test 0000003 [ dog bites ]");
-    VERIFY_PASS(results(), "tagged-test 0000002 [ cat bites ]");
-    VERIFY_PASS(results(), "tagged-test 0000001 [ dog moans ]");
-    VERIFY_PASS(results(), "tagged-test 0000000 [ cat moans ]");
-
-    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("../../../../doc/code/reference/dimension-with-references.qml"));
-    VERIFY_PASS(results(), "testcase 0000003 [ dog white ]");
-    VERIFY_PASS(results(), "testcase 0000002 [ cat white ]");
-    VERIFY_PASS(results(), "testcase 0000001 [ dog brown ]");
-    VERIFY_PASS(results(), "testcase 0000000 [ cat brown ]");
 }
 
 QTEST_GUILESS_MAIN(test_misc)
