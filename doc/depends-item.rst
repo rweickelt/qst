@@ -23,7 +23,7 @@ The ``Depends`` defines a dependency on another test case specified by
 as for instance in the following example:
 
 ..  literalinclude:: code/reference/simple-depends.qml
-    :caption: `simple-depends-exports.qml`
+    :caption: `simple-depends-depends.qml`
     :emphasize-lines: 15
 
 
