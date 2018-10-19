@@ -446,11 +446,8 @@ void Testcase::setWorkingDirectory(const QString& path)
 // we use an intermediate 'dependencies' property.
 void Testcase::attachDependencyExport(const QString& name, const QVariant& values)
 {
-    if (m_dependencies.contains(name))
-    {
-        m_dependencies.clear(name);
-    }
-    m_dependencies.insert(name, values);
+    m_dependencies[name] = values;
+    emit dependenciesChanged();
 }
 
 void Testcase::setTags(const TagSet& tags)

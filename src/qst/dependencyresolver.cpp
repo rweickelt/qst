@@ -198,7 +198,11 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
             continue;
         }
 
-        QVariantMap exportMap = exportItem->toVariantMap();
+        // Put the exports item into a list because we do that
+        // later for all dependencies as well.
+        QJsonArray exports;
+        exports.append(QJsonValue::fromVariant(exportItem->toVariantMap()));
+
         for (const auto& dependentTcName: m_testcaseGraph.successors(tcName).toSet())
         {
             Testcase* dependentTestcase = m_testcases.value(dependentTcName);
@@ -210,7 +214,7 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
                 {
                     aliasName = dependsItem->alias();
                 }
-                dependentTestcase->attachDependencyExport(aliasName, exportMap);
+                dependentTestcase->attachDependencyExport(aliasName, exports);
             }
         }
     }

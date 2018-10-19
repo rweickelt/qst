@@ -76,7 +76,7 @@ public:
     Q_PROPERTY(State state READ state)
     Q_PROPERTY(QString workingDirectory READ workingDirectory NOTIFY workingDirectoryChanged)
     Q_PROPERTY(QString message MEMBER m_message)
-    Q_PROPERTY(QObject* dependencies READ dependencies CONSTANT)
+    Q_PROPERTY(QObject* dependencies READ dependencies NOTIFY dependenciesChanged)
 
     virtual const QMetaObject* baseTypeInfo() const final;
     virtual void handleParserEvent(QstItem::ParserEvent event) override;
@@ -98,6 +98,7 @@ signals:
     // Emitted everytime after a test function has been invoked.
     void finished();
 
+    void dependenciesChanged();
     void workingDirectoryChanged();
 
 public slots:
