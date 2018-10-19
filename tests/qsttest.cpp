@@ -109,3 +109,20 @@ bool QstTest::execQstRun(const QStringList& arguments, int expectedExitCode, con
 
     return false;
 }
+
+bool QstTest::verifyExecutionOrder(const QStringList& expected, const QStringList& actual)
+{
+    if (actual.length() < expected.length())
+        return false;
+
+    if (actual.length() == 0)
+        return false;
+
+    if (expected.length() == 1)
+        return actual.contains(expected.first());
+
+    for (int i = 1; i < expected.length(); i++)
+        return (actual.indexOf(expected[i-1]) < actual.indexOf(expected[i]));
+
+    return false;
+}

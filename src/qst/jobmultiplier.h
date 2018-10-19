@@ -1,15 +1,41 @@
+/****************************************************************************
+ **
+ ** Copyright (C) 2018 The Qst project.
+ **
+ ** Contact: https://github.com/rweickelt/qst
+ **
+ ** $BEGIN_LICENSE$
+ **
+ ** This program is free software: you can redistribute it and/or modify
+ ** it under the terms of the GNU General Public License as published by
+ ** the Free Software Foundation, either version 3 of the License, or
+ ** (at your option) any later version.
+
+ ** This program is distributed in the hope that it will be useful,
+ ** but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ ** GNU General Public License for more details.
+
+ ** You should have received a copy of the GNU General Public License
+ ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ **
+ ** $END_LICENSE$
+****************************************************************************/
+
 #ifndef MATRIXEXPANDER_H
 #define MATRIXEXPANDER_H
 
 #include "dimension.h"
 #include "tag.h"
-#include "testjob.h"
+#include "job.h"
 
 #include <QtCore/QList>
+#include <QtCore/QMap>
 #include <QtCore/QPair>
 #include <QtCore/QVariantMap>
 
 class Matrix;
+class QstDocument;
 class Testcase;
 
 /* JobExpander:
@@ -29,45 +55,45 @@ class Testcase;
        (correct format, valid trivial values, no objecs etc.)
 
  */
-class JobMultiplier
+class JobMultiplier : private QstItemVisitor
 {
     Q_DISABLE_COPY(JobMultiplier)
 
 public:
-    JobMultiplier(const QList<Matrix*>& matrices, const QList<Testcase*>& testcases);
+    JobMultiplier(const QList<QstDocument*>& documents);
     QString errorString() const;
     bool hasError() const;
-    QMultiMap<QString, TestJob> jobs() const;
-    TagLookupTable tags() const;
+    JobLookupTable jobs() const;
 
 
 private:
     // Expands matrix with n dimensions into 1-dimensional vector with n columns
-    static QMap<TagId, Tag> expand(const Matrix* matrix);
+    static QList<TagSet> expand(const Matrix* matrix);
 
     // Matches existing testcases against wildcard patterns
     static QStringList match(const QStringList& testcases, const QStringList& patterns);
 
     // Creates a job table from a list of testcases and tags
-    QMultiMap<QString, TestJob> combine(const QStringList& testcases,
-                                        const QMap<TagId, Tag>& tags);
+    QMultiMap<QString, Job> combine(const QStringList& testcases,
+                                        const QList<TagSet>& tags);
 
     // Returns a filtered jobs table with all exceptions removed
-    static QMultiMap<QString, TestJob> removeExcluded(const QMultiMap<QString, TestJob>& jobs,
+    static QMultiMap<QString, Job> removeExcluded(const QMultiMap<QString, Job>& jobs,
                                                       const QStringList& patterns,       // = "Excepts" item
-                                                      const TagLookupTable& tags); // = "Excepts" item
+                                                      const TagSet& tags); // = "Excepts" item
+
+    virtual void visit(Matrix* item) final;
+    virtual void visit(Testcase* item) final;
 
     QString m_errorString;
     QList<Matrix*> m_matrices;
     QMap<QString, Testcase*> m_testcases;
-    QMultiMap<QString, TestJob> m_jobs;
-    TagLookupTable m_tags;
+    JobLookupTable m_jobs;
 };
 
 inline QString JobMultiplier::errorString() const { return m_errorString; }
 inline bool JobMultiplier::hasError() const { return !m_errorString.isEmpty(); }
-inline QMultiMap<QString, TestJob> JobMultiplier::jobs() const { return m_jobs; }
-inline TagLookupTable JobMultiplier::tags() const { return m_tags; }
+inline JobLookupTable JobMultiplier::jobs() const { return m_jobs; }
 
 
 #endif // MATRIXEXPANDER_H

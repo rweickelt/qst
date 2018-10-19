@@ -33,12 +33,20 @@
 #include <QtCore/QHash>
 
 #include <QtQml/QQmlContext>
+#include <QtQml/QQmlError>
+#include <QtQml/QQmlExpression>
 #include <QtQml/QQmlEngine>
 
-Project::Project(QObject *parent) : QstItem(&Project::staticMetaObject, parent)
+Project::Project(QObject *parent) : QstItem(parent)
 {
-    QstItem::setAllowedParentTypes({nullptr});
-    QstItem::setAllowedNestedTypes({&Matrix::staticMetaObject, &Testcase::staticMetaObject});
+    setObjectName("project");
+    m_workingDirectory = ApplicationOptions::instance()->workingDirectory;
+    QObject::connect(this, &QObject::objectNameChanged, this, &Project::nameChanged);
+}
+
+void Project::callVisitor(QstItemVisitor* visitor)
+{
+    visitor->visit(this);
 }
 
 void Project::handleParserEvent(ParserEvent event)
@@ -53,17 +61,33 @@ void Project::handleParserEvent(ParserEvent event)
                 profileName = "default";
             }
             QString workDirName = QString(".%1-%2-%3")
-                    .arg(m_name)
+                    .arg(name())
                     .arg(profileName)
-                    .arg(qHash(m_filepath), 0, 16);
+                    .arg(qHash(qst::qmlDefinitionContext(this).file()), 0, 16);
             m_workingDirectory = QDir().absoluteFilePath(workDirName);
         }
     }
-    else if (event == ClassBegin)
+}
+
+QStringList Project::references()
+{
+    QQmlExpression expression(m_references, qmlContext(this), this);
+    bool valueIsUndefined = false;
+    QVariant result = expression.evaluate(&valueIsUndefined);
+    if (expression.hasError())
     {
-        ApplicationOptions* options = ApplicationOptions::instance();
-        m_workingDirectory = options->workingDirectory;
-        m_name = "project";
-        m_filepath = ProjectResolver::instance()->currentDocument()->filepath;
+        QQmlError error = expression.error();
+        QST_ERROR_AND_EXIT(QString("At %1:%2: %3")
+                           .arg(error.url().path())
+                           .arg(error.line())
+                           .arg(error.description())
+        );
     }
+
+    if (valueIsUndefined)
+    {
+        return QStringList();
+    }
+
+    return result.toStringList();
 }

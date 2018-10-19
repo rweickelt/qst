@@ -33,17 +33,21 @@
 #include <QtQml/QJSValue>
 #include <QtQml/QQmlError>
 #include <QtQml/QQmlComponent>
+#include <QtQml/QQmlPropertyMap>
 
 #include "component.h"
+#include "tag.h"
 
+class Exports;
 class Project;
+class QstItemVisitor;
 class TestcaseAttached;
 
 class Testcase : public Component
 {
     Q_OBJECT
-    Q_DISABLE_COPY(Testcase)
 
+    friend class DependencyVisitor;
     friend class ProjectResolver;
 
 public:
@@ -72,15 +76,12 @@ public:
     Q_PROPERTY(State state READ state)
     Q_PROPERTY(QString workingDirectory READ workingDirectory NOTIFY workingDirectoryChanged)
     Q_PROPERTY(QString message MEMBER m_message)
+    Q_PROPERTY(QObject* dependencies READ dependencies NOTIFY dependenciesChanged)
 
+    virtual const QMetaObject* baseTypeInfo() const final;
     virtual void handleParserEvent(QstItem::ParserEvent event) override;
 
-    template <typename T>
-    QList<T*> childrenByType() const;
-
     Result exec();
-
-    void registerChild(Component* component);
 
     static Testcase* instance();
 
@@ -97,6 +98,7 @@ signals:
     // Emitted everytime after a test function has been invoked.
     void finished();
 
+    void dependenciesChanged();
     void workingDirectoryChanged();
 
 public slots:
@@ -110,19 +112,24 @@ protected:
     Q_INVOKABLE void waitMilliseconds(int milliseconds, const QString& file, int line);
     Q_INVOKABLE void waitUntilExpression(QJSValue expression, int milliseconds, const QString& file, int line);
 
+    virtual void callVisitor(QstItemVisitor* visitor) final;
+
     Project* project() const;
 
 public:
+    void setTags(const TagSet& tags);
     Testcase(QObject *parent = 0);
+    QObject* dependencies();
     QString displayName() const;
-    QString errorString() const;
-    bool hasErrors() const;
     qint64 elapsedTime() const;
     Result result() const;
     void setDisplayName(const QString& name);
     void setWorkingDirectory(const QString& path);
     State state() const;
     QString workingDirectory() const;
+
+    void attachDependencyExport(const QString& name, const QVariant& values);
+    Exports* exportsItem() const;
 
     static TestcaseAttached* qmlAttachedProperties(QObject *);
 
@@ -139,7 +146,6 @@ private:
     State m_state;
     State m_nextState;
     bool m_transitionPending;
-    QList<Component*> m_nestedComponents;
     QList<QObject*> m_attachedObjects;
 
     int m_callerLine;
@@ -150,32 +156,19 @@ private:
     QString m_displayName;
     QString m_workingDirectory;
 
+    QQmlPropertyMap m_dependencies;
+    Exports* m_exports;
+
     static QPointer<Testcase> m_currentTestCase;
-    QString m_errorString;
 };
 
 Q_DECLARE_METATYPE(Testcase::State)
 QML_DECLARE_TYPEINFO(Testcase, QML_HAS_ATTACHED_PROPERTIES)
 
-inline QString Testcase::errorString() const { return m_errorString; }
-inline bool Testcase::hasErrors() const { return !m_errorString.isEmpty(); }
+inline const QMetaObject* Testcase::baseTypeInfo() const { return &Testcase::staticMetaObject; }
+inline QObject* Testcase::dependencies() { return &m_dependencies; }
 inline Testcase::Result Testcase::result() const { return m_result; }
 inline Testcase::State Testcase::state() const { return m_state; }
-inline void Testcase::registerChild(Component* component) { m_nestedComponents.append(component); }
 inline QString Testcase::workingDirectory() const { return m_workingDirectory; }
-
-template <typename T>
-QList<T*> Testcase::childrenByType() const
-{
-    QList<T*> result;
-    for (auto child : m_nestedComponents)
-    {
-        if (child->metaObject()->inherits(&T::staticMetaObject))
-        {
-            result << qobject_cast<T*>(child);
-        }
-    }
-    return result;
-}
 
 #endif // TESTCASE_H

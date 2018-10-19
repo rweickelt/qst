@@ -489,3 +489,23 @@ When executing above project, the command line output looks as follows:
     PASS, tagged-test 0ni1i5d [ cat bites ],,,
     INFO, tagged-test 07cs7hy [ dog moans ], , /matrix-project.qml:27, The dog moans.
     PASS, tagged-test 07cs7hy [ dog moans ],,,
+
+
+Specifying dependencies between test cases
+------------------------------------------
+
+The default execution order of test cases is undefined in Qst. But in practise,
+a test case ``B`` might require the completion of another test case ``A``. Such
+dependencies can be expressed with the :qml:item:`Depends` item as shown in the
+following code snippet:
+
+..  literalinclude:: code/reference/simple-depends.qml
+    :caption: `simple-depends-depends.qml`
+
+Of course the test cases ``A`` and ``B`` can be defined in different files and
+each test case can have multiple dependencies.
+
+Sometimes it might also be desired to access data from a preceding test. By the
+help of the :qml:item:`Exports` item, a test case can specify which data is to
+be forward to dependent test cases. This is not possible otherwise because test
+cases are isolated from each other do not share any memory.

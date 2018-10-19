@@ -26,8 +26,12 @@
 #include "commandlineparser.h"
 #include "component.h"
 #include "console.h"
+#include "dependencyresolver.h"
+#include "depends.h"
 #include "dimension.h"
+#include "exports.h"
 #include "file.h"
+#include "job.h"
 #include "xds.h"
 #include "plaintextlogger.h"
 #include "matrix.h"
@@ -39,9 +43,10 @@
 #include "projectresolver.h"
 #include "proxylogger.h"
 #include "qst.h"
+#include "serialjobscheduler.h"
 #include "testcase.h"
 #include "testcaseattached.h"
-#include "jobrunner.h"
+#include "jobdispatcher.h"
 #include "textfile.h"
 
 #include <QtCore/QCoreApplication>
@@ -89,7 +94,6 @@ int main(int argc, char *argv[])
     if (cli.hasErrors())
     {
         Console::printError(QString("Error: %1").arg(cli.errorString()));
-        Console::printToStdOut(cli.helpText());
         return qst::ExitApplicationError;
     }
 
@@ -113,17 +117,12 @@ int main(int argc, char *argv[])
 void execRunCommand()
 {
     ApplicationOptions* options = ApplicationOptions::instance();
-    QQmlEngine engine;
-    engine.connect(&engine, &QQmlEngine::quit, QCoreApplication::instance(), QCoreApplication::quit);
 
-    for (const auto& path : options->importPaths)
-    {
-        engine.addImportPath(path);
-    }
-
-    qmlRegisterCustomType<Dimension>("qst", 1,0, "Dimension", new DimensionParser());
+    qmlRegisterCustomType<Dimension>("qst", 1,0, "Dimension", new DimensionParser);
     qmlRegisterType<Matrix>("qst", 1,0, "Matrix");
     qmlRegisterType<Component>("qst", 1,0, "Component");
+    qmlRegisterCustomType<Depends>("qst", 1,0, "Depends", new DependsParser);
+    qmlRegisterType<Exports>("qst", 1,0, "Exports");
     qmlRegisterType<Testcase>("qst", 1,0, "Testcase");
     qmlRegisterType<TestcaseAttached>();
     qmlRegisterType<PinProbe>("qst", 1,0, "PinProbe");
@@ -131,7 +130,6 @@ void execRunCommand()
     qmlRegisterType<Project>("qst", 1,0, "Project");
     qmlRegisterType<QstService>("qst", 1, 0, "QstService");
     qmlRegisterUncreatableType<TextFile>("qst", 1, 0, "TextFile", "TextFile can only be created in a JS context");
-    TextFile::registerJSType(&engine);
 
     qRegisterMetaType<Testcase::State>();
     qRegisterMetaType<QmlContext>();
@@ -143,22 +141,54 @@ void execRunCommand()
     PlaintextLogger plaintextLogger;
     ProxyLogger::instance()->registerLogger(&plaintextLogger);
 
+    // Eventually load the profile first.
     ProfileLoader profileLoader(options->profilePaths);
-    QVariant profile = profileLoader.loadProfile(options->profile);
+    QVariantMap profile = profileLoader.loadProfile(options->profile);
     CHECK_FOR_ERROR(profileLoader);
-    engine.rootContext()->setContextProperty("profile", profile);
 
-    ProjectResolver resolver(&engine);
-    resolver.loadRootFile(options->projectFilepath);
-    CHECK_FOR_ERRORS(resolver);
+    // Create all components, but do not resolve bindings yet
+    // If other documents are referenced, load them as well.
+    ProjectResolver projectResolver(profile);
+    projectResolver.beginLoad(options->projectFilepath);
+    CHECK_FOR_ERRORS(projectResolver);
 
-    JobMultiplier expander(resolver.matrices(), resolver.testcases());
-    CHECK_FOR_ERROR(expander);
+    // Resolve basic dependency relations between test cases
+    // and attach Exports items so that bindings will work.
+    DependencyResolver dependencyResolver;
+    dependencyResolver.beginResolve(projectResolver.documents());
+    CHECK_FOR_ERRORS(dependencyResolver);
 
-    JobRunner runner(resolver.project(), expander.jobs().values(), expander.tags());
-    CHECK_FOR_ERROR(runner);
+    // Finally resolve bindings
+    projectResolver.completeLoad();
+    CHECK_FOR_ERRORS(projectResolver);
 
-    runner.execTestCases();
+    // Create an overview over tags if defined and prepare
+    // executable jobs.
+    JobMultiplier multiplier(projectResolver.documents());
+    CHECK_FOR_ERROR(multiplier);
+    JobLookupTable jobs = multiplier.jobs();
+
+    // Do more fine-grained dependency resolution, taking tags into account.
+    dependencyResolver.completeResolve(jobs);
+
+    //Does the dirty work
+    JobDispatcher dispatcher(projectResolver.project());
+    CHECK_FOR_ERROR(dispatcher);
+
+    // Schedules jobs one-by-one, taking dependency relations into account.
+    SerialJobScheduler scheduler(dependencyResolver.jobGraph());
+    QObject::connect(&scheduler, &SerialJobScheduler::jobReady, &dispatcher, &JobDispatcher::dispatch);
+    QObject::connect(&dispatcher, &JobDispatcher::finished, &scheduler, &SerialJobScheduler::onJobFinished);
+    scheduler.start();
+
+    if (dispatcher.results().contains(Testcase::Fail))
+    {
+        QCoreApplication::exit(qst::ExitTestCaseFailed);
+    }
+    else
+    {
+        QCoreApplication::exit(qst::ExitNormal);
+    }
 }
 
 

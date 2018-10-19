@@ -24,28 +24,37 @@
 #include "testcase.h"
 #include "testcaseattached.h"
 #include "console.h"
+#include "exports.h"
 #include "proxylogger.h"
 #include "project.h"
 #include "qst.h"
+#include "qstitemvisitor.h"
 
 #include <QtDebug>
 #include <QtCore/QDir>
 #include <QtCore/QEventLoop>
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlEngine>
+#include <QtQml/QQmlProperty>
 
 #include <private/qv4engine_p.h>
 #include <private/qv8engine_p.h>
 
 QPointer<Testcase> Testcase::m_currentTestCase;
 
-Testcase::Testcase(QObject *parent) : Component(&Testcase::staticMetaObject, parent)
+Testcase::Testcase(QObject *parent) : Component(parent)
 {
     m_state = Uninitialized;
     m_nextState = Uninitialized;
     m_result = Unfinished;
     m_executionTime = 0;
     m_transitionPending = false;
+    m_exports = nullptr;
+}
+
+void Testcase::callVisitor(QstItemVisitor* visitor)
+{
+    visitor->visit(this);
 }
 
 void Testcase::handleParserEvent(QstItem::ParserEvent event)
@@ -65,7 +74,9 @@ void Testcase::handleParserEvent(QstItem::ParserEvent event)
         }
         if (!availableMethods.contains("run"))
         {
-            m_errorString = QString("Test case '%1' does not define a 'run' method.").arg(m_name);
+            QmlContext context = qst::qmlDefinitionContext(this);
+            QST_ERROR_AND_EXIT(QString("At %1:%2: Test case does not define a 'run()' method.")
+                    .arg(context.file()).arg(context.line()));
         }
     }
 }
@@ -114,15 +125,11 @@ Testcase::Result Testcase::exec()
 Testcase::State Testcase::unitializedStateFunction()
 {
     m_result = Unfinished;
-
-    m_nestedComponents = childrenByType<Component>();
-    m_nestedComponents << this;
-
-    Q_ASSERT(this != nullptr);
     m_currentTestCase = this;
 
+    QList<Component*> nestedComponents = findChildren<Component*>(QString(), Qt::FindChildrenRecursively) << this;
     // created() is a signal that even QML children can subscribe.
-    for (Component* child : m_nestedComponents)
+    for (Component* child : nestedComponents)
     {
         QObject* attached = qmlAttachedPropertiesObject<Testcase>(child, false);
         if (attached != NULL)
@@ -139,7 +146,8 @@ Testcase::State Testcase::unitializedStateFunction()
 
 Testcase::State Testcase::initingTestCaseStateFunction()
 {
-    for (auto child : m_nestedComponents)
+    QList<Component*> nestedComponents = findChildren<Component*>(QString(), Qt::FindChildrenRecursively) << this;
+    for (auto child : nestedComponents)
     {
         child->initTestCase();
     }
@@ -149,7 +157,8 @@ Testcase::State Testcase::initingTestCaseStateFunction()
 
 Testcase::State Testcase::initingTestFunctionStateFunction()
 {
-    for (auto child : m_nestedComponents)
+    QList<Component*> nestedComponents = findChildren<Component*>(QString(), Qt::FindChildrenRecursively) << this;
+    for (auto child : nestedComponents)
     {
         child->initTestFunction();
     }
@@ -197,14 +206,14 @@ Testcase::State Testcase::cleaningUpTestFunctionStateFunction()
     case Success:
         info.type = LogInfo::Success;
         info.test = displayName();
-        info.component = m_name;
+        info.component = name();
         info.file = m_callerFile;
         ProxyLogger::instance()->print(info);
         break;
     case Fail:
         info.type = LogInfo::Fail;
         info.test = displayName();
-        info.component = m_name;
+        info.component = name();
         info.file = m_callerFile;
         info.line = m_callerLine;
         info.message = m_message;
@@ -212,7 +221,8 @@ Testcase::State Testcase::cleaningUpTestFunctionStateFunction()
         break;
     }
 
-    for (auto child : m_nestedComponents)
+    QList<Component*> nestedComponents = findChildren<Component*>(QString(), Qt::FindChildrenRecursively) << this;
+    for (auto child : nestedComponents)
     {
         child->cleanupTestFunction();
     }
@@ -229,7 +239,8 @@ Testcase::State Testcase::cleaningUpTestCaseStateFunction()
         m_result = Success;
     }
 
-    for (auto child : m_nestedComponents)
+    QList<Component*> nestedComponents = findChildren<Component*>(QString(), Qt::FindChildrenRecursively) << this;
+    for (auto child : nestedComponents)
     {
         child->cleanupTestCase();
     }
@@ -318,6 +329,13 @@ void Testcase::waitUntilExpression(QJSValue expression, int milliseconds, const 
 
         QCoreApplication::processEvents(QEventLoop::AllEvents, milliseconds);
     }
+}
+
+Exports* Testcase::exportsItem() const
+{
+    QList<Exports*> result = findChildren<Exports*>(QString(), Qt::FindDirectChildrenOnly);
+    Q_ASSERT(result.length() <= 1);
+    return result.value(0, nullptr);
 }
 
 qint64 Testcase::elapsedTime() const
@@ -420,5 +438,27 @@ void Testcase::setWorkingDirectory(const QString& path)
     {
         m_workingDirectory = path;
         emit workingDirectoryChanged();
+    }
+}
+
+// Work-around for https://bugreports.qt.io/browse/QTBUG-69075
+// Instead of making the Exports item's content available under 'name' directly,
+// we use an intermediate 'dependencies' property.
+void Testcase::attachDependencyExport(const QString& name, const QVariant& values)
+{
+    m_dependencies[name] = values;
+    emit dependenciesChanged();
+}
+
+void Testcase::setTags(const TagSet& tags)
+{
+    for (const auto& tag: tags)
+    {
+        const auto strings = tag.toPair();
+
+        QQmlProperty property(this, strings.first);
+        Q_ASSERT(property.isProperty());
+        Q_ASSERT(property.isWritable());
+        property.write(strings.second);
     }
 }

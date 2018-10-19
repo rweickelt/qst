@@ -23,15 +23,30 @@
 ****************************************************************************/
 #include "component.h"
 #include "projectresolver.h"
+#include "qst.h"
+#include "qstitemvisitor.h"
 #include "testcase.h"
+
 #include <QtDebug>
 
 namespace {
     QHash<QString, int> instancesCount;
 }
 
-Component::Component(const QMetaObject* basetypeInfo, QObject* parent) : QstItem(basetypeInfo, parent)
+Component::Component(QObject* parent) : QstItem(parent)
 {
+    // Alias signal
+    QObject::connect(this, &QObject::objectNameChanged, this, &Component::nameChanged);
+}
+
+void Component::callVisitor(QstItemVisitor* visitor)
+{
+    visitor->visit(this);
+}
+
+QString Component::filepath() const
+{
+    return qst::qmlDefinitionContext(this).file();
 }
 
 Testcase* Component::testCase()
@@ -50,26 +65,7 @@ Testcase* Component::testCase()
 
 const Testcase* Component::testCase() const
 {
-    for (const QObject* currentObject = this; currentObject != NULL;
-         currentObject = currentObject->parent())
-    {
-        if (currentObject->metaObject()->inherits(&Testcase::staticMetaObject))
-        {
-            return qobject_cast<const Testcase*>(currentObject);
-        }
-    }
-    Q_ASSERT(false);
-    return nullptr;
-}
-
-
-void Component::setName(const QString& name)
-{
-    if (name != m_name)
-    {
-        m_name = name;
-        emit nameChanged();
-    }
+    return const_cast<Testcase*>(testCase());
 }
 
 void Component::handleParserEvent(QstItem::ParserEvent event)
@@ -78,23 +74,18 @@ void Component::handleParserEvent(QstItem::ParserEvent event)
     {
     case AfterClassBegin:
     {
-        m_typeName = this->metaObject()->className();
-        int pos = m_typeName.indexOf("_QML_");
-        if (pos > 0)
+        if (name().isEmpty())
         {
-            m_typeName = m_typeName.left(pos);
+            QString typeName = this->metaObject()->className();
+            int pos = typeName.indexOf("_QML_");
+            if (pos > 0)
+            {
+                typeName = typeName.left(pos);
+            }
+            int count = instancesCount[typeName]++;
+            setObjectName(QString("%1-%2").arg(typeName.toLower()).arg(count));
         }
-        if (m_name.isEmpty())
-        {
-            int count = instancesCount[m_typeName]++;
-            m_name = QString("%1-%2").arg(m_typeName.toLower()).arg(count);
-        }
-        this->setObjectName(m_name);
     }
-        break;
-    case ClassBegin:
-        m_filepath = ProjectResolver::instance()->currentDocument()->filepath;
-        ProjectResolver::instance()->currentDocument()->components.append(this);
         break;
     default:
         break;

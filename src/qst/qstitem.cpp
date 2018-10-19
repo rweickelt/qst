@@ -1,20 +1,48 @@
+/****************************************************************************
+ **
+ ** Copyright (C) 2018 The Qst project.
+ **
+ ** Contact: https://github.com/rweickelt/qst
+ **
+ ** $BEGIN_LICENSE$
+ **
+ ** This program is free software: you can redistribute it and/or modify
+ ** it under the terms of the GNU General Public License as published by
+ ** the Free Software Foundation, either version 3 of the License, or
+ ** (at your option) any later version.
+
+ ** This program is distributed in the hope that it will be useful,
+ ** but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ ** GNU General Public License for more details.
+
+ ** You should have received a copy of the GNU General Public License
+ ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ **
+ ** $END_LICENSE$
+****************************************************************************/
+
 #include "qstitem.h"
 #include "projectresolver.h"
 #include "qst.h"
 
-QstItem::QstItem(const QMetaObject* basetypeInfo, QObject* parent)
-    : QObject(parent)
+#include <QtDebug>
+
+QstItem::QstItem(QObject* parent) : QObject(parent)
 {
-    m_allowedChildTypes = QList<const QMetaObject*>{ &QObject::staticMetaObject };
-    m_allowedParentTypes = QList<const QMetaObject*>{ &QObject::staticMetaObject, nullptr };
-    m_canBeDocumentRoot = true;
-    m_basetypeInfo = basetypeInfo;
+}
+
+void QstItem::accept(QstItemVisitor* visitor)
+{
+    this->callVisitor(visitor);
+    for (QstItem* child: this->findChildren<QstItem*>(QString(), Qt::FindDirectChildrenOnly))
+    {
+        child->accept(visitor);
+    }
 }
 
 void QstItem::afterClassBegin()
 {
-    verifyParentAllowed();
-    verifyChildrenAllowed();
     this->handleParserEvent(AfterClassBegin);
 }
 
@@ -25,7 +53,7 @@ void QstItem::afterComponentComplete()
 
 void QstItem::classBegin()
 {
-    ProjectResolver::instance()->currentDocument()->handlers.append(this);
+//    ProjectResolver::instance()->currentDocument()->handlers.append(this);
 
     handleParserEvent(ClassBegin);
 }
@@ -33,106 +61,4 @@ void QstItem::classBegin()
 void QstItem::componentComplete()
 {
     handleParserEvent(ComponentComplete);
-}
-
-void QstItem::setAllowedNestedTypes(const QList<const QMetaObject*>& types)
-{
-    m_allowedChildTypes = types;
-    Q_ASSERT(!m_allowedChildTypes.contains(nullptr));
-}
-
-void QstItem::setAllowedParentTypes(const QList<const QMetaObject*>& types)
-{
-    m_allowedParentTypes = types;
-    if (m_allowedParentTypes.contains(nullptr))
-    {
-        m_allowedParentTypes.removeAll(nullptr);
-        m_canBeDocumentRoot = true;
-    }
-    else
-    {
-        m_canBeDocumentRoot = false;
-    }
-}
-
-void QstItem::verifyChildrenAllowed()
-{
-    if ((m_allowedChildTypes.isEmpty()) && (!m_children.isEmpty()))
-    {
-        QmlContext context = qst::qmlDefinitionContext(m_children.first());
-        QString message = QString("At %1:%2: %3 must not contain nested items.")
-                    .arg(context.file())
-                    .arg(context.line())
-                    .arg(m_basetypeInfo->className());
-        QST_ERROR_AND_EXIT(message);
-    }
-
-    for (const auto child: m_children)
-    {
-        bool ok = false;
-        for (const auto type: m_allowedChildTypes)
-        {
-            if (child->metaObject()->inherits(type))
-            {
-                ok = true;
-                break;
-            }
-        }
-        if (!ok)
-        {
-            QmlContext context = qst::qmlDefinitionContext(child);
-            QString message = QString("At %1:%2: %3 item is not allowed inside %4 item.")
-                        .arg(context.file())
-                        .arg(context.line())
-                        .arg(child->metaObject()->className())
-                        .arg(m_basetypeInfo->className());
-            QST_ERROR_AND_EXIT(message);
-        }
-    }
-}
-
-void QstItem::verifyParentAllowed()
-{
-    bool ok = false;
-    if (parent() == nullptr)
-    {
-        if (m_canBeDocumentRoot)
-        {
-            ok = true;
-        }
-    }
-    else
-    {
-        for (const auto type: m_allowedParentTypes)
-        {
-            if (parent()->metaObject()->inherits(type))
-            {
-                ok = true;
-                break;
-            }
-        }
-    }
-    if (!ok)
-    {
-        QmlContext context = qst::qmlDefinitionContext(this);
-        QString message;
-
-        if (parent() == nullptr)
-        {
-            message = QString("At %1:%2. %3 cannot be document root.")
-                    .arg(context.file())
-                    .arg(context.line())
-                    .arg(this->metaObject()->className());
-        }
-        else
-        {
-            message = QString("At %1:%2. %3 is not allowed inside %4")
-                    .arg(context.file())
-                    .arg(context.line())
-                    .arg(this->metaObject()->className())
-                    .arg(parent()->metaObject()->className());
-        }
-
-        QST_ERROR_AND_EXIT(message);
-    }
 }

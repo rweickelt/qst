@@ -5,7 +5,7 @@ env:
     # Needed by AWS
     - PATH=$HOME/.local/bin:$PATH
     - QST_VERSION=$(if [[ "$TRAVIS_TAG" ]]; then echo -n ${TRAVIS_TAG:1} ; else echo -n ${TRAVIS_COMMIT::8} ; fi)
-    - QT_VERSION=v5.9.4-1
+    - QT_VERSION=v5.9.5-1
 
 stages:
   - name: build

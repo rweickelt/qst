@@ -24,7 +24,9 @@ Reference
 Name                                                     Description
 ======================================================== ===========
 :doc:`Component <component-item>`                        Base type for various dynamic items.
+:doc:`Depends <depends-item>`                            Describes dependencies between :class:`Testcase` items.
 :doc:`Dimension <dimension-item>`                        Defines a value span within a :class:`Matrix`.
+:doc:`Exports <exports-item>`                            Forwards data to dependent :class:`Testcase` items.
 :doc:`Matrix <matrix-item>`                              Replicates :class:`Testcase` components with different property values.
 :doc:`Project <project-item>`                            Container item for multiple :cpp:class:`Testcase` items.
 :doc:`Testcase <testcase-item>`                          Implements a test action.

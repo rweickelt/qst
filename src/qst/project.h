@@ -30,6 +30,7 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtQml/QQmlListProperty>
+#include <QtQml/QQmlScriptString>
 
 class Project : public QstItem
 {
@@ -40,42 +41,39 @@ class Project : public QstItem
 public:
     explicit Project(QObject *parent = 0);
 
-    Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QStringList references READ references WRITE setReferences)
+    Q_PROPERTY(QString name READ objectName WRITE setObjectName NOTIFY nameChanged)
+    Q_PROPERTY(QQmlScriptString references MEMBER m_references)
     Q_PROPERTY(QString workingDirectory READ workingDirectory CONSTANT)
 
+    virtual const QMetaObject* baseTypeInfo() const final;
     QString name() const;
-    QStringList references() const;
+    QStringList references();
     QString workingDirectory() const;
 
-    void setName(const QString& name);
-    void setReferences(const QStringList& references);
+signals:
+    void nameChanged(const QString&);
 
 protected:
+    virtual void callVisitor(QstItemVisitor* visitor) final;
     virtual void handleParserEvent(QstItem::ParserEvent event);
 
 private:
-    QString m_name;
-    QStringList m_references;
+    QQmlScriptString m_references;
     QString m_workingDirectory;
-    QString m_filepath;
 };
 
-inline QString Project::name() const { return m_name; }
+inline const QMetaObject* Project::baseTypeInfo() const { return &Project::staticMetaObject; }
 
-inline QStringList Project::references() const { return m_references; }
+inline QString Project::name() const { return objectName(); }
+
+//inline QStringList Project::references() const { return m_references; }
 
 inline QString Project::workingDirectory() const { return m_workingDirectory; }
 
-inline void Project::setName(const QString& name)
-{
-    m_name = name;
-}
-
-inline void Project::setReferences(const QStringList& references)
-{
-    m_references = references;
-}
+//inline void Project::setReferences(const QStringList& references)
+//{
+//    m_references = references;
+//}
 
 
 

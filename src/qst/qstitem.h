@@ -1,5 +1,31 @@
+/****************************************************************************
+ **
+ ** Copyright (C) 2018 The Qst project.
+ **
+ ** Contact: https://github.com/rweickelt/qst
+ **
+ ** $BEGIN_LICENSE$
+ **
+ ** This program is free software: you can redistribute it and/or modify
+ ** it under the terms of the GNU General Public License as published by
+ ** the Free Software Foundation, either version 3 of the License, or
+ ** (at your option) any later version.
+
+ ** This program is distributed in the hope that it will be useful,
+ ** but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ ** GNU General Public License for more details.
+
+ ** You should have received a copy of the GNU General Public License
+ ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ **
+ ** $END_LICENSE$
+****************************************************************************/
+
 #ifndef PARSERSTATEHANDLER_H
 #define PARSERSTATEHANDLER_H
+
+#include "qstitemvisitor.h"
 
 #include <QtCore/QList>
 #include <QtCore/QObject>
@@ -10,15 +36,17 @@ class QstItem : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
-    Q_DISABLE_COPY(QstItem)
 
-    Q_PROPERTY(QQmlListProperty<QObject> children READ children CONSTANT)
-    Q_CLASSINFO("DefaultProperty", "children")
+    Q_PROPERTY(QQmlListProperty<QObject> nestedComponents READ nested)
+    Q_CLASSINFO("DefaultProperty", "nestedComponents")
 
     friend class ProjectResolver;
+    friend class QstItemVisitor;
 
 public:
-    QstItem(const QMetaObject* basetypeInfo, QObject* parent = nullptr);
+    QstItem(QObject* parent = nullptr);
+    void accept(QstItemVisitor* visitor);
+    virtual const QMetaObject* baseTypeInfo() const = 0;
 
 protected:
     enum ParserEvent {
@@ -28,34 +56,20 @@ protected:
         ComponentComplete
     };
 
-    const QList<const QMetaObject*>& allowedChildTypes() const;
-    const QList<const QMetaObject*>& allowedParentTypes() const;
-    QQmlListProperty<QObject> children();
-
+    virtual void callVisitor(QstItemVisitor* visitor) = 0;
+    QQmlListProperty<QObject> nested();
     virtual void handleParserEvent(ParserEvent event) = 0;
-
-    void setAllowedNestedTypes(const QList<const QMetaObject*>& types);
-    void setAllowedParentTypes(const QList<const QMetaObject*>& typenames);
-
-    QList<QObject*> m_children;
+    QList<QObject*> m_nested;
 
 private:
     void afterClassBegin();
     void afterComponentComplete();
     virtual void classBegin() final;
     virtual void componentComplete() final;
-    void verifyChildrenAllowed();
-    void verifyParentAllowed();
 
-    QList<const QMetaObject*> m_allowedChildTypes;
-    QList<const QMetaObject*> m_allowedParentTypes;
-    bool m_canBeDocumentRoot;
-    const QMetaObject* m_basetypeInfo;
 };
 
-inline const QList<const QMetaObject*>& QstItem::allowedChildTypes() const { return m_allowedChildTypes; }
-inline const QList<const QMetaObject*>& QstItem::allowedParentTypes() const { return m_allowedParentTypes; }
-inline QQmlListProperty<QObject> QstItem::children() { return QQmlListProperty<QObject>(this, m_children); }
+inline QQmlListProperty<QObject> QstItem::nested() { return QQmlListProperty<QObject>(this, m_nested); }
 
 
 #endif // PARSERSTATEHANDLER_H

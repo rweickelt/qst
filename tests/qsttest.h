@@ -30,6 +30,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QProcess>
 #include <QtCore/QString>
+#include <QtTest/QTest>
 
 class QstTest : public QObject
 {
@@ -37,6 +38,8 @@ class QstTest : public QObject
 
 public:
     QstTest();
+
+    static bool verifyExecutionOrder(const QStringList& expected, const QStringList& actual);
 
 protected:
     QString dataPath(const QString& directory) const;
@@ -85,6 +88,9 @@ inline QString QstTest::stdError() const { return m_stdError; }
                     .arg(expectedLocation) \
                     .arg(results.output(name).location))); \
     }
+
+#define VERIFY_EXECUTION_ORDER(...) \
+    QVERIFY(verifyExecutionOrder(QStringList{__VA_ARGS__}, results().names()) == true)
 
 #define RUN_AND_EXPECT(expectedExitCode, arguments... ) \
     if (!execQstRun(QStringList{arguments}, expectedExitCode, __FILE__, __LINE__)) { \

@@ -21,71 +21,66 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#include "jobrunner.h"
+#include "jobdispatcher.h"
 #include "project.h"
+#include "tag.h"
 #include "qst.h"
 
+#include <algorithm>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtQml/QQmlProperty>
 
 #include <QtDebug>
 
-JobRunner::JobRunner(Project* project, const QList<TestJob>& jobs,
-                     const TagLookupTable& tags):
-    m_project(project), m_jobs(jobs), m_tags(tags)
+JobDispatcher::JobDispatcher(Project* project)
+    : m_project(project)
 {
     createProjectWorkingDirectory();
 }
 
-void JobRunner::execTestCases()
+void JobDispatcher::dispatch(Job job)
 {
-    for (auto& job: m_jobs)
+    QString name = job.testcase()->name();
+    QString displayName = name;
+    QString workingDirectoryName = name;
+    QList<Tag> tags = job.tags().toList();
+    std::sort(tags.begin(), tags.end());
+
+    if (job.tags().size() > 0)
     {
-        QString name = job.testcase->name();
-        QString displayName = name;
-        QString workingDirectoryName = name;
-
-        if (job.tagGroupId != InvalidId)
+        QStringList tagsStrings;
+        for (const auto& tag: tags)
         {
-            const auto& taglist = m_tags[job.tagGroupId][job.tagId];
+            const auto strings = tag.toPair();
+            tagsStrings << strings.second;
 
-            displayName = QString("%1 %2 [ %3 ]")
-                    .arg(name)
-                    .arg(job.tagId, 7, 36, QChar('0'))
-                    .arg(QVariant(taglist.values()).toStringList().join(" "));
-
-            workingDirectoryName = QString("%1-%2")
-                    .arg(name)
-                    .arg(job.tagId, 7, 36, QChar('0'));
-
-            for (const auto& key: taglist.keys())
-            {
-                QQmlProperty property(job.testcase, key);
-                Q_ASSERT(property.isProperty());
-                Q_ASSERT(property.isWritable());
-                property.write(taglist[key]);
-            }
+            QQmlProperty property(job.testcase(), strings.first);
+            Q_ASSERT(property.isProperty());
+            Q_ASSERT(property.isWritable());
+            property.write(strings.second);
         }
 
-        QString workingDirectory = createTestcaseWorkingDirectory(workingDirectoryName);
-        job.testcase->setWorkingDirectory(workingDirectory);
-        job.testcase->setDisplayName(displayName);
+        displayName = QString("%1 %2 [ %3 ]")
+                .arg(name)
+                .arg(job.id(), 7, 36, QChar('0'))
+                .arg(tagsStrings.join(" "));
 
-        m_results << job.testcase->exec();
+        workingDirectoryName = QString("%1-%2")
+                .arg(name)
+                .arg(job.id(), 7, 36, QChar('0'));
     }
 
-    if (m_results.contains(Testcase::Fail))
-    {
-        QCoreApplication::exit(qst::ExitTestCaseFailed);
-    }
-    else
-    {
-        QCoreApplication::exit(qst::ExitNormal);
-    }
+    QString workingDirectory = createTestcaseWorkingDirectory(workingDirectoryName);
+    job.testcase()->setWorkingDirectory(workingDirectory);
+    job.testcase()->setDisplayName(displayName);
+
+    m_results << job.testcase()->exec();
+
+    emit finished(job);
 }
 
-void JobRunner::createProjectWorkingDirectory()
+void JobDispatcher::createProjectWorkingDirectory()
 {
     QString workDirPath = m_project->workingDirectory();
 
@@ -112,7 +107,7 @@ void JobRunner::createProjectWorkingDirectory()
     }
 }
 
-QString JobRunner::createTestcaseWorkingDirectory(const QString& name)
+QString JobDispatcher::createTestcaseWorkingDirectory(const QString& name)
 {
     QDir projectWorkDir(m_project->workingDirectory());
     QDir testcaseWorkDir(projectWorkDir.absoluteFilePath(name));
@@ -134,3 +129,4 @@ QString JobRunner::createTestcaseWorkingDirectory(const QString& name)
 
     return testcaseWorkDir.absolutePath();
 }
+

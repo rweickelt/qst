@@ -30,9 +30,8 @@
 
 #include "QDebug"
 
-PinProbe::PinProbe(QObject *parent) : Component(&PinProbe::staticMetaObject, parent)
+PinProbe::PinProbe(QObject *parent) : Component(parent)
 {
-    setObjectName("PinProbe");
     m_ioid = 0;
     m_value = Undefined;
     m_type = Read;
@@ -55,7 +54,7 @@ void PinProbe::initTestCase()
     Q_ASSERT(!m_port.isEmpty());
     registerWithHost(RocHostController::instance(m_port));
 
-    for (const auto& probe : testCase()->childrenByType<PinProbe>())
+    for (const auto& probe : testCase()->findChildren<PinProbe*>(QString(), Qt::FindChildrenRecursively))
     {
         if (((probe->m_ioid == m_ioid) && (probe != this) && (this->m_port == probe->m_port)))
         {

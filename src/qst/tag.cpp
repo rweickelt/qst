@@ -1,23 +1,89 @@
+/****************************************************************************
+ **
+ ** Copyright (C) 2018 The Qst project.
+ **
+ ** Contact: https://github.com/rweickelt/qst
+ **
+ ** $BEGIN_LICENSE$
+ **
+ ** This program is free software: you can redistribute it and/or modify
+ ** it under the terms of the GNU General Public License as published by
+ ** the Free Software Foundation, either version 3 of the License, or
+ ** (at your option) any later version.
+
+ ** This program is distributed in the hope that it will be useful,
+ ** but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ ** GNU General Public License for more details.
+
+ ** You should have received a copy of the GNU General Public License
+ ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ **
+ ** $END_LICENSE$
+****************************************************************************/
+
 #include "tag.h"
 
-#include <QtCore/QHash>
+#include <QtCore/QMap>
 
-TagGroupId makeTagGroupId(const Tag& tag)
-{
-    QString text;
-    for (const auto& key: tag.keys())
-    {
-        text += key;
-    }
-    return qHash(text);
+namespace {
+    QMap<Tag::Id, QPair<QString, QString> > stringTable;
 }
 
-TagId makeTagId(const Tag& tag)
+Tag Tag::create(const QString& label, const QString& value)
 {
-    QString text;
-    for (const auto& value: tag.values())
+    Tag::Id id = qHash(label) + qHash(value);
+    if (stringTable.contains(id))
     {
-        text += value.toString();
+        const QPair<QString, QString>& other = stringTable[id];
+        // If this fails, we have to come up with a more clever storage and look-up.
+        Q_ASSERT((other.first == label) && (other.second == value));
     }
-    return qHash(text);
+    stringTable[id] = { label, value };
+
+    Tag tag;
+    tag.m_id = id;
+    return tag;
 }
+
+QString Tag::label() const
+{
+    return stringTable[m_id].first;
+}
+
+QString Tag::value() const
+{
+    return stringTable[m_id].second;
+}
+
+QPair<QString, QString> Tag::toPair() const
+{
+    return stringTable[m_id];
+}
+
+QString Tag::toString() const
+{
+    QPair<QString, QString> tag = stringTable[m_id];
+    return QString("%1:%2").arg(tag.first).arg(tag.second);
+}
+
+bool TagSet::matches(const TagSet& other) const
+{
+    return *this == other;
+}
+
+QStringList TagSet::toStringList() const
+{
+    QStringList result;
+    for (const auto& tag: *this)
+    {
+        result << tag.toString();
+    }
+    return result;
+}
+
+bool Tag::operator<(const Tag& other) const
+{
+    return stringTable[m_id].first < stringTable[other.m_id].first;
+}
+

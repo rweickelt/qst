@@ -1,8 +1,32 @@
+/****************************************************************************
+ **
+ ** Copyright (C) 2018 The Qst project.
+ **
+ ** Contact: https://github.com/rweickelt/qst
+ **
+ ** $BEGIN_LICENSE$
+ **
+ ** This program is free software: you can redistribute it and/or modify
+ ** it under the terms of the GNU General Public License as published by
+ ** the Free Software Foundation, either version 3 of the License, or
+ ** (at your option) any later version.
+
+ ** This program is distributed in the hope that it will be useful,
+ ** but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ ** GNU General Public License for more details.
+
+ ** You should have received a copy of the GNU General Public License
+ ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ **
+ ** $END_LICENSE$
+****************************************************************************/
 
 #include "jobmultiplier.h"
 #include "matrix.h"
 #include "project.h"
 #include "qst.h"
+#include "qstdocument.h"
 #include "testcase.h"
 
 #include <QtCore/QRegularExpression>
@@ -23,22 +47,20 @@ namespace {
         }
         return self;
     }
-
 }
 
-JobMultiplier::JobMultiplier(const QList<Matrix*>& matrices, const QList<Testcase*>& testcases) :
-    m_matrices(matrices)
+JobMultiplier::JobMultiplier(const QList<QstDocument*>& documents)
 {
-    for (const auto& testcase: testcases)
+    for (const auto& document: documents)
     {
-        m_testcases[testcase->name()] = testcase;
+        document->object->accept(this);
     }
 
     // Create tagged jobs for all test cases that
     // are part of a matrix.
     for (const auto& matrix: m_matrices)
     {
-        QMap<TagId, Tag> tags = expand(matrix);
+        QList<TagSet> tags = expand(matrix);
         QStringList patterns = matrix->testcases();
         QStringList names = match(m_testcases.keys(), patterns);
 
@@ -49,30 +71,10 @@ JobMultiplier::JobMultiplier(const QList<Matrix*>& matrices, const QList<Testcas
                                .arg(context.file()).arg(context.line()));
         }
 
-//        QSet<QString> usedNames = m_jobs.uniqueKeys().toSet();
-//        QSet<QString> overlappingNames = names.toSet().intersect(usedNames);
-//        if (overlappingNames.size() > 0)
-//        {
-//            QmlContext context = qst::qmlDefinitionContext(matrix);
-//            QST_ERROR_AND_EXIT(QString("Testcases ('%1') in matrix defined at %2:%3 occur in multiple matrices. "
-//                                       "Each testcase can only occur in one matrix. Check the 'testcases' property.")
-//                               .arg(overlappingNames.toList().join("', '"))
-//                               .arg(context.file()).arg(context.line()));
-//        }
-
-        QMultiMap<QString, TestJob> jobs = combine(names, tags);
-        jobs = removeExcluded(jobs, QStringList(), TagLookupTable());
+        QMultiMap<QString, Job> jobs = combine(names, tags);
+        jobs = removeExcluded(jobs, QStringList(), TagSet());
 
         m_jobs += jobs;
-        TagGroupId groupId = makeTagGroupId(tags.first());
-        if (m_tags.contains(groupId))
-        {
-            m_tags[groupId] += tags;
-        }
-        else
-        {
-            m_tags[groupId] = tags;
-        }
     }
 
     QSet<QString> allNames = m_testcases.keys().toSet();
@@ -83,7 +85,7 @@ JobMultiplier::JobMultiplier(const QList<Matrix*>& matrices, const QList<Testcas
     for (const auto& name: untaggedNames)
     {
         Q_ASSERT(!m_jobs.contains(name));
-        m_jobs.insert(name, TestJob::fromTestcase(m_testcases[name]));
+        m_jobs.insert(name, Job::create(m_testcases[name]));
     }
 }
 
@@ -96,7 +98,7 @@ JobMultiplier::JobMultiplier(const QList<Matrix*>& matrices, const QList<Testcas
 
    We assume that dimensions always have at least 1 entry.
 */
-QMap<TagId, Tag> JobMultiplier::expand(const Matrix* matrix)
+QList<TagSet> JobMultiplier::expand(const Matrix* matrix)
 {
     QList<int> lengths;
     QList<int> dividers;
@@ -124,20 +126,20 @@ QMap<TagId, Tag> JobMultiplier::expand(const Matrix* matrix)
         tagnames += dimensionTagnames;
     }
 
-    QMap<TagId, Tag> expandedTags;
+    QList<TagSet> expandedTags;
     for (int i = 0; i < dividers.last() * lengths.last(); i++)
     {
-        Tag tag;
-
+        TagSet tagsPerJob;
         for (int j = 0; j < matrix->dimensions().length(); j++)
         {
             const Dimension* dimension = matrix->dimensions()[j];
-            tag += dimension->data()[(i / dividers[j]) % lengths[j]];
+            QVariantMap data = dimension->data()[(i / dividers[j]) % lengths[j]];
+            for (const auto& key: data.keys())
+            {
+                tagsPerJob << Tag::create(key, data.value(key).toString());
+            }
         }
-
-        TagId id = makeTagId(tag);
-        Q_ASSERT(!expandedTags.contains(id));
-        expandedTags[id] = tag;
+        expandedTags << tagsPerJob;
     }
 
     return expandedTags;
@@ -168,37 +170,39 @@ QStringList JobMultiplier::match(const QStringList& testcases, const QStringList
     return matchedNames;
 }
 
-QMultiMap<QString, TestJob> JobMultiplier::combine(const QStringList& testcases, const QMap<TagId, Tag>& tags)
+QMultiMap<QString, Job> JobMultiplier::combine(const QStringList& testcases, const QList<TagSet>& tags)
 {
-    QMultiMap<QString, TestJob> result;
+    QMultiMap<QString, Job> result;
     for (const auto& name: testcases)
     {
         Testcase* testcase = m_testcases[name];
 
-        for (const auto& name: tags.first().keys())
+        // We assume that every TagList in tags has identical
+        // tag keys. Thus it is safe to test compatibility
+        // with the first TagList only.
+        Q_ASSERT(tags.length() > 0);
+        for (const auto& representative: tags.first())
         {
-            QQmlProperty property(testcase, name);
+            QString label = representative.label();
+            QQmlProperty property(testcase, label);
             if (!property.isProperty())
             {
                 QmlContext context = qst::qmlDefinitionContext(testcase);
                 QST_ERROR_AND_EXIT(QString("Testcase defined at %1:%2 does not have a property with name '%3'")
-                                   .arg(context.file()).arg(context.line()).arg(name));
+                                   .arg(context.file()).arg(context.line()).arg(label));
             }
             if (!property.isWritable())
             {
                 QmlContext context = qst::qmlDefinitionContext(testcase);
                 QST_ERROR_AND_EXIT(QString("Property '%3' of Testcase '%4' at %1:%2 is not writable.")
-                                   .arg(context.file()).arg(context.line()).arg(name)
-                                   .arg(testcase->name()));
+                                   .arg(context.file()).arg(context.line()).arg(label)
+                                   .arg(name));
             }
         }
 
-        for (const auto& tag: tags)
+        for (const auto& tagsPerJob: tags)
         {
-            TestJob job;
-            job.testcase = testcase;
-            job.tagGroupId = makeTagGroupId(tag);
-            job.tagId = makeTagId(tag);
+            Job job = Job::create(testcase, tagsPerJob);
             result.insert(name, job);
         }
     }
@@ -206,12 +210,22 @@ QMultiMap<QString, TestJob> JobMultiplier::combine(const QStringList& testcases,
 }
 
 
-QMultiMap<QString, TestJob> JobMultiplier::removeExcluded(const QMultiMap<QString, TestJob>& jobs,
+QMultiMap<QString, Job> JobMultiplier::removeExcluded(const QMultiMap<QString, Job>& jobs,
                                                           const QStringList& patterns,
-                                                          const TagLookupTable& tags)
+                                                          const TagSet& tags)
 {
     Q_UNUSED(patterns);
     Q_UNUSED(tags);
     return jobs;
+}
+
+void JobMultiplier::visit(Testcase* item)
+{
+    m_testcases[item->name()] = item;
+}
+
+void JobMultiplier::visit(Matrix* item)
+{
+    m_matrices.append(item);
 }
 

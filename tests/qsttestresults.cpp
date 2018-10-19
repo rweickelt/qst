@@ -37,6 +37,8 @@ QstTestResults QstTestResults::fromQstOutput(const QByteArray& text)
     QstTestResults results;
 
     results.m_stdOut = text;
+    results.m_passCount = 0;
+    results.m_failCount = 0;
 
     QStringList lines = QString::fromLatin1(text).trimmed().split('\n');
     QRegularExpression parser(
@@ -77,6 +79,8 @@ QstTestResults QstTestResults::fromQstOutput(const QByteArray& text)
             {
                 Q_ASSERT(false);
             }
+
+            results.m_names.append(newEntry.name);
         }
         else
         {
@@ -87,12 +91,12 @@ QstTestResults QstTestResults::fromQstOutput(const QByteArray& text)
     return results;
 }
 
-quint32 QstTestResults::failCount() const
+int QstTestResults::failCount() const
 {
     return m_failCount;
 }
 
-quint32 QstTestResults::passCount() const
+int QstTestResults::passCount() const
 {
     return m_passCount;
 }
@@ -119,6 +123,16 @@ bool QstTestResults::hasPassed(const QString &name) const
     {
         return false;
     }
+}
+
+int QstTestResults::indexOf(const QString& name) const
+{
+    return m_names.indexOf(name);
+}
+
+QStringList QstTestResults::names() const
+{
+    return m_names;
 }
 
 const QstOutput QstTestResults::output(const QString& name) const

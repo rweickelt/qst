@@ -38,7 +38,7 @@ public:
     ProfileLoader(const QStringList& profilePaths = QStringList());
     QString errorString() const;
     bool hasError() const;
-    QVariant loadProfile(QString name);
+    QVariantMap loadProfile(QString name);
     void setProfileSearchPaths(const QStringList& paths);
 
 private:

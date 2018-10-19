@@ -40,6 +40,8 @@ every loaded documented unless unless otherwise stated.
     available in documents containing a :cpp:class:`Project` component.
 
 
+.. _language_basic-data-types:
+
 QML data types
 --------------
 

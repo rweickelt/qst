@@ -21,12 +21,11 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#ifndef JOBRUNNER_H
-#define JOBRUNNER_H
+#ifndef JOBDISPATCHER_H
+#define JOBDISPATCHER_H
 
-#include "tag.h"
 #include "testcase.h"
-#include "testjob.h"
+#include "job.h"
 
 #include <QtCore/QList>
 #include <QtCore/QString>
@@ -35,14 +34,21 @@
 
 class Project;
 
-class JobRunner
+class JobDispatcher : public QObject
 {
-    Q_DISABLE_COPY(JobRunner)
+    Q_OBJECT
+    Q_DISABLE_COPY(JobDispatcher)
 public:
-    JobRunner(Project* project, const QList<TestJob>& testCases, const TagLookupTable& tags);
+    JobDispatcher(Project* project);
     QString errorString() const;
-    void execTestCases();
     bool hasError() const;
+    QList<Testcase::Result> results() const;
+
+public slots:
+    void dispatch(Job job);
+
+signals:
+    void finished(Job);
 
 private:
     void createProjectWorkingDirectory();
@@ -50,12 +56,11 @@ private:
 
     QString m_errorString;
     Project* m_project;
-    QList<TestJob> m_jobs;
     QList<Testcase::Result> m_results;
-    TagLookupTable m_tags;
 };
 
-inline QString JobRunner::errorString() const { return m_errorString; }
-inline bool JobRunner::hasError() const { return !m_errorString.isEmpty(); }
+inline QString JobDispatcher::errorString() const { return m_errorString; }
+inline bool JobDispatcher::hasError() const { return !m_errorString.isEmpty(); }
+inline QList<Testcase::Result> JobDispatcher::results() const { return m_results; }
 
 #endif // JOBRUNNER_H

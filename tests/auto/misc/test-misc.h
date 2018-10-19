@@ -25,29 +25,6 @@
 #ifndef AUTOTEST_H
 #define AUTOTEST_H
 
-#include <qsttest.h>
 
-#include <QtCore/QObject>
-#include <QtTest/QtTest>
-
-class AutoTest : public QstTest
-{
-    Q_OBJECT
-
-private slots:
-    void project();
-    void testCase();
-    void testCaseName();
-    void errorHandling();
-    void processProbe();
-    void workingDirectory_data();
-    void workingDirectory();
-    void signalProbe();
-    void durationConstraint();
-    void valueRangeConstraint();
-    void profile();
-    void matrix();
-    void codeSnippets();
-};
 
 #endif // AUTOTEST_H
