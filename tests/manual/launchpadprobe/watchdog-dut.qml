@@ -2,7 +2,7 @@ import qst 1.0
 import ti 1.0
 
 // Internal helper file for watchdog.qml
-Testcase {
+LaunchpadProbeTest {
     name: "watchdog-dut"
 
     PinProbe {

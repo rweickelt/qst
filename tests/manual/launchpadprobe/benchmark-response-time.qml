@@ -50,11 +50,11 @@ Testcase {
         var maxResponseTime = responseTimes[responseTimes.length - 1]
         var avgResponseTime = arrayAvg(responseTimes)
 
-        console.log("Avg " + avgResponseTime + " min " + minResponseTime + " max " + maxResponseTime)
+        Qst.info("Avg " + avgResponseTime + " min " + minResponseTime + " max " + maxResponseTime)
 
         var counts = count(responseTimes)
         counts.forEach(function(element){
-            console.log("value " + element.value + " count " + element.count)
+            Qst.info("value " + element.value + " count " + element.count)
         });
     }
 

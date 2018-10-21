@@ -33,8 +33,15 @@ class LaunchpadProbeTest : public QstTest
 {
     Q_OBJECT
 
+public:
+    QString dataPath(const QString &fileName) const;
+
 private slots:
-    void pinProbe();
+    void flashFirmware();
+    void pinProbereadWrite();
+    void benchmarkPinProbeResponseTime();
+    void pinProbeWatchdog();
+
 };
 
 #endif // LAUNCHPADPROBETEST_H

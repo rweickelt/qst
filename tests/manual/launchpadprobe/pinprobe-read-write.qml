@@ -12,7 +12,7 @@ Test description:
  - Test might give strange and misleading results when the probe firmware is completely broken.
 
 */
-Testcase {
+LaunchpadProbeTest {
     name : "pinprobe-read-write"
     property int maxResponseTimeMs: 120 /* Maximum time from changing the value on the writer probe until the
                                           valueChanged signal is populated on the reader probe.

@@ -3,7 +3,15 @@ import qst 1.0
 Component {
     id : root
 
-    property string installPath : "/opt/ti/uniflash_4.4.0"
+    property string installPath : {
+        var path = ""
+        if ((typeof profile.UniflashProbe !== "undefined")
+                    && (typeof profile.UniflashProbe.installDirectory !== "undefined")) {
+                path = profile.UniflashProbe.installDirectory
+        }
+        return path
+    }
+
     property string programmer
     property string serial
     property string device
@@ -64,7 +72,7 @@ Component {
     ProcessProbe {
         id: reset
 
-        program:  installPath + "/simplelink/gen2/bin/xds110reset" + ((Qst.hostOS === "windows") ? ".exe" : "")
+        program:  installPath + "/simplelink/imagecreator/bin/xds110reset" + ((Qst.hostOS === "windows") ? ".exe" : "")
         arguments: [
             "-s",
             root.serial

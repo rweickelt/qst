@@ -1,7 +1,7 @@
 import qst 1.0
 import ti 1.0
 
-Testcase {
+LaunchpadProbeTest {
     name: "watchdog"
 
     property int connectionTimeoutMs: 600
@@ -31,7 +31,7 @@ Testcase {
     ProcessProbe {
         id: dutQstProcess
         name: "dut-qst-process"
-        program: project.qstExecutable
+        program: profile.qstExecutable
         arguments: [
             "run",
             "-f",

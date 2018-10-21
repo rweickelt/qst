@@ -74,6 +74,8 @@ Project {
             Qst.verify(values.indexOf("tag2") > -1)
             // Binding must be updated
             Qst.verify(values.indexOf(bindingA) > -1)
+
+            console.log(dependencies.level1.filter(elem => elem.value === "tag1"))
         }
     }
 

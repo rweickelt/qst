@@ -21,25 +21,54 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#include "launchpadprobetest.h"
+#include "test-launchpadprobe.h"
 #include <qtest.h>
 #include <qsttestresults.h>
 
-void LaunchpadProbeTest::pinProbe()
+QString LaunchpadProbeTest::dataPath(const QString &fileName) const
 {
-    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("pinprobe/project.qml"), "-p", "cc1310_launchxl" }, 25000);
+    return QDir(QString(SOURCE_DIR)).absoluteFilePath(fileName);
+}
+
+void LaunchpadProbeTest::flashFirmware()
+{
+    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("flash-firmware.qml"), "-p", "cc1310_launchxl" }, 25000);
     if (qstProcess().exitCode() != 0)
     {
         QFAIL(qstProcess().readAllStandardError());
     }
     VERIFY_PASS(results, "flash-firmware");
-    VERIFY_PASS(results, "pinprobe-read-write");
-    VERIFY_PASS(results, "benchmark-response-time");
-    VERIFY_PASS(results, "watchdog");
-    QString stdErr = qstProcess().readAllStandardError();
-    for (const auto& line : stdErr.split('\n'))
+}
+
+void LaunchpadProbeTest::pinProbereadWrite()
+{
+    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("pinprobe-read-write.qml"), "-p", "cc1310_launchxl" }, 25000);
+    if (qstProcess().exitCode() != 0)
     {
-        qDebug() << line;
+        QFAIL(qstProcess().readAllStandardError());
+    }
+    VERIFY_PASS(results, "pinprobe-read-write");
+}
+
+void LaunchpadProbeTest::benchmarkPinProbeResponseTime()
+{
+    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("benchmark-response-time.qml"), "-p", "cc1310_launchxl" }, 25000);
+    if (qstProcess().exitCode() != 0)
+    {
+        QFAIL(qstProcess().readAllStandardError());
+    }
+    VERIFY_PASS(results, "benchmark-response-time");
+}
+
+void LaunchpadProbeTest::pinProbeWatchdog()
+{
+    {
+        QstTestResults results = execQstRun(QStringList{ "-f", dataPath("watchdog.qml"), "-p", "cc1310_launchxl" }, 25000);
+        if (qstProcess().exitCode() != 0)
+        {
+            QFAIL(qstProcess().readAllStandardError());
+        }
+        VERIFY_PASS(results, "watchdog");
     }
 }
 

@@ -1,7 +1,8 @@
 import qst 1.0
 import ti 1.0
 
-Testcase {
+LaunchpadProbeTest {
+    id: root
     name: "flash-firmware"
     property int maxFlashTime: 15000
 

@@ -55,7 +55,7 @@ SimpleLinkModule {
 
         Artifact {
             fileTags: "toolchainOptions"
-            filepath: product.buildDirectory
+            filePath: product.buildDirectory
                       + "/" + product.moduleProperty("simplelink.tirtos", "buildDirectoryName")
                       + "/compiler.opt"
         }
