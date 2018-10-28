@@ -17,15 +17,17 @@ Component {
     property string device
     property string file
 
+    readonly property string host: (Qst.hostOS === "linux") ? "linux" : "win"
+
     signal finished
 
     function flash() {
         Qst.verify(File.exists(uniflash.program), uniflash.program + " not found. Check 'installPath' property.");
         Qst.verify(File.exists(file), file + " not found. Check 'file' property.");
         Qst.verify(File.exists((installPath
-                + "/deskdb/content/TICloudAgent/linux/ccs_base/common/targetdb/devices/"
+                + "/deskdb/content/TICloudAgent/" + host + "/ccs_base/common/targetdb/devices/"
                 + device + ".xml")), "No db entry for device '"+ device + "' found in '"
-                + installPath + "/deskdb/content/TICloudAgent/linux/ccs_base/common/targetdb/devices/" + "'.");
+                + installPath + "/deskdb/content/TICloudAgent/" + host + "/ccs_base/common/targetdb/devices/" + "'.");
 
         var configFilePath = test.workingDirectory + "/uniflashprobe"
                 + "-" + device
@@ -55,6 +57,11 @@ Component {
         return reset.waitForFinished(Math.max(milliseconds - (t1 - t0), -1));
     }
 
+    function reset() {
+        reset.start();
+        reset.waitForStarted(200);
+    }
+
     ProcessProbe {
         id: uniflash
 
@@ -64,8 +71,6 @@ Component {
             Qst.compare(exitCode, 0, "UniflashProbe '" + root.name
                     + "' (dslite) exited with " + exitCode
                     + ": " + readAllStandardError() + readAllStandardOutput());
-            reset.start();
-            reset.waitForStarted(100);
         }
      }
 
