@@ -41,8 +41,11 @@ public:
 
     static bool verifyExecutionOrder(const QStringList& expected, const QStringList& actual);
 
+    void setTimeoutMs(int milliseconds);
+
 protected:
-    QString dataPath(const QString& directory) const;
+    virtual QString dataPath(const QString& directory) const;
+
     QString defaultImportPath() const;
     QstTestResults execQstRun(const QStringList& arguments, int timeoutMs = 500);
     bool execQstRun(const QStringList& arguments, int expectedExitCode, const QString& file, int line);
@@ -54,6 +57,7 @@ private:
     QProcess m_qstProcess;
     QstTestResults m_results;
     QString m_stdError;
+    int m_timeoutMs = 500;
     static const QDir m_dataDirectory;
     static const QString m_defaultImportPath;
 };
@@ -96,6 +100,7 @@ inline QString QstTest::stdError() const { return m_stdError; }
     if (!execQstRun(QStringList{arguments}, expectedExitCode, __FILE__, __LINE__)) { \
         return; \
     }
+
 
 
 #endif // QSTTEST_H

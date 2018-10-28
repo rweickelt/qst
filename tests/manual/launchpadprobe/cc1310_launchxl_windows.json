@@ -1,0 +1,18 @@
+{
+    "UniflashProbe": {
+        "installDirectory": "C:/ti/uniflash_4.4.0"
+    },
+    "qstExecutable": "qst.exe",
+    "dut": {
+        "serial": "L400028Q",
+        "device": "cc1310f128",
+        "firmwarePath": "C:/qst/share/qst/firmware/launchpad-probe-CC1310_LAUNCHXL.elf",
+        "ioid": 13
+    },
+    "probe": {
+        "serial": "L20002HM",
+        "device": "cc1310f128",
+        "firmwarePath": "C:/qst/share/qst/firmware/launchpad-probe-CC1310_LAUNCHXL.elf",
+        "ioid": 23
+    }
+}

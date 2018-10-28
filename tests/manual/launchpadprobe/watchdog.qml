@@ -8,6 +8,7 @@ LaunchpadProbeTest {
     property int pingIntervalMs: 517
     property int timeUntilDutKillMs: Math.ceil(Math.random() * connectionTimeoutMs) + 100
 
+    // Shows the DUT's connected state
     PinProbe {
         name: "connected-led"
         id: connectedLed
@@ -18,6 +19,7 @@ LaunchpadProbeTest {
         port:  Xds.portFromSerial(profile.probe.serial)
     }
 
+    // Shows the DUT's activity
     PinProbe {
         name: "activity-led"
         id: activityLed
@@ -28,6 +30,7 @@ LaunchpadProbeTest {
         port:  Xds.portFromSerial(profile.probe.serial)
     }
 
+    // Another qst instance accessing the DUT board
     ProcessProbe {
         id: dutQstProcess
         name: "dut-qst-process"
@@ -79,20 +82,29 @@ LaunchpadProbeTest {
         endOn:   dutDisconnected
 
         minDuration: (connectionTimeoutMs - pingIntervalMs)
-        maxDuration: connectionTimeoutMs
+        maxDuration: (connectionTimeoutMs + pingIntervalMs)
     }
 
     function run() {
+        // The DUT must not be in connected state
         Qst.compare(connectedLed.value, PinProbe.Low)
+        // Start another qst application that connects to the DUT
         dutQstProcess.start()
-        Qst.wait(100)
+        Qst.wait(300)
+        // The DUT must now be in connected state
         Qst.compare(connectedLed.value, PinProbe.High)
+
+        // Kill the Qst DUT instance after some time to
+        // trigger a watchdog reset
         Qst.wait(timeUntilDutKillMs)
         dutQstProcess.terminate()
-        dutKilled()
-        dutQstProcess.waitForFinished(100)
-        Qst.compare(dutQstProcess.state, ProcessProbe.NotRunning)
-        Qst.wait(connectionTimeoutMs * 2)
+
+        // Wait for the termination propagate
+        dutQstProcess.waitForFinished(300)
+        // Qst.compare(dutQstProcess.state, ProcessProbe.NotRunning)
+
+        // Wait and ensure that the DUT resets
+        Qst.wait(connectionTimeoutMs + (2*pingIntervalMs))
         Qst.compare(connectedLed.value, PinProbe.Low)
     }
 }

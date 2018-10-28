@@ -1,7 +1,7 @@
 import qbs
 
 Project {
-    condition : qbs.architecture.lastIndexOf("x86") === 0
+    condition : qbs.architecture.contains("x86")
 
     references: [
         "auto/auto.qbs",

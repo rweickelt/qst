@@ -25,6 +25,8 @@ LaunchpadProbeTest {
         board2.flash();
         board1.waitForFinished(maxFlashTime);
         board2.waitForFinished(Math.max(maxFlashTime - test.elapsedTime, 0));
-        Qst.wait(666) // Otherwise the following test may not connect properly
+        board1.reset()
+        board2.reset()
+        Qst.wait(666) // Need to wait before the next test can access the board
     }
 }
