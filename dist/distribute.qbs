@@ -7,7 +7,6 @@ Product {
     name: "distribute"
     type: "installable"
     condition : qbs.architecture.contains("x86")
-    builtByDefault: qbs.buildVariant.contains("release")
 
     Depends { name: "cpp" }
     Depends { name: "Qt.core" }
@@ -39,6 +38,7 @@ Product {
                 suffix += "d";
             return suffix + cpp.dynamicLibrarySuffix;
         }
+
         files: {
             function addQtVersions(libs) {
                 var result = [];
@@ -61,6 +61,10 @@ Product {
                     "Qt5Qml" + postfix,
                     "Qt5SerialPort" + postfix
                 );
+
+                if (qbs.buildVariant === "debug") {
+                    list.push("Qt5Test" + postfix);
+                }
             }
 
             if (qbs.targetOS.contains("linux")) {
@@ -78,7 +82,7 @@ Product {
     }
 
     Group {
-        name: "Runtime DLLs - MinGW on Windows"
+        name: "Runtime DLLs - MinGW on Windows host"
         condition: qbs.targetOS.contains("windows")
                         && qbs.hostOS.contains("windows")
                         && qbs.toolchain.contains("mingw")
@@ -95,7 +99,7 @@ Product {
     }
 
     Group {
-        name: "Runtime DLLs - MinGW on Linux"
+        name: "Runtime DLLs - MinGW on Linux host"
         condition: qbs.targetOS.contains("windows")
                         && qbs.hostOS.contains("linux")
 
