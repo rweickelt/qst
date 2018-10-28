@@ -24,7 +24,6 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #include <ti/drivers/PIN.h>
 #include <ti/drivers/Power.h>
@@ -37,6 +36,7 @@
 #include <ti/sysbios/knl/Event.h>
 #include <ti/sysbios/knl/Task.h>
 #include <ti/sysbios/knl/Mailbox.h>
+#include <ti/sysbios/posix/unistd.h>
 
 #include <protocols/roc.h>
 
