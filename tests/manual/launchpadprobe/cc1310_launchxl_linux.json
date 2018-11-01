@@ -2,7 +2,7 @@
     "UniflashProbe": {
         "installDirectory": "/opt/ti/uniflash_4.4.0"
     },
-    "qstExecutable": "/opt/qst/bin/qst",
+    "qstExecutable": "qst",
     "dut": {
         "serial": "L400028Q",
         "device": "cc1310f128",

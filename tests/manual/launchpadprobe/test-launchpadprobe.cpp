@@ -21,55 +21,79 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#include "test-launchpadprobe.h"
+#include <qst.h>
 #include <qtest.h>
 #include <qsttestresults.h>
 
-QString LaunchpadProbeTest::dataPath(const QString &fileName) const
+#include <qsttest.h>
+
+#include <QtCore/QtGlobal>
+#include <QtCore/QObject>
+#include <QtTest/QtTest>
+
+class test_launchpadprobe : public QstTest
+{
+    Q_OBJECT
+
+public:
+    QString dataPath(const QString &fileName) const;
+
+private slots:
+    void init();
+    void flashFirmware();
+    void pinProbereadWrite();
+    void benchmarkPinProbeResponseTime();
+    void pinProbeWatchdog();
+
+private:
+    QString profile() const;
+};
+
+QString test_launchpadprobe::profile() const
+{
+#ifdef Q_OS_WIN
+    return "cc1310_launchxl_windows";
+#elif defined Q_OS_LINUX
+    return "cc1310_launchxl_linux";
+#endif
+}
+
+void test_launchpadprobe::init()
+{
+    setTimeoutMs(25000);
+}
+
+QString test_launchpadprobe::dataPath(const QString &fileName) const
 {
     return QDir(QString(SOURCE_DIR)).absoluteFilePath(fileName);
 }
 
-void LaunchpadProbeTest::flashFirmware()
+void test_launchpadprobe::flashFirmware()
 {
-    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("flash-firmware.qml"), "-p", "cc1310_launchxl" }, 25000);
-    if (qstProcess().exitCode() != 0)
-    {
-        QFAIL(qstProcess().readAllStandardError());
-    }
-    VERIFY_PASS(results, "flash-firmware");
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("flash-firmware.qml"), "-p", profile());
+    VERIFY_PASS(results(), "flash-firmware");
 }
 
-void LaunchpadProbeTest::pinProbereadWrite()
+void test_launchpadprobe::pinProbereadWrite()
 {
-    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("pinprobe-read-write.qml"), "-p", "cc1310_launchxl" }, 25000);
-    if (qstProcess().exitCode() != 0)
-    {
-        QFAIL(qstProcess().readAllStandardError());
-    }
-    VERIFY_PASS(results, "pinprobe-read-write");
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("pinprobe-read-write.qml"), "-p", profile());
+    VERIFY_PASS(results(), "pinprobe-read-write");
+
 }
 
-void LaunchpadProbeTest::benchmarkPinProbeResponseTime()
+void test_launchpadprobe::benchmarkPinProbeResponseTime()
 {
-    QstTestResults results = execQstRun(QStringList{ "-f", dataPath("benchmark-response-time.qml"), "-p", "cc1310_launchxl" }, 25000);
-    if (qstProcess().exitCode() != 0)
-    {
-        QFAIL(qstProcess().readAllStandardError());
-    }
-    VERIFY_PASS(results, "benchmark-response-time");
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("benchmark-response-time.qml"), "-p", profile());
+    VERIFY_PASS(results(), "benchmark-response-time");
+
 }
 
-void LaunchpadProbeTest::pinProbeWatchdog()
+void test_launchpadprobe::pinProbeWatchdog()
 {
-    {
-        QstTestResults results = execQstRun(QStringList{ "-f", dataPath("watchdog.qml"), "-p", "cc1310_launchxl" }, 25000);
-        if (qstProcess().exitCode() != 0)
-        {
-            QFAIL(qstProcess().readAllStandardError());
-        }
-        VERIFY_PASS(results, "watchdog");
-    }
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("watchdog.qml"), "-p", profile());
+    VERIFY_PASS(results(), "watchdog");
 }
 
-QTEST_GUILESS_MAIN(LaunchpadProbeTest)
+QTEST_GUILESS_MAIN(test_launchpadprobe)
+
+#include "test-launchpadprobe.moc"

@@ -84,7 +84,7 @@ QmlContext qmlDefinitionContext(const QObject* object)
         QQmlData* data = QQmlData::get(object);
         if (data && data->outerContext)
         {
-            result["file"] = data->outerContext->url().path();
+            result["file"] = data->outerContext->url().toLocalFile();
             result["line"] = data->lineNumber;
             result["column"] = data->columnNumber;
         }

@@ -52,6 +52,11 @@ QString QstTest::dataPath(const QString& directory) const
     return m_dataDirectory.absoluteFilePath(directory);
 }
 
+void QstTest::setTimeoutMs(int milliseconds)
+{
+    m_timeoutMs = milliseconds;
+}
+
 QstTestResults QstTest::execQstRun(const QStringList& arguments, int timeoutMs)
 {
     QStringList cmdLine = { "run", "--import", m_defaultImportPath };
