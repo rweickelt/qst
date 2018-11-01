@@ -51,6 +51,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QPointer>
+#include <QtCore/QEventLoop>
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlEngine>
 
@@ -131,6 +132,7 @@ void execRunCommand()
     qmlRegisterType<QstService>("qst", 1, 0, "QstService");
     qmlRegisterUncreatableType<TextFile>("qst", 1, 0, "TextFile", "TextFile can only be created in a JS context");
 
+    qRegisterMetaType<Job>();
     qRegisterMetaType<Testcase::State>();
     qRegisterMetaType<QmlContext>();
     qRegisterMetaType<QList<QmlContext> >();
@@ -177,9 +179,21 @@ void execRunCommand()
 
     // Schedules jobs one-by-one, taking dependency relations into account.
     SerialJobScheduler scheduler(dependencyResolver.jobGraph());
-    QObject::connect(&scheduler, &SerialJobScheduler::jobReady, &dispatcher, &JobDispatcher::dispatch);
-    QObject::connect(&dispatcher, &JobDispatcher::finished, &scheduler, &SerialJobScheduler::onJobFinished);
+    QEventLoop eventLoop;
+
+    QObject::connect(&scheduler, &SerialJobScheduler::jobReady,
+                     &dispatcher, &JobDispatcher::dispatch,
+                     Qt::QueuedConnection);
+
+    QObject::connect(&dispatcher, &JobDispatcher::finished,
+                     &scheduler, &SerialJobScheduler::onJobFinished,
+                     Qt::QueuedConnection);
+
+    QObject::connect(&scheduler, &SerialJobScheduler::finished,
+                     &eventLoop, &QEventLoop::quit);
+
     scheduler.start();
+    eventLoop.exec();
 
     if (dispatcher.results().contains(Testcase::Fail))
     {

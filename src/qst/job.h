@@ -75,6 +75,8 @@ private:
     Id m_id = InvalidId;
 };
 
+Q_DECLARE_METATYPE(Job)
+
 uint qHash(const Job& job);
 
 inline bool Job::isValid() const { return m_id != InvalidId; }
