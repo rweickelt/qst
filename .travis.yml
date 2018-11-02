@@ -97,6 +97,7 @@ jobs:
         - find qst/
     # Deploy linux bundle
     - stage: bundle and deploy
+      sudo: false
       env:
         - TARGET="linux-x86_64 bundle"
         - FILE=qst-linux-x86_64-$QST_VERSION.tar.bz2
@@ -118,6 +119,7 @@ jobs:
             all_branches: true
     # Deploy windows bundle
     - stage: bundle and deploy
+      sudo: false
       env:
         - TARGET="windows-x86_64 bundle"
         - FILE=qst-windows-x86_64-$QST_VERSION.zip
@@ -140,6 +142,7 @@ jobs:
     # Deploy sources on release
     - stage: bundle and deploy
       if: tag IS present
+      sudo: false
       env:
         - TARGET="sources"
         - FILE=qst-src-$QST_VERSION.tar.bz2
