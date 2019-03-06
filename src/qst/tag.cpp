@@ -25,65 +25,90 @@
 #include "tag.h"
 
 #include <QtCore/QMap>
+#include <QtCore/QVector>
 
 namespace {
-    QMap<Tag::Id, QPair<QString, QString> > stringTable;
+    QVector<QString> stringsById;
+    QHash<QString, qint32> idByStrings;
 }
 
 Tag Tag::create(const QString& label, const QString& value)
 {
-    Tag::Id id = qHash(label) + qHash(value);
-    if (stringTable.contains(id))
+    qint64 labelId = idByStrings.value(label, -1);
+    if (labelId < 0)
     {
-        const QPair<QString, QString>& other = stringTable[id];
-        // If this fails, we have to come up with a more clever storage and look-up.
-        Q_ASSERT((other.first == label) && (other.second == value));
+        stringsById.append(label);
+        labelId = stringsById.size() - 1;
+        idByStrings.insert(label, labelId);
     }
-    stringTable[id] = { label, value };
+
+    qint64 valueId = idByStrings.value(value, -1);
+    if (valueId < 0)
+    {
+        stringsById.append(value);
+        valueId = stringsById.size() - 1;
+        idByStrings.insert(value, valueId);
+    }
 
     Tag tag;
-    tag.m_id = id;
+    tag.m_labelId = labelId;
+    tag.m_valueId = valueId;
+
     return tag;
 }
 
 QString Tag::label() const
 {
-    return stringTable[m_id].first;
+    return stringsById[m_labelId];
 }
 
 QString Tag::value() const
 {
-    return stringTable[m_id].second;
+    return stringsById[m_valueId];
 }
 
 QPair<QString, QString> Tag::toPair() const
 {
-    return stringTable[m_id];
+    return QPair<QString,QString>{ label(), value() };
 }
 
 QString Tag::toString() const
 {
-    QPair<QString, QString> tag = stringTable[m_id];
-    return QString("%1:%2").arg(tag.first).arg(tag.second);
+    return QString("%1:%2").arg(label()).arg(value());
 }
 
-bool TagSet::matches(const TagSet& other) const
-{
-    return *this == other;
-}
+//bool TagSet::matches(const TagSet& other) const
+//{
+//    return *this == other;
+//}
 
-QStringList TagSet::toStringList() const
-{
-    QStringList result;
-    for (const auto& tag: *this)
-    {
-        result << tag.toString();
-    }
-    return result;
-}
+//QStringList TagSet::toStringList() const
+//{
+//    QStringList result;
+//    for (const auto& tag: *this)
+//    {
+//        result << tag.toString();
+//    }
+//    return result;
+//}
 
 bool Tag::operator<(const Tag& other) const
 {
-    return stringTable[m_id].first < stringTable[other.m_id].first;
+    return stringsById[m_labelId] < stringsById[other.m_labelId];
+}
+
+bool Tag::operator==(const Tag& other) const
+{
+    return (m_labelId == other.m_labelId)
+            && (m_valueId == other.m_valueId);
+}
+
+uint qHash(const Tag& tag)
+{
+    Q_ASSERT(tag.m_labelId >= 0);
+    Q_ASSERT(tag.m_valueId >= 0);
+
+    return tag.m_labelId + (tag.m_valueId << 16);
+
 }
 

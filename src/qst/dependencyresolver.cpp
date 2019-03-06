@@ -341,7 +341,7 @@ void DependencyResolver::completeResolve(const JobLookupTable& jobs)
                     {
                         for (const auto& precedingJob: precedingJobs)
                         {
-                            if (precedingJob.tags().matches(tagSet))
+                            if (precedingJob.tags() == tagSet)
                             {
                                 dependency.incrementCount();
                                 m_jobGraph.insertEdge(precedingJob, currentJob, dependency);
