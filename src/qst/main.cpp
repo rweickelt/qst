@@ -40,6 +40,7 @@
 #include "processprobe.h"
 #include "profileloader.h"
 #include "project.h"
+#include "projectdatabase.h"
 #include "projectresolver.h"
 #include "proxylogger.h"
 #include "qst.h"
@@ -140,17 +141,19 @@ void execRunCommand()
     qmlRegisterSingletonType<File>("qst", 1,0, "File", &File::createSingleInstance);
     qmlRegisterSingletonType<Xds>("ti", 1, 0, "Xds", &Xds::createSingleInstance);
 
+    ProjectDatabase db;
+
     PlaintextLogger plaintextLogger;
     ProxyLogger::instance()->registerLogger(&plaintextLogger);
 
     // Eventually load the profile first.
     ProfileLoader profileLoader(options->profilePaths);
-    QVariantMap profile = profileLoader.loadProfile(options->profile);
+    db.profile = profileLoader.loadProfile(options->profile);
     CHECK_FOR_ERROR(profileLoader);
 
     // Create all components, but do not resolve bindings yet
     // If other documents are referenced, load them as well.
-    ProjectResolver projectResolver(profile);
+    ProjectResolver projectResolver(db.profile);
     projectResolver.beginLoad(options->projectFilepath);
     CHECK_FOR_ERRORS(projectResolver);
 
@@ -164,6 +167,8 @@ void execRunCommand()
     projectResolver.completeLoad();
     CHECK_FOR_ERRORS(projectResolver);
 
+    db.project = projectResolver.project();
+
     // Create an overview over tags if defined and prepare
     // executable jobs.
     JobMultiplier multiplier(projectResolver.documents());
@@ -174,7 +179,7 @@ void execRunCommand()
     dependencyResolver.completeResolve(jobs);
 
     //Does the dirty work
-    JobDispatcher dispatcher(projectResolver.project());
+    JobDispatcher dispatcher(db);
 
     // Schedules jobs one-by-one, taking dependency relations into account.
     SerialJobScheduler scheduler(dependencyResolver.jobGraph());
@@ -194,7 +199,7 @@ void execRunCommand()
     scheduler.start();
     eventLoop.exec();
 
-    if (dispatcher.results().contains(Testcase::Fail))
+    if (scheduler.results().contains(Testcase::Fail))
     {
         QCoreApplication::exit(qst::ExitTestCaseFailed);
     }

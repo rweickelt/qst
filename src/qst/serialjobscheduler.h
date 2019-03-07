@@ -28,10 +28,10 @@
 #include "dependency.h"
 #include "directedgraph.h"
 #include "job.h"
+#include "testcase.h"
 
 #include <QtCore/QList>
 #include <QtCore/QObject>
-#include <QtCore/QSet>
 #include <QtCore/QString>
 
 class Exports;
@@ -48,6 +48,7 @@ class SerialJobScheduler : public QObject
 public:
     SerialJobScheduler(const DirectedGraph<Job, Dependency>& jobs, QObject* parent = nullptr);
     void start();
+    QList<Testcase::Result> results() const;
 
 public slots:
     void onJobFinished(Job job);
@@ -64,6 +65,7 @@ private:
     DirectedGraph<Job, Dependency> m_dependencies;
     QMap<Job, uint> m_dependencyCounts;
     QList<Job> m_readyList;
+    QList<Testcase::Result> m_results;
 };
 
 #endif // SERIALJOBSCHEDULER_H

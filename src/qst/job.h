@@ -26,6 +26,7 @@
 #define JOB_H
 
 #include "tag.h"
+#include "testcase.h"
 
 #include <QtCore/QList>
 #include <QtCore/QMultiMap>
@@ -47,11 +48,13 @@ public:
     Id id() const;
     QString filePath() const;
     QString name() const;
+    Testcase::Result result() const;
     TagSet tags() const;
     Testcase* testcase();
     Testcase* testcase() const;
     QVariantMap exports() const;
     void setExports(const QVariantMap& data);
+    void setResult(Testcase::Result result);
 
     bool operator==(const Job& other) const;
     bool operator<(const Job& other) const;

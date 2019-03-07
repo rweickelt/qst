@@ -25,38 +25,30 @@
 #define JOBDISPATCHER_H
 
 #include "job.h"
-#include "testcase.h"
 
 #include <QtCore/QDir>
-#include <QtCore/QList>
 #include <QtCore/QString>
-#include <QtCore/QVariantMap>
 
-class Project;
+class ProjectDatabase;
 
 class JobDispatcher : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(JobDispatcher)
 public:
-    JobDispatcher(const QVariantMap& project);
-    QList<Testcase::Result> results() const;
+    JobDispatcher(const ProjectDatabase& db);
 
 public slots:
     void dispatch(Job job);
 
 signals:
-    void errorOccured(QString message);
     void finished(Job job);
 
 private:
     QString createTestcaseWorkingDirectory(const QString& name);
 
-    QVariantMap m_project;
+    const ProjectDatabase& m_db;
     QDir m_projectWorkingDirectory;
-    QList<Testcase::Result> m_results;
 };
-
-inline QList<Testcase::Result> JobDispatcher::results() const { return m_results; }
 
 #endif // JOBRUNNER_H

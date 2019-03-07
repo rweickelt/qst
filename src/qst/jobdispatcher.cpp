@@ -22,16 +22,18 @@
  ** $END_LICENSE$
 ****************************************************************************/
 #include "jobdispatcher.h"
+#include "projectdatabase.h"
 #include "tag.h"
+#include "testcase.h"
 #include "qst.h"
 
-#include <QtCore/QDir>
+#include <QtCore/QFileInfo>
 #include <QtQml/QQmlProperty>
 
-JobDispatcher::JobDispatcher(const QVariantMap& project)
-    : m_project(project), m_projectWorkingDirectory(project["workingDirectory"].toString())
+JobDispatcher::JobDispatcher(const ProjectDatabase& database)
+    : m_db(database)
 {
-
+    m_projectWorkingDirectory.setPath(m_db.project["workingDirectory"].toString());
 }
 
 void JobDispatcher::dispatch(Job job)
@@ -69,7 +71,8 @@ void JobDispatcher::dispatch(Job job)
     job.testcase()->setWorkingDirectory(workingDirectory);
     job.testcase()->setDisplayName(displayName);
 
-    m_results << job.testcase()->exec();
+    Testcase::Result result = job.testcase()->exec();
+    job.setResult(result);
 
     emit finished(job);
 }

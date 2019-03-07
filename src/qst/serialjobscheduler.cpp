@@ -29,9 +29,6 @@
 #include "qstitemvisitor.h"
 #include "testcase.h"
 
-#include <QtQml/QQmlContext>
-#include <QtDebug>
-
 SerialJobScheduler::SerialJobScheduler(const DirectedGraph<Job, Dependency>& jobs, QObject* parent)
     : QObject(parent)
 {
@@ -42,6 +39,7 @@ void SerialJobScheduler::onJobFinished(Job finishedJob)
 {
     QString name = finishedJob.testcase()->name();
     m_done.append(finishedJob);
+    m_results.append(finishedJob.result());
 
     if (Exports* exports = finishedJob.testcase()->exportsItem())
     {
@@ -138,5 +136,10 @@ QVariantMap SerialJobScheduler::parseExports(Exports* item)
         result[QLatin1String(name)] = value;
     }
     return result;
+}
+
+QList<Testcase::Result> SerialJobScheduler::results() const
+{
+    return m_results;
 }
 

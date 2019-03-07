@@ -36,6 +36,7 @@ struct JobData
     QString name;
     QString filePath;
     Testcase* testcase;
+    Testcase::Result result;
     TagSet tags;
     QVariantMap exports;
 };
@@ -76,6 +77,16 @@ QString Job::filePath() const
 QString Job::name() const
 {
     return jobs[m_id].name;
+}
+
+Testcase::Result Job::result() const
+{
+    return jobs[m_id].result;
+}
+
+void Job::setResult(Testcase::Result result)
+{
+    jobs[m_id].result = result;
 }
 
 TagSet Job::tags() const
