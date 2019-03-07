@@ -403,13 +403,6 @@ TestcaseAttached* Testcase::qmlAttachedProperties(QObject* object)
     return new TestcaseAttached(object);
 }
 
-Project* Testcase::project() const
-{
-    Project* project = qvariant_cast<Project*>(qmlContext(this)->contextProperty("project"));
-    Q_ASSERT(project != NULL);
-    return project;
-}
-
 Testcase* Testcase::instance()
 {
     return m_currentTestCase.data();

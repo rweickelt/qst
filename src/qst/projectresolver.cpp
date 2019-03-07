@@ -343,9 +343,33 @@ void ProjectResolver::onQmlEngineWarnings(const QList<QQmlError> &warnings)
     QST_ERROR_AND_EXIT(message);
 }
 
-Project* ProjectResolver::project()
+QVariantMap ProjectResolver::project() const
 {
-    return m_project.data();
+    QVariantMap result;
+
+    const static QStringList ignoredProperties{ "objectName", "nestedComponents" };
+    const QMetaObject* metaobject = m_project->metaObject();
+    int count = metaobject->propertyCount();
+    for (int i = 0; i < count; i++)
+    {
+        QMetaProperty metaproperty = metaobject->property(i);
+        const char* name = metaproperty.name();
+
+        if (ignoredProperties.contains(QLatin1String(name)) || (!metaproperty.isReadable()))
+        {
+            continue;
+        }
+
+        QVariant value = m_project->property(name);
+        result[QLatin1String(name)] = value;
+    }
+
+    return result;
+}
+
+QString ProjectResolver::workDirPath() const
+{
+    return m_project->workingDirectory();
 }
 
 QQmlEngine* ProjectResolver::createEngine()

@@ -27,6 +27,7 @@
 #include "testcase.h"
 #include "job.h"
 
+#include <QtCore/QDir>
 #include <QtCore/QList>
 #include <QtCore/QString>
 #include <QtCore/QVector>
@@ -39,7 +40,7 @@ class JobDispatcher : public QObject
     Q_OBJECT
     Q_DISABLE_COPY(JobDispatcher)
 public:
-    JobDispatcher(Project* project);
+    JobDispatcher(const QVariantMap& project, const QString& workDirPath);
     QString errorString() const;
     bool hasError() const;
     QList<Testcase::Result> results() const;
@@ -51,12 +52,13 @@ signals:
     void finished(Job);
 
 private:
-    void createProjectWorkingDirectory();
+    void createProjectWorkingDirectory(const QString& dirPath);
     QString createTestcaseWorkingDirectory(const QString& name);
 
     QString m_errorString;
-    Project* m_project;
+    QVariantMap m_project;
     QList<Testcase::Result> m_results;
+    QDir m_workingDirectory;
 };
 
 inline QString JobDispatcher::errorString() const { return m_errorString; }

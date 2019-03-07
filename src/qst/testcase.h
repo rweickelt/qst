@@ -114,8 +114,6 @@ protected:
 
     virtual void callVisitor(QstItemVisitor* visitor) final;
 
-    Project* project() const;
-
 public:
     void setTags(const TagSet& tags);
     Testcase(QObject *parent = 0);

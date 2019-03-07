@@ -174,7 +174,7 @@ void execRunCommand()
     dependencyResolver.completeResolve(jobs);
 
     //Does the dirty work
-    JobDispatcher dispatcher(projectResolver.project());
+    JobDispatcher dispatcher(projectResolver.project(), projectResolver.workDirPath());
     CHECK_FOR_ERROR(dispatcher);
 
     // Schedules jobs one-by-one, taking dependency relations into account.
