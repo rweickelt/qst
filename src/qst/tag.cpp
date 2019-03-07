@@ -67,31 +67,6 @@ QString Tag::value() const
     return stringsById[m_valueId];
 }
 
-QPair<QString, QString> Tag::toPair() const
-{
-    return QPair<QString,QString>{ label(), value() };
-}
-
-QString Tag::toString() const
-{
-    return QString("%1:%2").arg(label()).arg(value());
-}
-
-//bool TagSet::matches(const TagSet& other) const
-//{
-//    return *this == other;
-//}
-
-//QStringList TagSet::toStringList() const
-//{
-//    QStringList result;
-//    for (const auto& tag: *this)
-//    {
-//        result << tag.toString();
-//    }
-//    return result;
-//}
-
 bool Tag::operator<(const Tag& other) const
 {
     return stringsById[m_labelId] < stringsById[other.m_labelId];

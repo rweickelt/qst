@@ -52,13 +52,12 @@ void JobDispatcher::dispatch(Job job)
         QStringList tagsStrings;
         for (const auto& tag: tags)
         {
-            const auto strings = tag.toPair();
-            tagsStrings << strings.second;
+            tagsStrings << tag.value();
 
-            QQmlProperty property(job.testcase(), strings.first);
+            QQmlProperty property(job.testcase(), tag.label());
             Q_ASSERT(property.isProperty());
             Q_ASSERT(property.isWritable());
-            property.write(strings.second);
+            property.write(tag.value());
         }
 
         displayName = QString("%1 %2 [ %3 ]")

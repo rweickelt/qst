@@ -320,7 +320,7 @@ void DependencyResolver::completeResolve(const JobTable& jobs)
                                 QStringList strings;
                                 for (const auto& tag: tags)
                                 {
-                                    strings << tag.toString();
+                                    strings << QString("%1:%2").arg(tag.label()).arg(tag.value());
                                 }
                                 return strings.join(' ');
                             };

@@ -26,7 +26,6 @@
 #define TAG_H
 
 #include <QtCore/QList>
-#include <QtCore/QPair>
 #include <QtCore/QSet>
 #include <QtCore/QString>
 
@@ -39,8 +38,6 @@ public:
     QString value() const;
 
     static Tag create(const QString& label, const QString& value);
-    QPair<QString, QString> toPair() const;
-    QString toString() const;
 
     bool operator==(const Tag& other) const;
     bool operator<(const Tag& other) const;
@@ -53,12 +50,5 @@ private:
 uint qHash(const Tag& tag);
 
 using TagSet = QSet<Tag>;
-
-//class TagSet: public QSet<Tag>
-//{
-//public:
-//    bool matches(const TagSet& other) const;
-//    QStringList toStringList() const;
-//};
 
 #endif // TAG_H

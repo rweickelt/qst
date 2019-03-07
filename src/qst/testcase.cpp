@@ -454,11 +454,9 @@ void Testcase::setTags(const TagSet& tags)
 {
     for (const auto& tag: tags)
     {
-        const auto strings = tag.toPair();
-
-        QQmlProperty property(this, strings.first);
+        QQmlProperty property(this, tag.label());
         Q_ASSERT(property.isProperty());
         Q_ASSERT(property.isWritable());
-        property.write(strings.second);
+        property.write(tag.value());
     }
 }
