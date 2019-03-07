@@ -63,7 +63,7 @@ public:
     JobMultiplier(const QList<QstDocument*>& documents);
     QString errorString() const;
     bool hasError() const;
-    JobLookupTable jobs() const;
+    JobTable jobs() const;
 
 
 private:
@@ -88,12 +88,12 @@ private:
     QString m_errorString;
     QList<Matrix*> m_matrices;
     QMap<QString, Testcase*> m_testcases;
-    JobLookupTable m_jobs;
+    JobTable m_jobs;
 };
 
 inline QString JobMultiplier::errorString() const { return m_errorString; }
 inline bool JobMultiplier::hasError() const { return !m_errorString.isEmpty(); }
-inline JobLookupTable JobMultiplier::jobs() const { return m_jobs; }
+inline JobTable JobMultiplier::jobs() const { return m_jobs; }
 
 
 #endif // MATRIXEXPANDER_H

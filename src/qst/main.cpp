@@ -168,7 +168,7 @@ void execRunCommand()
     // executable jobs.
     JobMultiplier multiplier(projectResolver.documents());
     CHECK_FOR_ERROR(multiplier);
-    JobLookupTable jobs = multiplier.jobs();
+    JobTable jobs = multiplier.jobs();
 
     // Do more fine-grained dependency resolution, taking tags into account.
     dependencyResolver.completeResolve(jobs);

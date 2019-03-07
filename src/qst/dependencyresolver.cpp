@@ -248,7 +248,7 @@ in the Depends item:
 The term job class means: all jobs with equal name.
 
 */
-void DependencyResolver::completeResolve(const JobLookupTable& jobs)
+void DependencyResolver::completeResolve(const JobTable& jobs)
 {
     for (const auto& job: jobs.values())
     {
@@ -261,11 +261,11 @@ void DependencyResolver::completeResolve(const JobLookupTable& jobs)
         currentJob.testcase()->setTags(ourTags);
 
         // All job classes we are depending on
-        QSet<QString> dependencyNames = m_testcaseGraph.predecessors(currentJob.testcase()->name()).toSet();
+        QSet<QString> dependencyNames = m_testcaseGraph.predecessors(currentJob.name()).toSet();
         for (const auto& dependencyName: dependencyNames)
         {
             // All Depends items pointing to our job class
-            QList<Depends*> dependsItems = m_testcaseGraph.edges(dependencyName, currentJob.testcase()->name());
+            QList<Depends*> dependsItems = m_testcaseGraph.edges(dependencyName, currentJob.name());
             for (const auto& dependsItem: dependsItems)
             {
                 // Make the Depends item reevaluate its bindings based on the tags set further up
@@ -327,7 +327,7 @@ void DependencyResolver::completeResolve(const JobLookupTable& jobs)
                             QmlContext context = qst::qmlDefinitionContext(currentJob.testcase());
                             QString message = QString("At %1:%2: Cannot create one-to-one relation between %3 (%4) and %5 because the tags don't match any job.")
                                     .arg(context.file()).arg(context.line())
-                                    .arg(currentJob.testcase()->name())
+                                    .arg(currentJob.name())
                                     .arg(dumpTagList(ourTags))
                                     .arg(dependencyName);
                             QST_ERROR_AND_EXIT(message);

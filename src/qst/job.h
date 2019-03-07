@@ -22,14 +22,12 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
-#ifndef TESTJOB_H
-#define TESTJOB_H
+#ifndef JOB_H
+#define JOB_H
 
 #include "tag.h"
 
 #include <QtCore/QList>
-#include <QtCore/QSharedData>
-#include <QtCore/QSharedDataPointer>
 #include <QtCore/QMultiMap>
 #include <QtCore/QVariantMap>
 
@@ -37,18 +35,7 @@ class Testcase;
 
 struct Job;
 
-using JobLookupTable = QMultiMap<QString, Job>;
 using JobTable = QMultiMap<QString, Job>;
-
-/* TestJobs are testcase-data tuples created by JobMultiplier
-   and executed by TestRunner.
- */
-struct JobData
-{
-    Testcase* testcase;
-    TagSet tags;
-    QVariantMap exports;
-};
 
 class Job
 {
@@ -58,6 +45,8 @@ public:
 
     bool isValid() const;
     Id id() const;
+    QString filePath() const;
+    QString name() const;
     TagSet tags() const;
     Testcase* testcase();
     Testcase* testcase() const;
@@ -86,4 +75,4 @@ inline bool Job::operator<(const Job& other) const { return (m_id < other.m_id);
 
 inline uint qHash(const Job& job) { return job.id(); }
 
-#endif // TESTJOB_H
+#endif // JOB_H

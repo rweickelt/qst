@@ -66,7 +66,7 @@ void SerialJobScheduler::onJobFinished(Job finishedJob)
 
         for (const auto& predecessor: m_dependencies.predecessors(nextJob))
         {
-            if (!predecessor.testcase()->exportsItem())
+            if (predecessor.exports().isEmpty())
             {
                 continue;
             }

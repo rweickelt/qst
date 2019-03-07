@@ -22,9 +22,23 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
+#include "exports.h"
 #include "job.h"
+#include "testcase.h"
 
 #include <QtCore/QVector>
+
+/* TestJobs are testcase-data tuples created by JobMultiplier
+   and executed by TestRunner.
+ */
+struct JobData
+{
+    QString name;
+    QString filePath;
+    Testcase* testcase;
+    TagSet tags;
+    QVariantMap exports;
+};
 
 namespace {
 //    class JobTable
@@ -54,6 +68,16 @@ void Job::setExports(const QVariantMap& data)
     jobs[m_id].exports = data;
 }
 
+QString Job::filePath() const
+{
+    return jobs[m_id].filePath;
+}
+
+QString Job::name() const
+{
+    return jobs[m_id].name;
+}
+
 TagSet Job::tags() const
 {
     return jobs[m_id].tags;
@@ -72,6 +96,9 @@ Testcase* Job::testcase() const
 Job Job::create(Testcase* testcase, const TagSet& tags)
 {
     JobData data;
+    data.exports = testcase->exportsItem() ? testcase->exportsItem()->toVariantMap() : QVariantMap{};
+    data.name = testcase->name();
+    data.filePath = testcase->filepath();
     data.testcase = testcase;
     data.tags = tags;
     jobs.append(data);

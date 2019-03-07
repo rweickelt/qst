@@ -41,7 +41,7 @@ JobDispatcher::JobDispatcher(Project* project)
 
 void JobDispatcher::dispatch(Job job)
 {
-    QString name = job.testcase()->name();
+    QString name = job.name();
     QString displayName = name;
     QString workingDirectoryName = name;
     QList<Tag> tags = job.tags().toList();
