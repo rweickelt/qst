@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017, 2018 The Qst project.
+ ** Copyright (C) 2017-2019 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -24,13 +24,12 @@
 #ifndef JOBDISPATCHER_H
 #define JOBDISPATCHER_H
 
-#include "testcase.h"
 #include "job.h"
+#include "testcase.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QList>
 #include <QtCore/QString>
-#include <QtCore/QVector>
 #include <QtCore/QVariantMap>
 
 class Project;
@@ -40,29 +39,24 @@ class JobDispatcher : public QObject
     Q_OBJECT
     Q_DISABLE_COPY(JobDispatcher)
 public:
-    JobDispatcher(const QVariantMap& project, const QString& workDirPath);
-    QString errorString() const;
-    bool hasError() const;
+    JobDispatcher(const QVariantMap& project);
     QList<Testcase::Result> results() const;
 
 public slots:
     void dispatch(Job job);
 
 signals:
-    void finished(Job);
+    void errorOccured(QString message);
+    void finished(Job job);
 
 private:
-    void createProjectWorkingDirectory(const QString& dirPath);
     QString createTestcaseWorkingDirectory(const QString& name);
 
-    QString m_errorString;
     QVariantMap m_project;
+    QDir m_projectWorkingDirectory;
     QList<Testcase::Result> m_results;
-    QDir m_workingDirectory;
 };
 
-inline QString JobDispatcher::errorString() const { return m_errorString; }
-inline bool JobDispatcher::hasError() const { return !m_errorString.isEmpty(); }
 inline QList<Testcase::Result> JobDispatcher::results() const { return m_results; }
 
 #endif // JOBRUNNER_H

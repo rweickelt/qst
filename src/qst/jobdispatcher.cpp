@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017, 2018 The Qst project.
+ ** Copyright (C) 2017-2019 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -25,37 +25,13 @@
 #include "tag.h"
 #include "qst.h"
 
-#include <algorithm>
-#include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtQml/QQmlProperty>
 
-#include <QtDebug>
-
-JobDispatcher::JobDispatcher(const QVariantMap& project, const QString& workDirPath)
-    : m_project(project), m_workingDirectory(workDirPath)
+JobDispatcher::JobDispatcher(const QVariantMap& project)
+    : m_project(project), m_projectWorkingDirectory(project["workingDirectory"].toString())
 {
-    if (!QFileInfo::exists(workDirPath))
-    {
-        if (!QDir().mkpath(workDirPath))
-        {
-            m_errorString = QString("Could not create working directory '%1'.").arg(workDirPath);
-            return;
-        }
-    }
-    else if (!QFileInfo(workDirPath).isDir())
-    {
-        m_errorString = QString("Working directory path '%1' is not a valid directory.").arg(workDirPath);
-        return;
-    }
-    else
-    {
-        if (!QFileInfo(workDirPath).isWritable())
-        {
-            m_errorString = QString("Working directory '%1' is not writable.").arg(workDirPath);
-            return;
-        }
-    }
+
 }
 
 void JobDispatcher::dispatch(Job job)
@@ -100,7 +76,27 @@ void JobDispatcher::dispatch(Job job)
 
 QString JobDispatcher::createTestcaseWorkingDirectory(const QString& name)
 {
-    QDir testcaseWorkDir(m_workingDirectory.absoluteFilePath(name));
+    QString workDirPath = m_projectWorkingDirectory.absolutePath();
+    if (!QFileInfo::exists(workDirPath))
+    {
+        if (!QDir().mkpath(workDirPath))
+        {
+            QST_ERROR_AND_EXIT(QString("Could not create working directory '%1'.").arg(workDirPath));
+        }
+    }
+    else if (!QFileInfo(workDirPath).isDir())
+    {
+        QST_ERROR_AND_EXIT(QString("Working directory path '%1' is not a valid directory.").arg(workDirPath));
+    }
+    else
+    {
+        if (!QFileInfo(workDirPath).isWritable())
+        {
+            QST_ERROR_AND_EXIT(QString("Working directory '%1' is not writable.").arg(workDirPath));
+        }
+    }
+
+    QDir testcaseWorkDir(m_projectWorkingDirectory.absoluteFilePath(name));
 
     if (testcaseWorkDir.exists())
     {
@@ -111,7 +107,7 @@ QString JobDispatcher::createTestcaseWorkingDirectory(const QString& name)
         }
     }
 
-    if ((!m_workingDirectory.mkdir(name)))
+    if ((!m_projectWorkingDirectory.mkdir(name)))
     {
         QST_ERROR_AND_EXIT(QString("Could not create working directory '%1'.")
                             .arg(testcaseWorkDir.absolutePath()));
