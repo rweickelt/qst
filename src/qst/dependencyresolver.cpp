@@ -258,7 +258,7 @@ void DependencyResolver::completeResolve(const JobTable& jobs)
     for (auto& currentJob: jobs.values())
     {
         TagSet ourTags = currentJob.tags();
-        currentJob.testcase()->setTags(ourTags);
+        m_testcases[currentJob.name()]->setTags(ourTags);
 
         // All job classes we are depending on
         QSet<QString> dependencyNames = m_testcaseGraph.predecessors(currentJob.name()).toSet();
@@ -324,7 +324,7 @@ void DependencyResolver::completeResolve(const JobTable& jobs)
                                 }
                                 return strings.join(' ');
                             };
-                            QmlContext context = qst::qmlDefinitionContext(currentJob.testcase());
+                            QmlContext context = qst::qmlDefinitionContext(m_testcases[currentJob.name()]);
                             QString message = QString("At %1:%2: Cannot create one-to-one relation between %3 (%4) and %5 because the tags don't match any job.")
                                     .arg(context.file()).arg(context.line())
                                     .arg(currentJob.name())

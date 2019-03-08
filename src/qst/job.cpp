@@ -36,27 +36,12 @@ struct JobData
     QMap<QString, QVariantList> dependenciesData;
     QString name;
     QString filePath;
-    Testcase* testcase;
     Testcase::Result result;
     TagSet tags;
     QVariantMap exports;
 };
 
 namespace {
-//    class JobTable
-//    {
-
-//    public:
-//        void insert(const Job& job);
-//        Job value(const QString& name, const QList<Tag>& tags);
-//        QList<Job> values(const QString& name, const QList<Tag>& tags);
-
-//    private:
-//        QVector<Job> m_jobs;
-//    };
-
-//    JobTable jobs;
-
     QVector<JobData> jobs;
 }
 
@@ -105,23 +90,12 @@ TagSet Job::tags() const
     return jobs[m_id].tags;
 }
 
-Testcase* Job::testcase()
-{
-    return jobs[m_id].testcase;
-}
-
-Testcase* Job::testcase() const
-{
-    return jobs[m_id].testcase;
-}
-
 Job Job::create(Testcase* testcase, const TagSet& tags)
 {
     JobData data;
     data.exports = testcase->exportsItem() ? testcase->exportsItem()->toVariantMap() : QVariantMap{};
     data.name = testcase->name();
     data.filePath = testcase->filepath();
-    data.testcase = testcase;
     data.tags = tags;
     jobs.append(data);
 

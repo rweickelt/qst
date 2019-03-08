@@ -52,8 +52,6 @@ public:
     QString name() const;
     Testcase::Result result() const;
     TagSet tags() const;
-    Testcase* testcase();
-    Testcase* testcase() const;
     QVariantMap exports() const;
     void setExports(const QVariantMap& data);
     void setResult(Testcase::Result result);
