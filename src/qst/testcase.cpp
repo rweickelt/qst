@@ -437,9 +437,19 @@ void Testcase::setWorkingDirectory(const QString& path)
 // Work-around for https://bugreports.qt.io/browse/QTBUG-69075
 // Instead of making the Exports item's content available under 'name' directly,
 // we use an intermediate 'dependencies' property.
-void Testcase::attachDependencyExport(const QString& name, const QVariant& values)
+void Testcase::setDependencyData(const QMap<QString, QVariantList>& data)
 {
-    m_dependencies[name] = values;
+    QStringList names = data.keys();
+    for (const auto& name: names)
+    {
+        m_dependencies.insert(name, data[name]);
+    }
+    emit dependenciesChanged();
+}
+
+void Testcase::setDependencyData(const QString& name, const QVariantList& data)
+{
+    m_dependencies.insert(name, data);
     emit dependenciesChanged();
 }
 

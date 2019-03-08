@@ -214,7 +214,7 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
                 {
                     aliasName = dependsItem->alias();
                 }
-                dependentTestcase->attachDependencyExport(aliasName, exports);
+                dependentTestcase->setDependencyData(aliasName, exports.toVariantList());
             }
         }
     }

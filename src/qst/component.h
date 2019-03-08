@@ -48,6 +48,7 @@ public:
     QString filepath() const;
     Testcase* testCase();
     const Testcase* testCase() const;
+    static void resetInstancesCounter();
 
 signals:
     void nameChanged(const QString &objectName);

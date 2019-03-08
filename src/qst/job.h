@@ -44,6 +44,8 @@ public:
     using Id = int;
     enum { InvalidId = -1 };
 
+    QMap<QString, QVariantList> dependenciesData() const;
+    void setDependenciesData(const QMap<QString, QVariantList>& data);
     bool isValid() const;
     Id id() const;
     QString filePath() const;

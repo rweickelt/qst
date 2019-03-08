@@ -28,6 +28,7 @@
 
 #include <QtCore/QDir>
 #include <QtCore/QString>
+#include <QtQml/QQmlEngine>
 
 class ProjectDatabase;
 
@@ -37,6 +38,7 @@ class JobDispatcher : public QObject
     Q_DISABLE_COPY(JobDispatcher)
 public:
     JobDispatcher(const ProjectDatabase& db);
+    ~JobDispatcher();
 
 public slots:
     void dispatch(Job job);
@@ -46,8 +48,10 @@ signals:
 
 private:
     QString createTestcaseWorkingDirectory(const QString& name);
+    static QVariantMap parseExports(Exports* item);
 
     const ProjectDatabase& m_db;
+    QQmlEngine m_engine;
     QDir m_projectWorkingDirectory;
 };
 

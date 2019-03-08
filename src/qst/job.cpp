@@ -33,6 +33,7 @@
  */
 struct JobData
 {
+    QMap<QString, QVariantList> dependenciesData;
     QString name;
     QString filePath;
     Testcase* testcase;
@@ -57,6 +58,16 @@ namespace {
 //    JobTable jobs;
 
     QVector<JobData> jobs;
+}
+
+QMap<QString, QVariantList> Job::dependenciesData() const
+{
+    return jobs[m_id].dependenciesData;
+}
+
+void Job::setDependenciesData(const QMap<QString, QVariantList>& data)
+{
+    jobs[m_id].dependenciesData = data;
 }
 
 QVariantMap Job::exports() const

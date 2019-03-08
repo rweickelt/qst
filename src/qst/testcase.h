@@ -126,7 +126,8 @@ public:
     State state() const;
     QString workingDirectory() const;
 
-    void attachDependencyExport(const QString& name, const QVariant& values);
+    void setDependencyData(const QString& name, const QVariantList& data);
+    void setDependencyData(const QMap<QString, QVariantList>& data);
     Exports* exportsItem() const;
 
     static TestcaseAttached* qmlAttachedProperties(QObject *);

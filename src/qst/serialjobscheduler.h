@@ -58,7 +58,6 @@ signals:
     void jobReady(Job job);
 
 private:
-    static QVariantMap parseExports(Exports* item);
 
     QList<Job> m_todo;
     QList<Job> m_done;
