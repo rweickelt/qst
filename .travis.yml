@@ -113,7 +113,7 @@ jobs:
             tags: true
         - provider: script
           skip_cleanup: true
-          script: curl --upload-file $TRAVIS_BUILD_DIR/$FILE https://transfer.sh/$FILE
+          script: curl -F'file=@$TRAVIS_BUILD_DIR/$FILE' https://0x0.st
           on:
             condition: $TRAVIS_TAG = ""
             all_branches: true
@@ -135,7 +135,7 @@ jobs:
             tags: true
         - provider: script
           skip_cleanup: true
-          script: curl --upload-file $TRAVIS_BUILD_DIR/$FILE https://transfer.sh/$FILE
+          script: curl -F'file=@$TRAVIS_BUILD_DIR/$FILE' https://0x0.st
           on:
             condition: $TRAVIS_TAG = ""
             all_branches: true
