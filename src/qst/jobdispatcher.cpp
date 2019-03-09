@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017, 2018 The Qst project.
+ ** Copyright (C) 2017-2019 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -21,44 +21,95 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
+
+#include "applicationoptions.h"
+#include "component.h"
+#include "exports.h"
 #include "jobdispatcher.h"
-#include "project.h"
+#include "projectdatabase.h"
 #include "tag.h"
+#include "testcase.h"
+#include "textfile.h"
 #include "qst.h"
 
-#include <algorithm>
-#include <QtCore/QCoreApplication>
-#include <QtCore/QDir>
+#include <QtCore/QFileInfo>
+#include <QtQml/QQmlContext>
 #include <QtQml/QQmlProperty>
+
+JobDispatcher::JobDispatcher(const ProjectDatabase& database)
+    : m_db(database)
+
+{
+    m_engine.setParent(this);
+    m_projectWorkingDirectory.setPath(m_db.project["workingDirectory"].toString());
+
+    for (const auto& path : ApplicationOptions::instance()->importPaths)
+    {
+        m_engine.addImportPath(path);
+    }
+    TextFile::registerJSType(&m_engine);
+}
+
+JobDispatcher::~JobDispatcher()
+{
+}
 
 #include <QtDebug>
 
-JobDispatcher::JobDispatcher(Project* project)
-    : m_project(project)
-{
-    createProjectWorkingDirectory();
-}
-
 void JobDispatcher::dispatch(Job job)
 {
-    QString name = job.testcase()->name();
+    QString name = job.name();
     QString displayName = name;
     QString workingDirectoryName = name;
     QList<Tag> tags = job.tags().toList();
     std::sort(tags.begin(), tags.end());
+
+    m_engine.rootContext()->setContextProperty("profile", m_db.profile);
+    m_engine.rootContext()->setContextProperty("project", m_db.project);
+    m_engine.rootContext()->setContextProperty("path", QFileInfo(job.filePath()).dir().absolutePath());
+
+    Component::resetInstancesCounter();
+    QQmlComponent component(&m_engine, job.filePath());
+    QstItem* rootItem = qobject_cast<QstItem*>(component.beginCreate(m_engine.rootContext()));
+    if (component.errors().length() > 0)
+    {
+        QST_ERROR_AND_EXIT(QString("Error while loading '%1': %2").arg(job.filePath()).arg(component.errorString()));
+    }
+
+    rootItem->afterClassBegin();
+    for (auto& item: rootItem->findChildren<QstItem*>())
+    {
+        item->afterClassBegin();
+    }
+
+    Testcase* testcase;
+    if (rootItem->objectName() == name)
+    {
+        testcase = qobject_cast<Testcase*>(rootItem);
+        Q_ASSERT(testcase != nullptr);
+    }
+    else
+    {
+        testcase = rootItem->findChild<Testcase*>(name);
+        if (testcase == nullptr)
+        {
+            QST_ERROR_AND_EXIT(QString("Error while loading '%1': Item '%2' not found").arg(job.filePath()).arg(name));
+        }
+    }
+
+    m_engine.rootContext()->setContextProperty("test", testcase);
 
     if (job.tags().size() > 0)
     {
         QStringList tagsStrings;
         for (const auto& tag: tags)
         {
-            const auto strings = tag.toPair();
-            tagsStrings << strings.second;
+            tagsStrings << tag.value();
 
-            QQmlProperty property(job.testcase(), strings.first);
+            QQmlProperty property(testcase, tag.label());
             Q_ASSERT(property.isProperty());
             Q_ASSERT(property.isWritable());
-            property.write(strings.second);
+            property.write(tag.value());
         }
 
         displayName = QString("%1 %2 [ %3 ]")
@@ -72,45 +123,52 @@ void JobDispatcher::dispatch(Job job)
     }
 
     QString workingDirectory = createTestcaseWorkingDirectory(workingDirectoryName);
-    job.testcase()->setWorkingDirectory(workingDirectory);
-    job.testcase()->setDisplayName(displayName);
+    testcase->setWorkingDirectory(workingDirectory);
+    testcase->setDisplayName(displayName);
 
-    m_results << job.testcase()->exec();
+    testcase->setDependencyData(job.dependenciesData());
+
+    component.completeCreate();
+    if (component.errors().length() > 0)
+    {
+        QST_ERROR_AND_EXIT(QString("Error while completing creation of '%1': %2").arg(job.filePath()).arg(component.errorString()));
+    }
+    rootItem->afterComponentComplete();
+
+    Testcase::Result result = testcase->exec();
+
+    job.setResult(result);
+    if (Exports* exports = testcase->exportsItem())
+    {
+        job.setExports(parseExports(exports));
+    }
 
     emit finished(job);
 }
 
-void JobDispatcher::createProjectWorkingDirectory()
+QString JobDispatcher::createTestcaseWorkingDirectory(const QString& name)
 {
-    QString workDirPath = m_project->workingDirectory();
-
-    if (!QFileInfo(workDirPath).exists())
+    QString workDirPath = m_projectWorkingDirectory.absolutePath();
+    if (!QFileInfo::exists(workDirPath))
     {
         if (!QDir().mkpath(workDirPath))
         {
-            m_errorString = QString("Could not create working directory '%1'.").arg(workDirPath);
-            return;
+            QST_ERROR_AND_EXIT(QString("Could not create working directory '%1'.").arg(workDirPath));
         }
     }
     else if (!QFileInfo(workDirPath).isDir())
     {
-        m_errorString = QString("Working directory path '%1' is not a valid directory.").arg(workDirPath);
-        return;
+        QST_ERROR_AND_EXIT(QString("Working directory path '%1' is not a valid directory.").arg(workDirPath));
     }
     else
     {
         if (!QFileInfo(workDirPath).isWritable())
         {
-            m_errorString = QString("Working directory '%1' is not writable.").arg(workDirPath);
-            return;
+            QST_ERROR_AND_EXIT(QString("Working directory '%1' is not writable.").arg(workDirPath));
         }
     }
-}
 
-QString JobDispatcher::createTestcaseWorkingDirectory(const QString& name)
-{
-    QDir projectWorkDir(m_project->workingDirectory());
-    QDir testcaseWorkDir(projectWorkDir.absoluteFilePath(name));
+    QDir testcaseWorkDir(m_projectWorkingDirectory.absoluteFilePath(name));
 
     if (testcaseWorkDir.exists())
     {
@@ -121,7 +179,7 @@ QString JobDispatcher::createTestcaseWorkingDirectory(const QString& name)
         }
     }
 
-    if ((!projectWorkDir.mkdir(name)))
+    if ((!m_projectWorkingDirectory.mkdir(name)))
     {
         QST_ERROR_AND_EXIT(QString("Could not create working directory '%1'.")
                             .arg(testcaseWorkDir.absolutePath()));
@@ -130,3 +188,23 @@ QString JobDispatcher::createTestcaseWorkingDirectory(const QString& name)
     return testcaseWorkDir.absolutePath();
 }
 
+QVariantMap JobDispatcher::parseExports(Exports* item)
+{
+    const static QStringList ignoredProperties{ "objectName", "nestedComponents" };
+    QVariantMap result;
+    const QMetaObject *metaobject = item->metaObject();
+    int count = metaobject->propertyCount();
+    for (int i=0; i<count; ++i) {
+        QMetaProperty metaproperty = metaobject->property(i);
+        const char *name = metaproperty.name();
+
+        if (ignoredProperties.contains(QLatin1String(name)) || (!metaproperty.isReadable()))
+        {
+            continue;
+        }
+
+        QVariant value = item->property(name);
+        result[QLatin1String(name)] = value;
+    }
+    return result;
+}

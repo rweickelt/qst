@@ -62,6 +62,8 @@ QtApplication {
         "plaintextlogger.h",
         "profileloader.cpp",
         "profileloader.h",
+        "projectdatabase.cpp",
+        "projectdatabase.h",
         "projectresolver.cpp",
         "projectresolver.h",
         "projecttree.cpp",

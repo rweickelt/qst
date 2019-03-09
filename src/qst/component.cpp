@@ -27,10 +27,11 @@
 #include "qstitemvisitor.h"
 #include "testcase.h"
 
+#include <QtCore/QThreadStorage>
 #include <QtDebug>
 
 namespace {
-    QHash<QString, int> instancesCount;
+    QThreadStorage<QHash<QString, int> > instancesCount;
 }
 
 Component::Component(QObject* parent) : QstItem(parent)
@@ -82,7 +83,7 @@ void Component::handleParserEvent(QstItem::ParserEvent event)
             {
                 typeName = typeName.left(pos);
             }
-            int count = instancesCount[typeName]++;
+            int count = instancesCount.localData()[typeName]++;
             setObjectName(QString("%1-%2").arg(typeName.toLower()).arg(count));
         }
     }
@@ -92,3 +93,7 @@ void Component::handleParserEvent(QstItem::ParserEvent event)
     }
 }
 
+void Component::resetInstancesCounter()
+{
+    instancesCount.localData().clear();
+}

@@ -41,7 +41,7 @@ class DependencyResolver
 public:
     DependencyResolver();
     void beginResolve(const QList<QstDocument*>& documents);
-    void completeResolve(const JobLookupTable& jobs);
+    void completeResolve(const JobTable& jobs);
     DirectedGraph<Job, Dependency> jobGraph();
 
     QStringList errors() const { return m_errors; }

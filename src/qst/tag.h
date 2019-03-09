@@ -26,41 +26,29 @@
 #define TAG_H
 
 #include <QtCore/QList>
-#include <QtCore/QPair>
 #include <QtCore/QSet>
 #include <QtCore/QString>
 
 class Tag {
 public:
-    using Id = int;
+    using Id = qint64;
+    friend uint qHash(const Tag& tag);
 
-    Id id() const;
     QString label() const;
     QString value() const;
 
     static Tag create(const QString& label, const QString& value);
-    QPair<QString, QString> toPair() const;
-    QString toString() const;
 
     bool operator==(const Tag& other) const;
     bool operator<(const Tag& other) const;
 
 private:
-    Id m_id = -1;
+    qint32 m_labelId = -1;
+    qint32 m_valueId = -1;
 };
 
 uint qHash(const Tag& tag);
 
-inline Tag::Id Tag::id() const { return m_id; }
-
-inline bool Tag::operator==(const Tag& other) const { return m_id == other.m_id; }
-inline uint qHash(const Tag& tag) { return tag.id(); }
-
-class TagSet: public QSet<Tag>
-{
-public:
-    bool matches(const TagSet& other) const;
-    QStringList toStringList() const;
-};
+using TagSet = QSet<Tag>;
 
 #endif // TAG_H

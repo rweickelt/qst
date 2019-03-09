@@ -59,7 +59,8 @@ public:
     QList<QstDocument*> documents();
     QStringList errors() const;
     bool hasErrors() const;
-    Project* project();
+    QVariantMap project() const;
+    QString workDirPath() const;
 
     void beginLoad(const QString& rootfilepath);
     void completeLoad();

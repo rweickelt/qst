@@ -29,9 +29,6 @@
 #include "qstitemvisitor.h"
 #include "testcase.h"
 
-#include <QtQml/QQmlContext>
-#include <QtDebug>
-
 SerialJobScheduler::SerialJobScheduler(const DirectedGraph<Job, Dependency>& jobs, QObject* parent)
     : QObject(parent)
 {
@@ -40,13 +37,9 @@ SerialJobScheduler::SerialJobScheduler(const DirectedGraph<Job, Dependency>& job
 
 void SerialJobScheduler::onJobFinished(Job finishedJob)
 {
-    QString name = finishedJob.testcase()->name();
+    QString name = finishedJob.name();
     m_done.append(finishedJob);
-
-    if (Exports* exports = finishedJob.testcase()->exportsItem())
-    {
-        finishedJob.setExports(parseExports(exports));
-    }
+    m_results.append(finishedJob.result());
 
     for (const auto& dependent: m_dependencies.successors(finishedJob))
     {
@@ -62,24 +55,21 @@ void SerialJobScheduler::onJobFinished(Job finishedJob)
     {
         Job nextJob = m_readyList.takeFirst();
 
-        QMultiMap<QString, QVariant> multiDependencies;
+        QMap<QString, QVariantList> multiDependencies;
 
         for (const auto& predecessor: m_dependencies.predecessors(nextJob))
         {
-            if (!predecessor.testcase()->exportsItem())
+            if (predecessor.exports().isEmpty())
             {
                 continue;
             }
 
             Dependency dependency = m_dependencies.edge(predecessor, nextJob);
             QString alias = dependency.alias().isEmpty() ? dependency.name() : dependency.alias();
-            multiDependencies.insert(alias, predecessor.exports());
+            multiDependencies[alias].append(predecessor.exports());
         }
 
-        for (const auto& alias: multiDependencies.keys())
-        {
-            nextJob.testcase()->attachDependencyExport(alias, multiDependencies.values(alias));
-        }
+        nextJob.setDependenciesData(multiDependencies);
 
         emit jobReady(nextJob);
         return;
@@ -118,25 +108,8 @@ void SerialJobScheduler::start()
     emit jobReady(m_readyList.takeFirst());
 }
 
-
-QVariantMap SerialJobScheduler::parseExports(Exports* item)
+QList<Testcase::Result> SerialJobScheduler::results() const
 {
-    const static QStringList ignoredProperties{ "objectName", "nestedComponents" };
-    QVariantMap result;
-    const QMetaObject *metaobject = item->metaObject();
-    int count = metaobject->propertyCount();
-    for (int i=0; i<count; ++i) {
-        QMetaProperty metaproperty = metaobject->property(i);
-        const char *name = metaproperty.name();
-
-        if (ignoredProperties.contains(QLatin1String(name)) || (!metaproperty.isReadable()))
-        {
-            continue;
-        }
-
-        QVariant value = item->property(name);
-        result[QLatin1String(name)] = value;
-    }
-    return result;
+    return m_results;
 }
 

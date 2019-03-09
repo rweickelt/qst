@@ -114,8 +114,6 @@ protected:
 
     virtual void callVisitor(QstItemVisitor* visitor) final;
 
-    Project* project() const;
-
 public:
     void setTags(const TagSet& tags);
     Testcase(QObject *parent = 0);
@@ -128,7 +126,8 @@ public:
     State state() const;
     QString workingDirectory() const;
 
-    void attachDependencyExport(const QString& name, const QVariant& values);
+    void setDependencyData(const QString& name, const QVariantList& data);
+    void setDependencyData(const QMap<QString, QVariantList>& data);
     Exports* exportsItem() const;
 
     static TestcaseAttached* qmlAttachedProperties(QObject *);
