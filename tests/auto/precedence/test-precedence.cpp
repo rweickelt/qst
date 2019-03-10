@@ -63,7 +63,7 @@ void test_precedence::inlineNontaggedDependsSingleTaggedOk()
 void test_precedence::inlineNontaggedDependsMultipleTaggedOk()
 {
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("inline-nontagged-depends-multiple-tagged-ok.qml"));
-    QCOMPARE(results().passCount(), 4);
+    QCOMPARE(results().passCount(), 5);
 }
 
 void test_precedence::inlineNontaggedDependsNontaggedWrongNameOk()
