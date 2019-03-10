@@ -35,6 +35,7 @@
 
 class Exports;
 class QstDocument;
+class Resource;
 
 class DependencyResolver
 {
@@ -49,11 +50,13 @@ public:
 
 private:
     friend class DependencyVisitor;
+    friend class ItemGatherVisitor;
 
+    QMap<QString, Resource*> m_resources;
     QMap<QString, Testcase*> m_testcases;
-//    QMultiMap<QString, Depends*> m_dependencies;
     QHash<QString, Exports*> m_exports;
 
+    DirectedGraph<QString, Depends*> m_resourceGraph;
     DirectedGraph<QString, Depends*> m_testcaseGraph;
     DirectedGraph<Job, Dependency> m_jobGraph;
     QStringList m_errors;

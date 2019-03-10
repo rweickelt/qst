@@ -43,6 +43,7 @@
 #include "projectdatabase.h"
 #include "projectresolver.h"
 #include "proxylogger.h"
+#include "resource.h"
 #include "qst.h"
 #include "serialjobscheduler.h"
 #include "testcase.h"
@@ -130,6 +131,7 @@ void execRunCommand()
     qmlRegisterType<PinProbe>("qst", 1,0, "PinProbe");
     qmlRegisterType<ProcessProbe>("qst", 1,0, "ProcessProbe");
     qmlRegisterType<Project>("qst", 1,0, "Project");
+    qmlRegisterType<Resource>("qst", 1,0, "Resource");
     qmlRegisterType<QstService>("qst", 1, 0, "QstService");
     qmlRegisterUncreatableType<TextFile>("qst", 1, 0, "TextFile", "TextFile can only be created in a JS context");
 

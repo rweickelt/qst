@@ -52,6 +52,7 @@ protected:
     virtual void visit(Exports* item) final;
     virtual void visit(Matrix* item) final;
     virtual void visit(Project* item) final;
+    virtual void visit(Resource* item) final;
     virtual void visit(Testcase* item) final;
 
 private:

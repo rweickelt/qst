@@ -126,7 +126,10 @@ void JobDispatcher::dispatch(Job job)
     testcase->setWorkingDirectory(workingDirectory);
     testcase->setDisplayName(displayName);
 
-    testcase->setDependencyData(job.dependenciesData());
+    if (!job.dependenciesData().isEmpty())
+    {
+        testcase->setDependencyData(job.dependenciesData());
+    }
 
     component.completeCreate();
     if (component.errors().length() > 0)

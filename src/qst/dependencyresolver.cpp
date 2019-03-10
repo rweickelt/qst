@@ -30,6 +30,7 @@
 #include "qst.h"
 #include "qstdocument.h"
 #include "qstitemvisitor.h"
+#include "resource.h"
 #include "testcase.h"
 
 #include <QtCore/QRegularExpression>
@@ -41,6 +42,19 @@
 namespace {
     QRegularExpression jsIdentifierPattern = QRegularExpression("^[A-Za-z][\\w]*$");
 }
+
+class ItemGatherVisitor: public QstItemVisitor
+{
+    Q_DISABLE_COPY(ItemGatherVisitor)
+public:
+    ItemGatherVisitor(DependencyResolver&);
+
+protected:
+    virtual void visit(Resource* item) final;
+    virtual void visit(Testcase* item) final;
+
+    DependencyResolver& m_resolver;
+};
 
 class DependencyVisitor : public QstItemVisitor
 {
@@ -54,10 +68,26 @@ protected:
     virtual void visit(Exports* item) final;
     virtual void visit(Testcase* item) final;
 
-private:
     DependencyResolver& m_resolver;
     Testcase* m_currentTestcase = nullptr;
 };
+
+ItemGatherVisitor::ItemGatherVisitor(DependencyResolver& resolver)
+    : m_resolver(resolver)
+{
+}
+
+void ItemGatherVisitor::visit(Resource* item)
+{
+    m_resolver.m_resources.insert(item->name(), item);
+    m_resolver.m_resourceGraph.insertNode(item->name());
+}
+
+void ItemGatherVisitor::visit(Testcase* item)
+{
+    m_resolver.m_testcases.insert(item->name(), item);
+    m_resolver.m_testcaseGraph.insertNode(item->name());
+}
 
 DependencyVisitor::DependencyVisitor(DependencyResolver& resolver)
     : m_resolver(resolver)
@@ -66,7 +96,49 @@ DependencyVisitor::DependencyVisitor(DependencyResolver& resolver)
 
 void DependencyVisitor::visit(Depends* item)
 {
-    m_resolver.m_testcaseGraph.insertEdge(item->name(), m_currentTestcase->name(), item);
+    if (m_resolver.m_testcases.contains(item->name()))
+    {
+        m_resolver.m_testcaseGraph.insertEdge(item->name(), m_currentTestcase->name(), item);
+    }
+    else if (m_resolver.m_resources.contains(item->name()))
+    {
+        m_resolver.m_resourceGraph.insertEdge(item->name(), m_currentTestcase->name(), item);
+    }
+    else
+    {
+        QmlContext context = qst::qmlDefinitionContext(item);
+        QString message = QString("%1:%2: The property name '%3' is neither an existing testcase nor resource.")
+                .arg(context.file()).arg(context.line())
+                .arg(item->name());
+        m_resolver.m_errors << message;
+    }
+
+    if (item->name().isEmpty())
+    {
+        QmlContext context = qst::qmlDefinitionContext(item);
+        QString message = QString("%1:%2: The name must not be empty.")
+                .arg(context.file()).arg(context.line());
+        m_resolver.m_errors << message;
+        return;
+    }
+    else if ((!item->alias().isEmpty()) && (!jsIdentifierPattern.match(item->alias()).hasMatch()))
+    {
+        QmlContext context = qst::qmlDefinitionContext(item);
+        QString message = QString("%2:%3: The alias '%1' must be a valid JavaScript identifier.")
+                .arg(item->alias())
+                .arg(context.file()).arg(context.line());
+        m_resolver.m_errors << message;
+        return;
+    }
+    else if ((item->alias().isEmpty()) && (!jsIdentifierPattern.match(item->name()).hasMatch()))
+    {
+        QmlContext context = qst::qmlDefinitionContext(item);
+        QString message = QString("%2:%3: The name '%1' must be a valid JavaScript identifier when no alias is defined.")
+                .arg(item->name())
+                .arg(context.file()).arg(context.line());
+        m_resolver.m_errors << message;
+        return;
+    }
 }
 
 void DependencyVisitor::visit(Exports* item)
@@ -77,13 +149,10 @@ void DependencyVisitor::visit(Exports* item)
 void DependencyVisitor::visit(Testcase* item)
 {
     m_currentTestcase = item;
-    m_resolver.m_testcases.insert(item->name(), item);
-    m_resolver.m_testcaseGraph.insertNode(item->name());
 }
 
 DependencyResolver::DependencyResolver()
 {
-
 }
 
 void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
@@ -93,48 +162,16 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
         return;
     }
 
-    DependencyVisitor visitor(*this);
+    ItemGatherVisitor v1(*this);
     for (auto& document: documents)
     {
-        document->object->accept(&visitor);
+        document->object->accept(&v1);
     }
 
-    QSet<QString> tcNames = m_testcaseGraph.nodes().toSet();
-
-    // Basic sanity checks on Depends item
-    for (const auto& depends: m_testcaseGraph.edges())
+    DependencyVisitor v2(*this);
+    for (auto& document: documents)
     {
-        if (depends->name().isEmpty())
-        {
-            QmlContext context = qst::qmlDefinitionContext(depends);
-            QString message = QString("%1:%2: The name must not be empty.")
-                    .arg(context.file()).arg(context.line());
-            m_errors << message;
-        }
-        else if ((!depends->alias().isEmpty()) && (!jsIdentifierPattern.match(depends->alias()).hasMatch()))
-        {
-            QmlContext context = qst::qmlDefinitionContext(depends);
-            QString message = QString("%2:%3: The alias '%1' must be a valid JavaScript identifier.")
-                    .arg(depends->alias())
-                    .arg(context.file()).arg(context.line());
-            m_errors << message;
-        }
-        else if ((depends->alias().isEmpty()) && (!jsIdentifierPattern.match(depends->name()).hasMatch()))
-        {
-            QmlContext context = qst::qmlDefinitionContext(depends);
-            QString message = QString("%2:%3: The name '%1' must be a valid JavaScript identifier when no alias is defined.")
-                    .arg(depends->name())
-                    .arg(context.file()).arg(context.line());
-            m_errors << message;
-        }
-        else if (!tcNames.contains(depends->name()))
-        {
-            QmlContext context = qst::qmlDefinitionContext(depends);
-            QString message = QString("%1:%2: The name '%3' is not an existing testcase.")
-                    .arg(context.file()).arg(context.line())
-                    .arg(depends->name());
-            m_errors << message;
-        }
+        document->object->accept(&v2);
     }
 
     if (hasErrors())
@@ -188,47 +225,56 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
         return;
     }
 
+    QSet<QString> tcNames = m_testcaseGraph.nodes().toSet();
+
     // Attach preliminary exports item to all dependents so that
     // QML engine can create bindings in dependents.
-    for (const auto& tcName: tcNames)
-    {
-        Exports* exportItem = m_exports.value(tcName);
-        if (!exportItem)
-        {
-            continue;
-        }
+//    for (const auto& tcName: tcNames)
+//    {
+//        Exports* exportItem = m_exports.value(tcName);
+//        if (!exportItem)
+//        {
+//            continue;
+//        }
 
-        // Put the exports item into a list because we do that
-        // later for all dependencies as well.
-        QJsonArray exports;
-        exports.append(QJsonValue::fromVariant(exportItem->toVariantMap()));
+//        // Put the exports item into a list because we do that
+//        // later for all dependencies as well.
+//        QVariantList exports;
+//        exports << exportItem->toVariantMap();
 
-        for (const auto& dependentTcName: m_testcaseGraph.successors(tcName).toSet())
-        {
-            Testcase* dependentTestcase = m_testcases.value(dependentTcName);
-            QList<Depends*> dependsItems = m_testcaseGraph.edges(tcName, dependentTcName);
-            for (const auto& dependsItem: dependsItems)
-            {
-                QString aliasName = tcName;
-                if (!dependsItem->alias().isEmpty())
-                {
-                    aliasName = dependsItem->alias();
-                }
-                dependentTestcase->setDependencyData(aliasName, exports.toVariantList());
-            }
-        }
-    }
+//        for (const auto& dependentTcName: m_testcaseGraph.successors(tcName).toSet())
+//        {
+//            Testcase* dependentTestcase = m_testcases.value(dependentTcName);
+//            QList<Depends*> dependsItems = m_testcaseGraph.edges(tcName, dependentTcName);
+//            for (const auto& dependsItem: dependsItems)
+//            {
+//                QString aliasName = tcName;
+//                if (!dependsItem->alias().isEmpty())
+//                {
+//                    aliasName = dependsItem->alias();
+//                }
+//                dependentTestcase->setDependencyData(aliasName, exports);
+//            }
+//        }
+//    }
+
+    // Attach preliminary resources to all dependent test cases so that
+    // QML engine can create bindings in dependents
 }
 
 /*
 1. We have a dependency tree m_testcaseGraph that specifies generic
    dependencies between testcases (job classes).
 
+2. We have a depndency tree m_resourceGraph that specifies dependencies
+   between resources and testcases (job classes).
+
 2. We have a job table with all job instances and their
    respective tags.
 
-Now we need to find out which job instance depends on which other job.
-Therefore, we need to go through all jobs and:
+Now we need to find out which job instance depends on which other job
+and whether the amount of resource instances per dependency can be
+satisfied. Therefore, we need to go through all jobs and:
 
 3. Apply its assigned tags to reevaluate bindings in that job.
    That is necessary because Depends item may change content
@@ -353,5 +399,4 @@ void DependencyResolver::completeResolve(const JobTable& jobs)
         }
     }
 }
-
 
