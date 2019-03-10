@@ -1,7 +1,7 @@
 import qst 1.0
 
 Matrix {
-    testcases: [
+    names: [
         "testcase"
     ]
 

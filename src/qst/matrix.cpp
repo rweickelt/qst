@@ -64,7 +64,7 @@ void Matrix::handleParserEvent(QstItem::ParserEvent event)
         if (m_scope == TestcaseScope)
         {
             Testcase* test = qobject_cast<Testcase*>(parent());
-            m_testcases = QStringList{ test->name() };
+            m_names = QStringList{ test->name() };
         }
     default:
         break;
@@ -80,6 +80,6 @@ void Matrix::setTestcases(const QStringList& names)
                 .arg(context.file()).arg(context.line());
         QST_ERROR_AND_EXIT(message);
     }
-    m_testcases = names;
+    m_names = names;
     emit testcasesChanged();
 }

@@ -18,7 +18,7 @@ Matrix Item
     :cpp:class:`Dimension`
 
 :Properties:
-    :cpp:member:`testcases`
+    :cpp:member:`names`
 
 
 Detailed Description
@@ -30,7 +30,7 @@ The |Matrix| item allows to implement data-driven tests and to separate
 implementation from input data. It spans a space of values based on one or more
 |Dimension| items. The resulting value combinations are called tags. Each tag
 may be applied to one or more test cases depending on the
-:cpp:member:`testcases` property.
+:cpp:member:`names` property.
 
 ..  literalinclude:: code/reference/matrix-project.qml
     :caption: matrix-project.qml
@@ -64,22 +64,24 @@ command line:
 ..  code-block:: console
 
     $ qst run -f matrix-project.qml
+    INFO, tagged-test 0000000 [ dog bites ], , /matrix-project.qml:28, The dog bites.
+    PASS, tagged-test 0000000 [ dog bites ],,,
+    INFO, tagged-test 0000001 [ cat bites ], , /matrix-project.qml:28, The cat bites.
+    PASS, tagged-test 0000001 [ cat bites ],,,
+    INFO, tagged-test 0000002 [ dog moans ], , /matrix-project.qml:28, The dog moans.
+    PASS, tagged-test 0000002 [ dog moans ],,,
+    INFO, tagged-test 0000003 [ cat moans ], , /matrix-project.qml:28, The cat moans.
+    PASS, tagged-test 0000003 [ cat moans ],,,
     PASS, normal-test,,,
-    INFO, tagged-test 1ms2r6i [ cat moans ], , /matrix-project.qml:27, The cat moans.
-    PASS, tagged-test 1ms2r6i [ cat moans ],,,
-    INFO, tagged-test 17tca19 [ dog bites ], , /matrix-project.qml:27, The dog bites.
-    PASS, tagged-test 17tca19 [ dog bites ],,,
-    INFO, tagged-test 0ni1i5d [ cat bites ], , /matrix-project.qml:27, The cat bites.
-    PASS, tagged-test 0ni1i5d [ cat bites ],,,
-    INFO, tagged-test 07cs7hy [ dog moans ], , /matrix-project.qml:27, The dog moans.
-    PASS, tagged-test 07cs7hy [ dog moans ],,,
+
+
 
 
 Matrix in :cpp:class:`Project` and in :cpp:class:`Testcase`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A |Matrix| can be defined on two levels: on project level and on test case
-level. When defined in project scope, the :cpp:member:`testcases` property
+level. When defined in project scope, the :cpp:member:`names` property
 specifies, to which test cases the |Matrix| applies. When defined inside a
 :cpp:class:`Testcase` item, the |Matrix| implicitly applies to the surrounding
 test case only.
@@ -122,14 +124,14 @@ and tags.
 
     // Matrices shadow each other.
     Matrix {
-        testcases: "*"
+        names: "*"
         Dimension {
             color: [ "red", "blue" ]
         }
     }
 
     Matrix {
-        testcases: "*"
+        names: "*"
         Dimension {
             color: [ "red", "blue" ]
         }
@@ -143,14 +145,14 @@ and tags.
 
     // Matrices are compatible.
     Matrix {
-        testcases: "*"
+        names: "*"
         Dimension {
             color: [ "orange", "green" ]
         }
     }
 
     Matrix {
-        testcases: "*"
+        names: "*"
         Dimension {
             color: [ "red", "blue" ]
         }
@@ -172,7 +174,7 @@ Properties
 
     Example::
 
-      testcases : [
+      names : [
           "sometest", // Matches only "sometest"
           "test-*",   // Matches any testcase starting with "test-"
           "tc-??",    // Matches any testcase starting with "tc-" followed

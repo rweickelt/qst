@@ -9,7 +9,7 @@ Project {
         Dimension {
             config: [ "debug", "release" ]
         }
-        testcases: [
+        names: [
             "A",
             "implicit"
         ]

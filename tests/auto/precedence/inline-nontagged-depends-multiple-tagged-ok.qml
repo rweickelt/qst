@@ -10,7 +10,7 @@ Project {
             ]
         }
 
-        testcases: [
+        names: [
             "level1"
         ]
     }
@@ -70,8 +70,10 @@ Project {
             var values = []
             values.push(dependencies.level1[0].value)
             values.push(dependencies.level1[1].value)
+            values.push(dependencies.level1[2].value)
             Qst.verify(values.indexOf("tag1") > -1)
             Qst.verify(values.indexOf("tag2") > -1)
+            Qst.verify(values.indexOf("tag3") > -1)
         }
     }
 

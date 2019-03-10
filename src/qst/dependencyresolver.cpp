@@ -30,7 +30,7 @@
 #include "qst.h"
 #include "qstdocument.h"
 #include "qstitemvisitor.h"
-#include "resource.h"
+#include "resourceitem.h"
 #include "testcase.h"
 
 #include <QtCore/QRegularExpression>
@@ -50,7 +50,7 @@ public:
     ItemGatherVisitor(DependencyResolver&);
 
 protected:
-    virtual void visit(Resource* item) final;
+    virtual void visit(ResourceItem* item) final;
     virtual void visit(Testcase* item) final;
 
     DependencyResolver& m_resolver;
@@ -77,7 +77,7 @@ ItemGatherVisitor::ItemGatherVisitor(DependencyResolver& resolver)
 {
 }
 
-void ItemGatherVisitor::visit(Resource* item)
+void ItemGatherVisitor::visit(ResourceItem* item)
 {
     m_resolver.m_resources.insert(item->name(), item);
     m_resolver.m_resourceGraph.insertNode(item->name());

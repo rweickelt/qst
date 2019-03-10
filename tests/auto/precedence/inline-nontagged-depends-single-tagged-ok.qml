@@ -9,7 +9,7 @@ Project {
             ]
         }
 
-        testcases: [
+        names: [
             "level1*"
         ]
     }

@@ -1,36 +1,46 @@
-/****************************************************************************
- **
- ** Copyright (C) 2019 The Qst project.
- **
- ** Contact: https://github.com/rweickelt/qst
- **
- ** $BEGIN_LICENSE$
- **
- ** This program is free software: you can redistribute it and/or modify
- ** it under the terms of the GNU General Public License as published by
- ** the Free Software Foundation, either version 3 of the License, or
- ** (at your option) any later version.
-
- ** This program is distributed in the hope that it will be useful,
- ** but WITHOUT ANY WARRANTY; without even the implied warranty of
- ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- ** GNU General Public License for more details.
-
- ** You should have received a copy of the GNU General Public License
- ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
- **
- ** $END_LICENSE$
-****************************************************************************/
-
 #include "resource.h"
-#include "qstitemvisitor.h"
 
-Resource::Resource(QObject* parent)
-    : QstItem(parent)
-{
+#include <QtCore/QVector>
+
+struct ResourceData {
+    QString name;
+    TagSet tags;
+    QVariantMap data;
+};
+
+namespace {
+QVector<ResourceData> resources;
 }
 
-void Resource::callVisitor(QstItemVisitor* visitor)
+QVariantMap Resource::data() const
 {
-    visitor->visit(this);
+    return resources[m_id].data;
+}
+
+QString Resource::name() const
+{
+    return resources[m_id].name;
+}
+
+void Resource::setData(const QVariantMap& data)
+{
+    resources[m_id].data = data;
+}
+
+TagSet Resource::tags() const
+{
+    return resources[m_id].tags;
+}
+
+Resource Resource::create(ResourceItem* item, const TagSet& tags)
+{
+    ResourceData data;
+    data.name = item->name();
+    data.tags = tags;
+
+    resources.append(data);
+
+    Resource resource;
+    resource.m_id = resources.length() - 1;
+    return resource;
 }

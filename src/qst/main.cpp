@@ -35,7 +35,7 @@
 #include "xds.h"
 #include "plaintextlogger.h"
 #include "matrix.h"
-#include "jobmultiplier.h"
+#include "matrixresolver.h"
 #include "pinprobe.h"
 #include "processprobe.h"
 #include "profileloader.h"
@@ -43,7 +43,7 @@
 #include "projectdatabase.h"
 #include "projectresolver.h"
 #include "proxylogger.h"
-#include "resource.h"
+#include "resourceitem.h"
 #include "qst.h"
 #include "serialjobscheduler.h"
 #include "testcase.h"
@@ -131,7 +131,7 @@ void execRunCommand()
     qmlRegisterType<PinProbe>("qst", 1,0, "PinProbe");
     qmlRegisterType<ProcessProbe>("qst", 1,0, "ProcessProbe");
     qmlRegisterType<Project>("qst", 1,0, "Project");
-    qmlRegisterType<Resource>("qst", 1,0, "Resource");
+    qmlRegisterType<ResourceItem>("qst", 1,0, "Resource");
     qmlRegisterType<QstService>("qst", 1, 0, "QstService");
     qmlRegisterUncreatableType<TextFile>("qst", 1, 0, "TextFile", "TextFile can only be created in a JS context");
 
@@ -173,8 +173,8 @@ void execRunCommand()
 
     // Create an overview over tags if defined and prepare
     // executable jobs.
-    JobMultiplier multiplier(projectResolver.documents());
-    CHECK_FOR_ERROR(multiplier);
+    MatrixResolver multiplier(projectResolver.documents());
+    CHECK_FOR_ERRORS(multiplier);
     JobTable jobs = multiplier.jobs();
 
     // Do more fine-grained dependency resolution, taking tags into account.

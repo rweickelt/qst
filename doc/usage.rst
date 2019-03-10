@@ -480,15 +480,15 @@ When executing above project, the command line output looks as follows:
 ..  code-block:: console
 
     $ qst run -f matrix-project.qml
+    INFO, tagged-test 0000000 [ dog bites ], , /matrix-project.qml:28, The dog bites.
+    PASS, tagged-test 0000000 [ dog bites ],,,
+    INFO, tagged-test 0000001 [ cat bites ], , /matrix-project.qml:28, The cat bites.
+    PASS, tagged-test 0000001 [ cat bites ],,,
+    INFO, tagged-test 0000002 [ dog moans ], , /matrix-project.qml:28, The dog moans.
+    PASS, tagged-test 0000002 [ dog moans ],,,
+    INFO, tagged-test 0000003 [ cat moans ], , /matrix-project.qml:28, The cat moans.
+    PASS, tagged-test 0000003 [ cat moans ],,,
     PASS, normal-test,,,
-    INFO, tagged-test 1ms2r6i [ cat moans ], , /matrix-project.qml:27, The cat moans.
-    PASS, tagged-test 1ms2r6i [ cat moans ],,,
-    INFO, tagged-test 17tca19 [ dog bites ], , /matrix-project.qml:27, The dog bites.
-    PASS, tagged-test 17tca19 [ dog bites ],,,
-    INFO, tagged-test 0ni1i5d [ cat bites ], , /matrix-project.qml:27, The cat bites.
-    PASS, tagged-test 0ni1i5d [ cat bites ],,,
-    INFO, tagged-test 07cs7hy [ dog moans ], , /matrix-project.qml:27, The dog moans.
-    PASS, tagged-test 07cs7hy [ dog moans ],,,
 
 
 Specifying dependencies between test cases

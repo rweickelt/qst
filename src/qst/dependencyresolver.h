@@ -35,7 +35,7 @@
 
 class Exports;
 class QstDocument;
-class Resource;
+class ResourceItem;
 
 class DependencyResolver
 {
@@ -52,7 +52,7 @@ private:
     friend class DependencyVisitor;
     friend class ItemGatherVisitor;
 
-    QMap<QString, Resource*> m_resources;
+    QMap<QString, ResourceItem*> m_resources;
     QMap<QString, Testcase*> m_testcases;
     QHash<QString, Exports*> m_exports;
 

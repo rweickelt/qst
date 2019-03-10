@@ -16,7 +16,7 @@ Project {
             ]
         }
 
-        testcases: [ "tagged-test" ]
+        names: [ "tagged-test" ]
     }
 
     Testcase {

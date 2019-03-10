@@ -4,7 +4,7 @@ Project {
     name: "wildcard"
 
     Matrix {
-        testcases: [
+        names: [
             "*test*"
         ]
 

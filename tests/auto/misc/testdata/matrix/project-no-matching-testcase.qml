@@ -4,7 +4,7 @@ Project {
     name: "no-matching-testcase"
 
     Matrix {
-        testcases: [
+        names: [
             "nothing",
         ]
 

@@ -10,7 +10,7 @@ Project {
             ]
         }
 
-        testcases: [
+        names: [
             "*"
         ]
     }

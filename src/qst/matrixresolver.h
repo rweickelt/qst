@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2018 The Qst project.
+ ** Copyright (C) 2019 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -22,12 +22,13 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
-#ifndef MATRIXEXPANDER_H
-#define MATRIXEXPANDER_H
+#ifndef MATRIXRESOLVER_H
+#define MATRIXRESOLVER_H
 
 #include "dimension.h"
-#include "tag.h"
 #include "job.h"
+#include "resource.h"
+#include "tag.h"
 
 #include <QtCore/QList>
 #include <QtCore/QMap>
@@ -35,65 +36,64 @@
 #include <QtCore/QVariantMap>
 
 class Matrix;
+class ResourceItem;
 class QstDocument;
-class Testcase;
+class QstItem;
 
-/* JobExpander:
+/* MatrixResolver:
      - takes a list of matrix descriptions and expands them
        to a 1-dimensional vector of property tag combinations.
 
-     - assigns tags to matching testcases based on the testcases
+     - assigns tags to matching items based on the names
        property in Matrix and creates fixtures for later execution.
 
-     - ensures that a test case is only part in max one matrix
+     - ensures that an item is only part in max one matrix
 
-     - property declarations in testcases match property tags in matrices
+     - property declarations in items match property tags in matrices
 
-   JobExpander assumes that:
+   MatrixResolver assumes that:
 
      - input data in dimensions has been tested for plausability
        (correct format, valid trivial values, no objecs etc.)
 
  */
-class JobMultiplier : private QstItemVisitor
-{
-    Q_DISABLE_COPY(JobMultiplier)
+class MatrixResolver : private QstItemVisitor {
+    Q_DISABLE_COPY(MatrixResolver)
 
 public:
-    JobMultiplier(const QList<QstDocument*>& documents);
-    QString errorString() const;
-    bool hasError() const;
+    MatrixResolver(const QList<QstDocument*>& documents);
+    QStringList errors() const;
+    bool hasErrors() const;
     JobTable jobs() const;
-
+    ResourceTable resources() const;
+    QMap<QString, QList<TagSet> > taggedItems() const;
 
 private:
     // Expands matrix with n dimensions into 1-dimensional vector with n columns
     static QList<TagSet> expand(const Matrix* matrix);
 
-    // Matches existing testcases against wildcard patterns
-    static QStringList match(const QStringList& testcases, const QStringList& patterns);
+    // Matches existing known items against wildcard patterns
+    static QStringList match(const QStringList& items, const QStringList& patterns);
 
-    // Creates a job table from a list of testcases and tags
-    QMultiMap<QString, Job> combine(const QStringList& testcases,
-                                        const QList<TagSet>& tags);
-
-    // Returns a filtered jobs table with all exceptions removed
-    static QMultiMap<QString, Job> removeExcluded(const QMultiMap<QString, Job>& jobs,
-                                                      const QStringList& patterns,       // = "Excepts" item
-                                                      const TagSet& tags); // = "Excepts" item
+    // Creates a look-up table from a list of named items and tags
+    QMultiMap<QString, TagSet> combine(const QSet<QString>& names, const QList<TagSet>& tags);
 
     virtual void visit(Matrix* item) final;
+    virtual void visit(ResourceItem* item) final;
     virtual void visit(Testcase* item) final;
 
-    QString m_errorString;
+    QStringList m_errorStrings;
     QList<Matrix*> m_matrices;
+    QMap<QString, QstItem*> m_items;
+    QMap<QString, ResourceItem*> m_resourceItems;
     QMap<QString, Testcase*> m_testcases;
     JobTable m_jobs;
+    ResourceTable m_resources;
 };
 
-inline QString JobMultiplier::errorString() const { return m_errorString; }
-inline bool JobMultiplier::hasError() const { return !m_errorString.isEmpty(); }
-inline JobTable JobMultiplier::jobs() const { return m_jobs; }
+inline QStringList MatrixResolver::errors() const { return m_errorStrings; }
+inline bool MatrixResolver::hasErrors() const { return !m_errorStrings.isEmpty(); }
+inline JobTable MatrixResolver::jobs() const { return m_jobs; }
+inline ResourceTable MatrixResolver::resources() const { return m_resources; }
 
-
-#endif // MATRIXEXPANDER_H
+#endif // MATRIXRESOLVER_H

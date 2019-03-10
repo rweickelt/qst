@@ -77,22 +77,22 @@ void test_precedence::inlineTaggedDependsNontaggedOk()
 {
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("inline-tagged-depends-nontagged-ok.qml"));
     QCOMPARE(results().passCount(), 4);
-    VERIFY_EXECUTION_ORDER({"level1", "level2 0000000 [ tag1 ]"});
+    VERIFY_EXECUTION_ORDER({"level1", "level2 0000000 [ tag3 ]"});
     VERIFY_EXECUTION_ORDER({"level1", "level2 0000001 [ tag2 ]"});
-    VERIFY_EXECUTION_ORDER({"level1", "level2 0000002 [ tag3 ]"});
+    VERIFY_EXECUTION_ORDER({"level1", "level2 0000002 [ tag1 ]"});
 }
 
 void test_precedence::inlineTaggedDependsSingleMatchingTaggedOk()
 {
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("inline-tagged-depends-single-matching-tagged-ok.qml"));
     QCOMPARE(results().passCount(), 4);
-    VERIFY_EXECUTION_ORDER({"level1 0000000 [ tag1 ]", "level2 0000002 [ tag1 ]"});
-    VERIFY_EXECUTION_ORDER({"level1 0000001 [ tag2 ]", "level2 0000003 [ tag2 ]"});
+    VERIFY_EXECUTION_ORDER({"level1 0000000 [ tag2 ]", "level2 0000002 [ tag2 ]"});
+    VERIFY_EXECUTION_ORDER({"level1 0000001 [ tag1 ]", "level2 0000003 [ tag1 ]"});
 
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("inline-tagged-depends-single-matching-tagged2-ok.qml"));
     QCOMPARE(results().passCount(), 4);
-    VERIFY_EXECUTION_ORDER({"level1 0000000 [ tag1 ]", "level2 0000002 [ tag1 ]"});
-    VERIFY_EXECUTION_ORDER({"level1 0000001 [ tag2 ]", "level2 0000003 [ tag2 ]"});
+    VERIFY_EXECUTION_ORDER({"level1 0000000 [ tag2 ]", "level2 0000002 [ tag2 ]"});
+    VERIFY_EXECUTION_ORDER({"level1 0000001 [ tag1 ]", "level2 0000003 [ tag1 ]"});
 }
 
 void test_precedence::inlineTaggedDependsMultipleTaggedOk()

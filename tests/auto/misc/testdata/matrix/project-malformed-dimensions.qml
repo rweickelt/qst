@@ -4,7 +4,7 @@ Project {
     name: "malformed-dimensions"
 
     Matrix {
-        testcases: [
+        names: [
             "testcase",
         ]
 

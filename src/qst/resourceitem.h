@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2018-2019 The Qst project.
+ ** Copyright (C) 2019 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -21,49 +21,31 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
-#ifndef MATRIX_H
-#define MATRIX_H
+
+#ifndef RESOURCEITEM_H
+#define RESOURCEITEM_H
 
 #include "qstitem.h"
 
-#include <QtCore/QObject>
-#include <QtCore/QStringList>
-#include <QtQml/QQmlListProperty>
-
-class Dimension;
-
-class Matrix : public QstItem
-{
+class ResourceItem : public QstItem {
     Q_OBJECT
-    Q_PROPERTY(QStringList names READ names WRITE setTestcases NOTIFY testcasesChanged)
-
-signals:
-    void testcasesChanged();
+    Q_PROPERTY(QString name READ objectName WRITE setObjectName NOTIFY nameChanged)
 
 public:
-    enum Scope {
-        ProjectScope,
-        TestcaseScope
-    };
-
-    Matrix(QObject* parent = nullptr);
+    ResourceItem(QObject* parent = nullptr);
     virtual const QMetaObject* baseTypeInfo() const final;
-    QList<Dimension*> dimensions() const;
-    QStringList names() const;
-    Scope scope() const;
-    void setTestcases(const QStringList& names);
+    QString name() const;
+
+signals:
+    void nameChanged(const QString &objectName);
 
 protected:
     virtual void callVisitor(QstItemVisitor* visitor) final;
-    void handleParserEvent(QstItem::ParserEvent event);
-
-private:
-    Scope m_scope;
-    QStringList m_names;
+    virtual void handleParserEvent(ParserEvent event) final { Q_UNUSED(event); }
 };
 
-inline const QMetaObject* Matrix::baseTypeInfo() const { return &Matrix::staticMetaObject; }
-inline Matrix::Scope Matrix::scope() const { return m_scope; }
-inline QStringList Matrix::names() const { return m_names; }
+inline const QMetaObject* ResourceItem::baseTypeInfo() const { return &ResourceItem::staticMetaObject; }
+inline QString ResourceItem::name() const { return objectName(); }
 
-#endif // MATRIX_H
+
+#endif // RESOURCEITEM_H
