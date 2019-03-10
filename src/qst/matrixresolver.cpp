@@ -46,7 +46,7 @@ MatrixResolver::MatrixResolver(const QList<QstDocument*>& documents)
     auto duplicates = m_testcases.keys().toSet().intersect(m_resourceItems.keys().toSet());
     for (const auto& name : duplicates) {
         QmlContext contextT = qst::qmlDefinitionContext(m_testcases[name]);
-        QmlContext contextR = qst::qmlDefinitionContext(m_resourceItems[name]);
+        QmlContext contextR = qst::qmlDefinitionContext(m_resourceItems.value(name));
         QString error = QString("Testcase at %1:%2 and Resource at %3:%4 have duplicate names.")
                 .arg(contextT.file())
                 .arg(contextT.line())
@@ -92,8 +92,11 @@ MatrixResolver::MatrixResolver(const QList<QstDocument*>& documents)
         combined = combine(selectedMatches, tags);
         for (auto i = combined.constBegin(); i != combined.constEnd(); i++) {
             QString name = i.key();
-            Resource resource = Resource::create(m_resourceItems[name], i.value());
-            m_resources.insert(name, resource);
+            for (const auto& item: m_resourceItems.values(name))
+            {
+                Resource resource = Resource::create(item, i.value());
+                m_resources.insert(name, resource);
+            }
         }
     }
 
@@ -120,7 +123,10 @@ MatrixResolver::MatrixResolver(const QList<QstDocument*>& documents)
     untaggedNames = allNames.subtract(usedNames);
     for (const auto& name : untaggedNames) {
         Q_ASSERT(!m_resources.contains(name));
-        m_resources.insert(name, Resource::create(m_resourceItems[name], TagSet()));
+        for (const auto& item: m_resourceItems.values(name))
+        {
+            m_resources.insert(name, Resource::create(item, TagSet()));
+        }
     }
 }
 
@@ -243,13 +249,13 @@ QMultiMap<QString, TagSet> MatrixResolver::combine(const QSet<QString>& names, c
 
 void MatrixResolver::visit(ResourceItem* item)
 {
-    m_resourceItems[item->name()] = item;
-    m_items[item->name()] = item;
+    m_resourceItems.insert(item->name(), item);
+    m_items.insert(item->name(), item);
 }
 
 void MatrixResolver::visit(Testcase* item)
 {
-    m_items[item->name()] = item;
+    m_items.insert(item->name(), item);
     m_testcases[item->name()] = item;
 }
 

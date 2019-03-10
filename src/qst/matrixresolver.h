@@ -84,8 +84,8 @@ private:
 
     QStringList m_errorStrings;
     QList<Matrix*> m_matrices;
-    QMap<QString, QstItem*> m_items;
-    QMap<QString, ResourceItem*> m_resourceItems;
+    QMultiMap<QString, QstItem*> m_items;
+    QMultiMap<QString, ResourceItem*> m_resourceItems;
     QMap<QString, Testcase*> m_testcases;
     JobTable m_jobs;
     ResourceTable m_resources;

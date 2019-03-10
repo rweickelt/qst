@@ -224,42 +224,6 @@ void DependencyResolver::beginResolve(const QList<QstDocument*> &documents)
     {
         return;
     }
-
-    QSet<QString> tcNames = m_testcaseGraph.nodes().toSet();
-
-    // Attach preliminary exports item to all dependents so that
-    // QML engine can create bindings in dependents.
-//    for (const auto& tcName: tcNames)
-//    {
-//        Exports* exportItem = m_exports.value(tcName);
-//        if (!exportItem)
-//        {
-//            continue;
-//        }
-
-//        // Put the exports item into a list because we do that
-//        // later for all dependencies as well.
-//        QVariantList exports;
-//        exports << exportItem->toVariantMap();
-
-//        for (const auto& dependentTcName: m_testcaseGraph.successors(tcName).toSet())
-//        {
-//            Testcase* dependentTestcase = m_testcases.value(dependentTcName);
-//            QList<Depends*> dependsItems = m_testcaseGraph.edges(tcName, dependentTcName);
-//            for (const auto& dependsItem: dependsItems)
-//            {
-//                QString aliasName = tcName;
-//                if (!dependsItem->alias().isEmpty())
-//                {
-//                    aliasName = dependsItem->alias();
-//                }
-//                dependentTestcase->setDependencyData(aliasName, exports);
-//            }
-//        }
-//    }
-
-    // Attach preliminary resources to all dependent test cases so that
-    // QML engine can create bindings in dependents
 }
 
 /*
