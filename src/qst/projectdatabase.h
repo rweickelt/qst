@@ -1,9 +1,15 @@
 #ifndef PROJECTDATABASE_H
 #define PROJECTDATABASE_H
 
-#include <QString>
-#include <QVariantMap>
+#include <QtCore/QMultiMap>
+#include <QtCore/QPair>
+#include <QtCore/QString>
+#include <QtCore/QVariantMap>
 
+#include "dependency.h"
+#include "directedgraph.h"
+#include "job.h"
+#include "resource.h"
 
 struct Action {
     int id;
@@ -12,10 +18,11 @@ struct Action {
     QVariantMap exports;
 };
 
-struct ProjectDatabase
-{
+struct ProjectDatabase {
     QVariantMap profile;
     QVariantMap project;
+    DirectedGraph<Job, Dependency> jobGraph;
+    QMultiMap<Job, QPair<Dependency, Resource> > resourcesPerJob;
 };
 
 /*

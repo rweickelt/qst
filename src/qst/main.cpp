@@ -176,18 +176,18 @@ void execRunCommand()
     // executable jobs.
     MatrixResolver multiplier(projectResolver.documents());
     CHECK_FOR_ERRORS(multiplier);
-    JobTable jobs = multiplier.jobs();
-    ResourceTable resources = multiplier.resources();
 
     // Do more fine-grained dependency resolution, taking tags into account.
-    dependencyResolver.completeResolve(jobs, resources);
+    dependencyResolver.completeResolve(multiplier.jobs(), multiplier.resources());
     CHECK_FOR_ERRORS(dependencyResolver);
+    db.resourcesPerJob = dependencyResolver.resourcesPerJob();
+    db.jobGraph = dependencyResolver.jobGraph();
 
     //Does the dirty work
     JobDispatcher dispatcher(db);
 
     // Schedules jobs one-by-one, taking dependency relations into account.
-    SerialJobScheduler scheduler(dependencyResolver.jobGraph());
+    SerialJobScheduler scheduler(&db);
     QEventLoop eventLoop;
 
     QObject::connect(&scheduler, &SerialJobScheduler::jobReady,

@@ -44,7 +44,8 @@ public:
     DependencyResolver();
     void beginResolve(const QList<QstDocument*>& documents);
     void completeResolve(const JobTable& jobs, const ResourceTable& resources);
-    DirectedGraph<Job, Dependency> jobGraph();
+    DirectedGraph<Job, Dependency> jobGraph() const;
+    QMultiMap<Job, QPair<Dependency, Resource> > resourcesPerJob() const;
 
     QStringList errors() const { return m_errors; }
     bool hasErrors() const { return !m_errors.isEmpty(); }
@@ -65,7 +66,11 @@ private:
     QStringList m_errors;
 };
 
-inline DirectedGraph<Job, Dependency> DependencyResolver::jobGraph() { return m_jobGraph; }
+inline DirectedGraph<Job, Dependency> DependencyResolver::jobGraph() const { return m_jobGraph; }
+inline QMultiMap<Job, QPair<Dependency, Resource> > DependencyResolver::resourcesPerJob() const
+{
+    return m_resourcesPerJob;
+}
 
 
 #endif // DEPENDENCYRESOLVER_H

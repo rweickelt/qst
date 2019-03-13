@@ -24,15 +24,15 @@
 
 #include "depends.h"
 #include "exports.h"
+#include "projectdatabase.h"
 #include "serialjobscheduler.h"
 #include "qstdocument.h"
 #include "qstitemvisitor.h"
 #include "testcase.h"
 
-SerialJobScheduler::SerialJobScheduler(const DirectedGraph<Job, Dependency>& jobs, QObject* parent)
-    : QObject(parent)
+SerialJobScheduler::SerialJobScheduler(ProjectDatabase* db, QObject* parent)
+    : QObject(parent), m_db(db)
 {
-    m_dependencies = jobs;
 }
 
 void SerialJobScheduler::onJobFinished(Job finishedJob)
@@ -41,7 +41,7 @@ void SerialJobScheduler::onJobFinished(Job finishedJob)
     m_done.append(finishedJob);
     m_results.append(finishedJob.result());
 
-    for (const auto& dependent: m_dependencies.successors(finishedJob))
+    for (const auto& dependent: m_db->jobGraph.successors(finishedJob))
     {
         m_dependencyCounts[dependent] -= 1;
         if (m_dependencyCounts[dependent] == 0)
@@ -57,14 +57,14 @@ void SerialJobScheduler::onJobFinished(Job finishedJob)
 
         QMap<QString, QVariantList> multiDependencies;
 
-        for (const auto& predecessor: m_dependencies.predecessors(nextJob))
+        for (const auto& predecessor: m_db->jobGraph.predecessors(nextJob))
         {
             if (predecessor.exports().isEmpty())
             {
                 continue;
             }
 
-            Dependency dependency = m_dependencies.edge(predecessor, nextJob);
+            Dependency dependency = m_db->jobGraph.edge(predecessor, nextJob);
             QString alias = dependency.alias().isEmpty() ? dependency.name() : dependency.alias();
             multiDependencies[alias].append(predecessor.exports());
         }
@@ -82,25 +82,25 @@ void SerialJobScheduler::onJobFinished(Job finishedJob)
 
 void SerialJobScheduler::start()
 {
-    if (m_dependencies.isEmpty())
+    if (m_db->jobGraph.isEmpty())
     {
         emit finished();
         return;
     }
 
-    Q_ASSERT(!m_dependencies.roots().isEmpty());
+    Q_ASSERT(!m_db->jobGraph.roots().isEmpty());
 
     m_done.clear();
-    m_todo = m_dependencies.nodes();
+    m_todo = m_db->jobGraph.nodes();
 
-    for (const auto& job: m_dependencies.roots())
+    for (const auto& job: m_db->jobGraph.roots())
     {
         m_readyList << m_todo.takeAt(m_todo.indexOf(job));
     }
 
-    for (const auto& job: m_dependencies.nodes())
+    for (const auto& job: m_db->jobGraph.nodes())
     {
-        m_dependencyCounts.insert(job, m_dependencies.predecessors(job).length());
+        m_dependencyCounts.insert(job, m_db->jobGraph.predecessors(job).length());
     }
 
     Q_ASSERT(!m_readyList.isEmpty());
