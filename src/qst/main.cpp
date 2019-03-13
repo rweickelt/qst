@@ -43,6 +43,7 @@
 #include "projectdatabase.h"
 #include "projectresolver.h"
 #include "proxylogger.h"
+#include "resource.h"
 #include "resourceitem.h"
 #include "qst.h"
 #include "serialjobscheduler.h"
@@ -176,9 +177,11 @@ void execRunCommand()
     MatrixResolver multiplier(projectResolver.documents());
     CHECK_FOR_ERRORS(multiplier);
     JobTable jobs = multiplier.jobs();
+    ResourceTable resources = multiplier.resources();
 
     // Do more fine-grained dependency resolution, taking tags into account.
-    dependencyResolver.completeResolve(jobs);
+    dependencyResolver.completeResolve(jobs, resources);
+    CHECK_FOR_ERRORS(dependencyResolver);
 
     //Does the dirty work
     JobDispatcher dispatcher(db);

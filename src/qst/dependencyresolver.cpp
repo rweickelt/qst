@@ -258,7 +258,7 @@ in the Depends item:
 The term job class means: all jobs with equal name.
 
 */
-void DependencyResolver::completeResolve(const JobTable& jobs)
+void DependencyResolver::completeResolve(const JobTable& jobs, const ResourceTable& resources)
 {
     for (const auto& job: jobs.values())
     {
@@ -278,6 +278,8 @@ void DependencyResolver::completeResolve(const JobTable& jobs)
             QList<Depends*> dependsItems = m_testcaseGraph.edges(dependencyName, currentJob.name());
             for (const auto& dependsItem: dependsItems)
             {
+                Q_ASSERT(dependsItem->name() == dependencyName);
+
                 // Make the Depends item reevaluate its bindings based on the tags set further up
                 dependsItem->evaluateTags();
 
@@ -289,6 +291,7 @@ void DependencyResolver::completeResolve(const JobTable& jobs)
                 dependency.setName(dependencyName);
                 dependency.setAlias(dependsItem->alias());
                 dependency.setTags(dependsItem->tags());
+                dependency.setType(Dependency::Type::Job);
 
                 bool weAreTagged = !ourTags.isEmpty();
                 bool dependencyIsTagged = (precedingJobs.length() > 1);
@@ -303,7 +306,6 @@ void DependencyResolver::completeResolve(const JobTable& jobs)
                     {
                         for (const auto& precedingJob: precedingJobs)
                         {
-                            dependency.incrementCount();
                             m_jobGraph.insertEdge(precedingJob, currentJob, dependency);
                         }
                     }
@@ -318,7 +320,6 @@ void DependencyResolver::completeResolve(const JobTable& jobs)
                             TagSet precedingTags = precedingJob.tags();
                             if (ourTags == precedingTags)
                             {
-                                dependency.incrementCount();
                                 m_jobGraph.insertEdge(precedingJob, currentJob, dependency);
                                 matched = true;
                                 break;
@@ -340,7 +341,7 @@ void DependencyResolver::completeResolve(const JobTable& jobs)
                                     .arg(currentJob.name())
                                     .arg(dumpTagList(ourTags))
                                     .arg(dependencyName);
-                            QST_ERROR_AND_EXIT(message);
+                            m_errors << message;
                         }
                     }
                 }
@@ -353,7 +354,6 @@ void DependencyResolver::completeResolve(const JobTable& jobs)
                         {
                             if (precedingJob.tags() == tagSet)
                             {
-                                dependency.incrementCount();
                                 m_jobGraph.insertEdge(precedingJob, currentJob, dependency);
                             }
                         }
@@ -361,6 +361,92 @@ void DependencyResolver::completeResolve(const JobTable& jobs)
                 }
             }
         }
+
+        //
+        // Get all resource names we are depending on. The job might define multiple
+        // Depends items and hence, has multiple edges in the resource graph.
+        //
+        dependencyNames = m_resourceGraph.predecessors(currentJob.name()).toSet();
+        for (const auto& dependencyName: dependencyNames)
+        {
+            //
+            // There might be multiple Depends items with the same name. Get all with
+            // the current dependency name.
+            //
+            QList<Depends*> dependsItems = m_resourceGraph.edges(dependencyName, currentJob.name());
+            for (const auto& dependsItem: dependsItems)
+            {
+                Q_ASSERT(dependsItem->name() == dependencyName);
+
+                //
+                // Make the Depends item reevaluate its bindings based on the tags set further up
+                //
+                dependsItem->evaluateTags();
+
+                QList<Resource> potentialResources = resources.values(dependencyName);
+                QList<Resource> filteredResources;
+                Q_ASSERT(potentialResources.length() > 0);
+
+                Dependency dependency;
+                dependency.setCount(dependsItem->count());
+                dependency.setName(dependencyName);
+                dependency.setAlias(dependsItem->alias());
+                dependency.setTags(dependsItem->tags());
+                dependency.setType(Dependency::Type::Resource);
+
+//                qDebug() << "Dependency: " << dependsItem->name() << currentJob.name();
+
+                if (!dependsItem->specifiesTags())
+                {
+                    //
+                    // If the dependency does not specify any tags, we include any resource from
+                    // the (named) pool. The resource limit is determined later.
+                    //
+                    filteredResources = potentialResources;
+                }
+                else
+                {
+                    //
+                    // Match each tagset of the Depends item with resources in the (named) pool. We might get
+                    // more resources than needed, but that will be handled in the execution stage.
+                    //
+                    for (const auto& tagSet: dependency.tags())
+                    {
+                        for (const auto& potentialResource: potentialResources)
+                        {
+                            //
+                            // Todo: Do not only match against tags of the resource
+                            //       but take any property into account.
+                            //
+                            if (potentialResource.tags().contains(tagSet))
+                            {
+                                filteredResources << potentialResource;
+
+                            }
+                        }
+                    }
+                }
+                //
+                // Ensure that there are sufficient resources available.
+                //
+                if (filteredResources.length() < dependency.count())
+                {
+                    QmlContext context = qst::qmlDefinitionContext(dependsItem);
+                    QString message = QString("At %1:%2: %3 resources of name '%4' required, but only (%5) available")
+                            .arg(context.file()).arg(context.line())
+                            .arg(dependency.count())
+                            .arg(dependency.name())
+                            .arg(filteredResources.length());
+                    m_errors << message;
+
+                }
+                for (const auto& neededResource: potentialResources)
+                {
+                    m_resourcesPerJob.insert(currentJob, { dependency, neededResource });
+                }
+            }
+        }
+
     }
 }
 

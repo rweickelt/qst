@@ -28,6 +28,7 @@
 #include "dependency.h"
 #include "directedgraph.h"
 #include "job.h"
+#include "resource.h"
 
 #include <QtCore/QHash>
 #include <QtCore/QList>
@@ -42,7 +43,7 @@ class DependencyResolver
 public:
     DependencyResolver();
     void beginResolve(const QList<QstDocument*>& documents);
-    void completeResolve(const JobTable& jobs);
+    void completeResolve(const JobTable& jobs, const ResourceTable& resources);
     DirectedGraph<Job, Dependency> jobGraph();
 
     QStringList errors() const { return m_errors; }
@@ -52,13 +53,15 @@ private:
     friend class DependencyVisitor;
     friend class ItemGatherVisitor;
 
-    QMap<QString, ResourceItem*> m_resources;
+    QMultiMap<QString, ResourceItem*> m_resources;
     QMap<QString, Testcase*> m_testcases;
     QHash<QString, Exports*> m_exports;
 
     DirectedGraph<QString, Depends*> m_resourceGraph;
     DirectedGraph<QString, Depends*> m_testcaseGraph;
+
     DirectedGraph<Job, Dependency> m_jobGraph;
+    QMultiMap<Job, QPair<Dependency, Resource> > m_resourcesPerJob;
     QStringList m_errors;
 };
 

@@ -35,6 +35,7 @@
 class Depends : public QstItem
 {
     Q_OBJECT
+    Q_PROPERTY(int name MEMBER m_count)
     Q_PROPERTY(QString name MEMBER m_name)
     Q_PROPERTY(QString alias MEMBER m_alias)
 
@@ -47,6 +48,7 @@ public:
     void evaluateTags();
 
     QString alias() const;
+    int count() const;
     QString name() const;
     QList<TagSet> tags() const;
 
@@ -58,6 +60,7 @@ private:
     friend class DependsParser;
 
     QString m_alias;
+    int m_count = 0;
     QString m_name;
     QList<TagSet> m_tags;
     QMap<QString, QQmlExpression*> m_tagExpressions;
@@ -65,6 +68,7 @@ private:
 
 inline const QMetaObject* Depends::baseTypeInfo() const { return &Depends::staticMetaObject; }
 inline QString Depends::alias() const { return m_alias; }
+inline int Depends::count() const { return m_count; }
 inline QString Depends::name() const { return m_name; }
 inline bool Depends::specifiesTags() const { return !m_tagExpressions.isEmpty(); }
 

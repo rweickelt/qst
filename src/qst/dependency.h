@@ -22,7 +22,7 @@ class Dependency
 public:
     enum class Type {
         Undefined,
-        Precedence,
+        Job,
         Resource
     };
 
@@ -31,7 +31,7 @@ public:
     Dependency& operator=(const Dependency& other);
 
     inline int count() const { return d->count; }
-    inline void incrementCount() { d->count++; }
+    inline void setCount(int count) { d->count = count; }
     inline QString name() const { return d->name; }
     inline void setName(const QString& name) { d->name = name; }
     inline QString alias() const { return d->alias; }
@@ -39,7 +39,7 @@ public:
     inline QList<TagSet> tags() const { return d->tags; }
     inline void setTags(const QList<TagSet>& tags) const { d->tags = tags; }
     inline Type type() const { return d->type; }
-    inline void setAlias(Dependency::Type type) { d->type = type; }
+    inline void setType(Dependency::Type type) { d->type = type; }
 
 private:
 
@@ -48,7 +48,7 @@ private:
         QString name;
         QString alias;
         QList<TagSet> tags;
-        quint32 count = 0;
+        int count = 0;
     };
 
     QExplicitlySharedDataPointer<DependencyData> d;
