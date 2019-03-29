@@ -45,7 +45,6 @@ namespace {
 
 class ItemGatherVisitor: public QstItemVisitor
 {
-    Q_DISABLE_COPY(ItemGatherVisitor)
 public:
     ItemGatherVisitor(DependencyResolver&);
 
@@ -58,8 +57,6 @@ protected:
 
 class DependencyVisitor : public QstItemVisitor
 {
-    Q_DISABLE_COPY(DependencyVisitor)
-
 public:
     DependencyVisitor(DependencyResolver&);
 
@@ -151,7 +148,7 @@ void DependencyVisitor::visit(Testcase* item)
     m_currentTestcase = item;
 }
 
-DependencyResolver::DependencyResolver()
+DependencyResolver::DependencyResolver(ProjectDatabase* db): m_db(db)
 {
 }
 
@@ -383,9 +380,9 @@ void DependencyResolver::completeResolve(const JobTable& jobs, const ResourceTab
                 //
                 dependsItem->evaluateTags();
 
-                QList<Resource> potentialResources = resources.values(dependencyName);
-                QList<Resource> filteredResources;
-                Q_ASSERT(potentialResources.length() > 0);
+                QSet<Resource> potentialResources = resources.values(dependencyName).toSet();
+                QSet<Resource> filteredResources;
+                Q_ASSERT(potentialResources.size() > 0);
 
                 Dependency dependency;
                 dependency.setCount(dependsItem->count());
@@ -429,21 +426,17 @@ void DependencyResolver::completeResolve(const JobTable& jobs, const ResourceTab
                 //
                 // Ensure that there are sufficient resources available.
                 //
-                if (filteredResources.length() < dependency.count())
+                if (filteredResources.size() < dependency.count())
                 {
                     QmlContext context = qst::qmlDefinitionContext(dependsItem);
                     QString message = QString("At %1:%2: %3 resources of name '%4' required, but only (%5) available")
                             .arg(context.file()).arg(context.line())
                             .arg(dependency.count())
                             .arg(dependency.name())
-                            .arg(filteredResources.length());
+                            .arg(filteredResources.size());
                     m_errors << message;
-
                 }
-                for (const auto& neededResource: potentialResources)
-                {
-                    m_resourcesPerJob.insert(currentJob, { dependency, neededResource });
-                }
+                m_resourcesPerJob.insert(currentJob, { dependency, potentialResources });
             }
         }
 

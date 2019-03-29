@@ -43,7 +43,7 @@ Project {
         property string animal: "monster"
 
         function run() {
-            Qst.info(name + ";" + attribute + ";" + animal)
+            // Qst.info(name + ";" + attribute + ";" + animal)
         }
     }
 

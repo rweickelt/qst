@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2017 The Qst project.
+ ** Copyright (C) 2019 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -22,36 +22,37 @@
  ** $END_LICENSE$
 ****************************************************************************/
 
-#include "proxylogger.h"
+#include <qst.h>
+#include <qsttest.h>
 
-#include <QtCore/QGlobalStatic>
-#include <QtCore/QMutexLocker>
+class test_resource : public QstTest {
+    Q_OBJECT
+public:
+    QString dataPath(const QString& fileName) const;
 
-namespace {
-    Q_GLOBAL_STATIC(ProxyLogger, singleLoggerObject)
-}
+private slots:
+    //    void inlineNontaggedDependsNonTaggedOk();
+    void dependsSingleResourcePerName();
+    void duplicateNames();
+};
 
-ProxyLogger::ProxyLogger()
+QString test_resource::dataPath(const QString& fileName) const
 {
-
+    return QDir(QString(SOURCE_DIR)).absoluteFilePath(fileName);
 }
 
-void ProxyLogger::registerLogger(Logger* logger)
+void test_resource::dependsSingleResourcePerName()
 {
-    Q_ASSERT(logger != NULL);
-    m_loggers.append(logger);
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("depends-single-resource-per-name.qml"));
+    QCOMPARE(results().passCount(), 1);
 }
 
-void ProxyLogger::print(const LogInfo& info)
+void test_resource::duplicateNames()
 {
-    QMutexLocker lock(&m_mutex);
-    for (const auto logger : m_loggers)
-    {
-        logger->print(info);
-    }
+    RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("duplicate-names.qml"));
+    QVERIFY(stdError().contains("duplicate-names.qml:4"));
 }
 
-ProxyLogger* ProxyLogger::instance()
-{
-    return singleLoggerObject();
-}
+QTEST_MAIN(test_resource)
+
+#include "test-resource.moc"

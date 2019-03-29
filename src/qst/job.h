@@ -34,7 +34,7 @@
 
 class Testcase;
 
-struct Job;
+class Job;
 
 using JobTable = QMultiMap<QString, Job>;
 
@@ -45,6 +45,7 @@ public:
     enum { InvalidId = -1 };
 
     QMap<QString, QVariantList> dependenciesData() const;
+    void insertDependencyData(const QString& name, const QVariant& data);
     void setDependenciesData(const QMap<QString, QVariantList>& data);
     bool isValid() const;
     Id id() const;

@@ -21,32 +21,46 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
+#ifndef JOBSERVER_H
+#define JOBSERVER_H
 
-#ifndef RESOURCEITEM_H
-#define RESOURCEITEM_H
+#include "job.h"
+#include "resource.h"
+#include "testcase.h"
 
-#include "qstitem.h"
+#include <QtCore/QObject>
 
-class ResourceItem : public QstItem {
+class ProjectDatabase;
+
+/*
+Triggers jobs according to their dependencies. Up to N parallel jobs may be
+triggered in parallel.
+ */
+class JobServer : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QString name READ objectName WRITE setObjectName NOTIFY nameChanged)
-
 public:
-    ResourceItem(QObject* parent = nullptr);
-    virtual const QMetaObject* baseTypeInfo() const final;
-    QString name() const;
-    QVariantMap data() const;
+    JobServer(ProjectDatabase* db, QObject* parent = nullptr);
+    void start();
+
+public slots:
+    void onJobFinished(Job job);
 
 signals:
-    void nameChanged(const QString &objectName);
+    void finished();
+    void jobReady(Job job);
 
-protected:
-    virtual void callVisitor(QstItemVisitor* visitor) final;
-    virtual void handleParserEvent(ParserEvent event) final { Q_UNUSED(event); }
+private:
+    void checkStagedJobs();
+
+    ProjectDatabase* m_db;
+    QSet<Job> m_todoJobs;    // unprocessed jobs
+    QSet<Job> m_stagingJobs; // ready to run, but missing resources
+    QSet<Job> m_runningJobs;
+    QSet<Job> m_doneJobs;    // finished jobs
+    QMultiMap<Job, Resource> m_resourcesLockedByJob;
+    QMultiMap<Resource, Job> m_jobsPerLockedResource;
+    QSet<Resource> m_lockedResources;
+    QMap<Job, int> m_dependencyCounts;
 };
 
-inline const QMetaObject* ResourceItem::baseTypeInfo() const { return &ResourceItem::staticMetaObject; }
-inline QString ResourceItem::name() const { return objectName(); }
-
-
-#endif // RESOURCEITEM_H
+#endif // JOBSERVER_H

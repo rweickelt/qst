@@ -37,6 +37,7 @@ Resource Resource::create(ResourceItem* item, const TagSet& tags)
     ResourceData data;
     data.name = item->name();
     data.tags = tags;
+    data.data = item->data();
 
     resources.append(data);
 

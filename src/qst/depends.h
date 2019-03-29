@@ -35,7 +35,7 @@
 class Depends : public QstItem
 {
     Q_OBJECT
-    Q_PROPERTY(int name MEMBER m_count)
+    Q_PROPERTY(int count MEMBER m_count)
     Q_PROPERTY(QString name MEMBER m_name)
     Q_PROPERTY(QString alias MEMBER m_alias)
 
@@ -43,7 +43,6 @@ public:
     Depends(QObject* parent = nullptr);
 
     virtual const QMetaObject* baseTypeInfo() const final;
-    void accept(QstItemVisitor* visitor);
     bool specifiesTags() const;
     void evaluateTags();
 

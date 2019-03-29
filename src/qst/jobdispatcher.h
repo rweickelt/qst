@@ -32,8 +32,7 @@
 
 class ProjectDatabase;
 
-class JobDispatcher : public QObject
-{
+class JobDispatcher : public QObject {
     Q_OBJECT
     Q_DISABLE_COPY(JobDispatcher)
 public:
@@ -46,13 +45,13 @@ public slots:
 signals:
     void finished(Job job);
 
+protected slots:
+
 private:
-    QString createTestcaseWorkingDirectory(const QString& name);
-    static QVariantMap parseExports(Exports* item);
+    void run();
+//    static QVariantMap parseExports(Exports* item);
 
     const ProjectDatabase& m_db;
-    QQmlEngine m_engine;
-    QDir m_projectWorkingDirectory;
 };
 
 #endif // JOBRUNNER_H

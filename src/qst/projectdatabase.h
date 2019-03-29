@@ -22,7 +22,8 @@ struct ProjectDatabase {
     QVariantMap profile;
     QVariantMap project;
     DirectedGraph<Job, Dependency> jobGraph;
-    QMultiMap<Job, QPair<Dependency, Resource> > resourcesPerJob;
+    QMultiMap<Job, QPair<Dependency, QSet<Resource> > > eligibleResourcesPerJob;
+    QMap<Dependency, QSet<Resource> > resourceMapping;
 };
 
 /*

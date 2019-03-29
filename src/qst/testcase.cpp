@@ -33,6 +33,7 @@
 #include <QtDebug>
 #include <QtCore/QDir>
 #include <QtCore/QEventLoop>
+#include <QtCore/QThreadStorage>
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlEngine>
 #include <QtQml/QQmlProperty>
@@ -40,7 +41,9 @@
 #include <private/qv4engine_p.h>
 #include <private/qv8engine_p.h>
 
-QPointer<Testcase> Testcase::m_currentTestCase;
+namespace {
+QThreadStorage<QPointer<Testcase> > m_currentTestCase;
+}
 
 Testcase::Testcase(QObject *parent) : Component(parent)
 {
@@ -125,7 +128,7 @@ Testcase::Result Testcase::exec()
 Testcase::State Testcase::unitializedStateFunction()
 {
     m_result = Unfinished;
-    m_currentTestCase = this;
+    m_currentTestCase.setLocalData(this);
 
     QList<Component*> nestedComponents = findChildren<Component*>(QString(), Qt::FindChildrenRecursively) << this;
     // created() is a signal that even QML children can subscribe.
@@ -250,7 +253,7 @@ Testcase::State Testcase::cleaningUpTestCaseStateFunction()
         QMetaObject::invokeMethod(attached, "destruction");
     }
     emit destruction();
-    m_currentTestCase.clear();
+    m_currentTestCase.localData().clear();
     return Destroyed;
 }
 
@@ -405,7 +408,7 @@ TestcaseAttached* Testcase::qmlAttachedProperties(QObject* object)
 
 Testcase* Testcase::instance()
 {
-    return m_currentTestCase.data();
+    return m_currentTestCase.localData().data();
 }
 
 void Testcase::setDisplayName(const QString& name)

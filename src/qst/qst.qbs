@@ -51,6 +51,8 @@ QtApplication {
         "job.h",
         "jobdispatcher.cpp",
         "jobdispatcher.h",
+        "jobserver.cpp",
+        "jobserver.h",
         "logger.cpp",
         "logger.h",
         "main.cpp",

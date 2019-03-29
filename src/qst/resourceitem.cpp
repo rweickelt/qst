@@ -25,10 +25,35 @@
 #include "resourceitem.h"
 #include "qstitemvisitor.h"
 
+#include <QtCore/QMetaProperty>
+
 ResourceItem::ResourceItem(QObject* parent)
     : QstItem(parent)
 {
     QObject::connect(this, &QObject::objectNameChanged, this, &ResourceItem::nameChanged);
+}
+
+QVariantMap ResourceItem::data() const
+{
+    QVariantMap result;
+
+    const static QStringList ignoredProperties{ "objectName", "nestedComponents", "name" };
+    const QMetaObject* metaobject = this->metaObject();
+    int count = metaobject->propertyCount();
+    for (int i = 0; i < count; i++)
+    {
+        QMetaProperty metaproperty = metaobject->property(i);
+        const char* name = metaproperty.name();
+
+        if (ignoredProperties.contains(QLatin1String(name)) || (!metaproperty.isReadable()))
+        {
+            continue;
+        }
+
+        QVariant value = this->property(name);
+        result[QLatin1String(name)] = value;
+    }
+    return result;
 }
 
 void ResourceItem::callVisitor(QstItemVisitor* visitor)

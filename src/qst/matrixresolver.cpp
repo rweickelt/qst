@@ -47,11 +47,12 @@ MatrixResolver::MatrixResolver(const QList<QstDocument*>& documents)
     for (const auto& name : duplicates) {
         QmlContext contextT = qst::qmlDefinitionContext(m_testcases[name]);
         QmlContext contextR = qst::qmlDefinitionContext(m_resourceItems.value(name));
-        QString error = QString("Testcase at %1:%2 and Resource at %3:%4 have duplicate names.")
-                .arg(contextT.file())
-                .arg(contextT.line())
+        QString error = QString("At %1:%2: name '%3' shadows Testcase at %4:%5.")
                 .arg(contextR.file())
-                .arg(contextR.line());
+                .arg(contextR.line())
+                .arg(name)
+                .arg(contextT.file())
+                .arg(contextT.line());
         m_errorStrings << error;
     }
 

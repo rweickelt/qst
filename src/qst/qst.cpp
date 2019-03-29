@@ -28,7 +28,10 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QHash>
+#include <QtCore/QMutex>
+#include <QtCore/QMutexLocker>
 #include <QtCore/QTemporaryFile>
+#include <QtCore/QThread>
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlEngine>
 #include <QtQml/QQmlExpression>
@@ -41,6 +44,7 @@
 
 namespace {
     QHash<QQmlEngine*, QstService*> instances;
+    QMutex mutex;
 
     QString singleInstanceQmlQuery = "import QtQml 2.0\n"
                                      "import qst 1.0\n"
@@ -220,6 +224,8 @@ QmlContext QstService::qmlDefinitionContext(QObject* object)
 QstService* QstService::instance(QQmlEngine* engine)
 {
     Q_ASSERT(engine != nullptr);
+
+    QMutexLocker locker(&mutex);
 
     // Singleton objects that were created in QML are tricky.
     // I couldn't find another way to look the instance up.

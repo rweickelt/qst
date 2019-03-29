@@ -32,6 +32,7 @@
 #include "exports.h"
 #include "file.h"
 #include "job.h"
+#include "jobserver.h"
 #include "xds.h"
 #include "plaintextlogger.h"
 #include "matrix.h"
@@ -162,7 +163,7 @@ void execRunCommand()
 
     // Resolve basic dependency relations between test cases
     // and attach Exports items so that bindings will work.
-    DependencyResolver dependencyResolver;
+    DependencyResolver dependencyResolver(&db);
     dependencyResolver.beginResolve(projectResolver.documents());
     CHECK_FOR_ERRORS(dependencyResolver);
 
@@ -174,44 +175,46 @@ void execRunCommand()
 
     // Create an overview over tags if defined and prepare
     // executable jobs.
-    MatrixResolver multiplier(projectResolver.documents());
-    CHECK_FOR_ERRORS(multiplier);
+    MatrixResolver matrixResolver(projectResolver.documents());
+    CHECK_FOR_ERRORS(matrixResolver);
 
-    // Do more fine-grained dependency resolution, taking tags into account.
-    dependencyResolver.completeResolve(multiplier.jobs(), multiplier.resources());
+    // Do more fine-grained dependency resolution, now taking tags into account.
+    dependencyResolver.completeResolve(matrixResolver.jobs(), matrixResolver.resources());
     CHECK_FOR_ERRORS(dependencyResolver);
-    db.resourcesPerJob = dependencyResolver.resourcesPerJob();
+    db.eligibleResourcesPerJob = dependencyResolver.resourcesPerJob();
     db.jobGraph = dependencyResolver.jobGraph();
 
     //Does the dirty work
     JobDispatcher dispatcher(db);
 
     // Schedules jobs one-by-one, taking dependency relations into account.
-    SerialJobScheduler scheduler(&db);
+    JobServer scheduler(&db);
     QEventLoop eventLoop;
 
-    QObject::connect(&scheduler, &SerialJobScheduler::jobReady,
+    QObject::connect(&scheduler, &JobServer::jobReady,
                      &dispatcher, &JobDispatcher::dispatch,
                      Qt::QueuedConnection);
 
     QObject::connect(&dispatcher, &JobDispatcher::finished,
-                     &scheduler, &SerialJobScheduler::onJobFinished,
+                     &scheduler, &JobServer::onJobFinished,
                      Qt::QueuedConnection);
 
-    QObject::connect(&scheduler, &SerialJobScheduler::finished,
+    QObject::connect(&scheduler, &JobServer::finished,
                      &eventLoop, &QEventLoop::quit);
 
     scheduler.start();
     eventLoop.exec();
 
-    if (scheduler.results().contains(Testcase::Fail))
+    qst::ExitCode exitCode = qst::ExitNormal;
+    for (const auto& job: db.jobGraph.nodes())
     {
-        QCoreApplication::exit(qst::ExitTestCaseFailed);
+        if (job.result() == Testcase::Fail)
+        {
+            exitCode = qst::ExitTestCaseFailed;
+            break;
+        }
     }
-    else
-    {
-        QCoreApplication::exit(qst::ExitNormal);
-    }
+    QCoreApplication::exit(exitCode);
 }
 
 

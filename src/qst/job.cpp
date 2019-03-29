@@ -55,6 +55,11 @@ void Job::setDependenciesData(const QMap<QString, QVariantList>& data)
     resources[m_id].dependenciesData = data;
 }
 
+void Job::insertDependencyData(const QString& name, const QVariant& data)
+{
+    resources[m_id].dependenciesData[name].append(data);
+}
+
 QVariantMap Job::exports() const
 {
     return resources[m_id].exports;

@@ -41,7 +41,7 @@ class QstItem : public QObject, public QQmlParserStatus
     Q_CLASSINFO("DefaultProperty", "nestedComponents")
 
     friend class ProjectResolver;
-    friend class JobDispatcher;
+    friend class ThreadWorker;
     friend class QstItemVisitor;
 
 public:

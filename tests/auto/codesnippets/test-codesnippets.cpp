@@ -52,14 +52,14 @@ void test_codesnippets::depends()
 
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("reference/depends-project-with-matrix.qml"));
     QCOMPARE(results().passCount(), 9);
-    VERIFY_EXECUTION_ORDER({"A 0000000 [ board-2 release ]", "A 0000001 [ board-1 release ]"});
-    VERIFY_EXECUTION_ORDER({"A 0000001 [ board-1 release ]", "A 0000002 [ board-2 debug ]"});
-    VERIFY_EXECUTION_ORDER({"A 0000002 [ board-2 debug ]", "A 0000003 [ board-1 debug ]"});
-    VERIFY_EXECUTION_ORDER({"A 0000003 [ board-1 debug ]", "implicit 0000004 [ board-2 release ]"});
-    VERIFY_EXECUTION_ORDER({"implicit 0000004 [ board-2 release ]", "implicit 0000005 [ board-1 release ]"});
-    VERIFY_EXECUTION_ORDER({"implicit 0000005 [ board-1 release ]", "implicit 0000006 [ board-2 debug ]"});
-    VERIFY_EXECUTION_ORDER({"implicit 0000006 [ board-2 debug ]", "implicit 0000007 [ board-1 debug ]"});
-    VERIFY_EXECUTION_ORDER({"implicit 0000007 [ board-1 debug ]", "explicit"});
+    VERIFY_EXECUTION_ORDER({"A 0000000 [ board-2 release ]", "implicit 0000004 [ board-2 release ]"});
+    VERIFY_EXECUTION_ORDER({"A 0000001 [ board-1 release ]", "implicit 0000005 [ board-1 release ]"});
+    VERIFY_EXECUTION_ORDER({"A 0000002 [ board-2 debug ]", "implicit 0000006 [ board-2 debug ]"});
+    VERIFY_EXECUTION_ORDER({"A 0000003 [ board-1 debug ]", "implicit 0000007 [ board-1 debug ]"});
+
+    VERIFY_EXECUTION_ORDER({"A 0000002 [ board-2 debug ]", "explicit"});
+    VERIFY_EXECUTION_ORDER({"A 0000003 [ board-1 debug ]", "explicit"});
+
 
     // Todo: Rather compare against terminal code snippet in the .rst file
 }

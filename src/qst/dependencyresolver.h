@@ -35,17 +35,18 @@
 #include <QtCore/QStringList>
 
 class Exports;
+class ProjectDatabase;
 class QstDocument;
 class ResourceItem;
 
 class DependencyResolver
 {
 public:
-    DependencyResolver();
+    DependencyResolver(ProjectDatabase* db);
     void beginResolve(const QList<QstDocument*>& documents);
     void completeResolve(const JobTable& jobs, const ResourceTable& resources);
     DirectedGraph<Job, Dependency> jobGraph() const;
-    QMultiMap<Job, QPair<Dependency, Resource> > resourcesPerJob() const;
+    QMultiMap<Job, QPair<Dependency, QSet<Resource> > > resourcesPerJob() const;
 
     QStringList errors() const { return m_errors; }
     bool hasErrors() const { return !m_errors.isEmpty(); }
@@ -62,12 +63,13 @@ private:
     DirectedGraph<QString, Depends*> m_testcaseGraph;
 
     DirectedGraph<Job, Dependency> m_jobGraph;
-    QMultiMap<Job, QPair<Dependency, Resource> > m_resourcesPerJob;
+    QMultiMap<Job, QPair<Dependency, QSet<Resource> > > m_resourcesPerJob;
     QStringList m_errors;
+    ProjectDatabase* m_db;
 };
 
 inline DirectedGraph<Job, Dependency> DependencyResolver::jobGraph() const { return m_jobGraph; }
-inline QMultiMap<Job, QPair<Dependency, Resource> > DependencyResolver::resourcesPerJob() const
+inline QMultiMap<Job, QPair<Dependency, QSet<Resource> > > DependencyResolver::resourcesPerJob() const
 {
     return m_resourcesPerJob;
 }
