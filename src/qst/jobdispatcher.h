@@ -26,12 +26,13 @@
 
 #include "job.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QString>
-#include <QtQml/QQmlEngine>
+#include <QtCore/QObject>
 
 class ProjectDatabase;
 
+/*
+Distributes jobs to multiple workers. There can only be one instance of JobDispatcher.
+*/
 class JobDispatcher : public QObject {
     Q_OBJECT
     Q_DISABLE_COPY(JobDispatcher)
@@ -44,14 +45,6 @@ public slots:
 
 signals:
     void finished(Job job);
-
-protected slots:
-
-private:
-    void run();
-//    static QVariantMap parseExports(Exports* item);
-
-    const ProjectDatabase& m_db;
 };
 
 #endif // JOBRUNNER_H

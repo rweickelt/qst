@@ -32,13 +32,14 @@
 #include "testcase.h"
 #include "textfile.h"
 
+#include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QMutex>
 #include <QtCore/QMutexLocker>
 #include <QtCore/QThreadPool>
 #include <QtCore/QThreadStorage>
-#include <QtDebug>
 #include <QtQml/QQmlContext>
+#include <QtQml/QQmlEngine>
 #include <QtQml/QQmlProperty>
 
 /*
@@ -48,18 +49,20 @@ in the threadpool.
 class ThreadWorker {
 public:
     ThreadWorker();
-    ~ThreadWorker();
 
     void run(Job& job);
 
 private:
     QString createWorkingDirectory(const QString& name);
 
-    ProjectDatabase* m_db;
     QQmlEngine m_engine;
     QDir m_projectWorkingDirectory;
 };
 
+/*
+Encapsulates a Job items as QRunnable to make it executable in a
+QThreadPool.
+*/
 class JobDelegate : public QRunnable {
 public:
     JobDelegate(const Job& job);
@@ -69,6 +72,10 @@ private:
     Job m_job;
 };
 
+/*
+We have to use some global variables here because there seems no elegant way to make
+ThreadWorker aware of JobDispatcher.
+*/
 namespace {
 QThreadStorage<ThreadWorker> workers;
 ProjectDatabase* projectDatabase;
@@ -77,18 +84,13 @@ QMutex mutex;
 }
 
 ThreadWorker::ThreadWorker()
-    : m_db(projectDatabase)
 {
-    m_projectWorkingDirectory.setPath(m_db->project["workingDirectory"].toString());
+    m_projectWorkingDirectory.setPath(projectDatabase->project["workingDirectory"].toString());
 
     for (const auto& path : ApplicationOptions::instance()->importPaths) {
         m_engine.addImportPath(path);
     }
     TextFile::registerJSType(&m_engine);
-}
-
-ThreadWorker::~ThreadWorker()
-{
 }
 
 void ThreadWorker::run(Job& job)
@@ -107,6 +109,9 @@ void ThreadWorker::run(Job& job)
 
     Component::resetInstancesCounter();
     QQmlComponent component(&m_engine, job.filePath());
+    // There is a concurrency bug in Qt's meta type system that requires
+    // us to lock access here. Seems like it starts somewhere in QVariant::canConvert<QPair>() and
+    // goes further down.
     QMutexLocker lock(&mutex);
     QstItem* rootItem = qobject_cast<QstItem*>(component.beginCreate(m_engine.rootContext()));
     lock.unlock();
@@ -161,6 +166,9 @@ void ThreadWorker::run(Job& job)
         testcase->setDependencyData(job.dependenciesData());
     }
 
+    // There seems to be a concurrency bug in the QML engine that causes
+    // singleton objects to not get properly instantiated. Thus we prevent from
+    // parallel access here once more.
     lock.relock();
     component.completeCreate();
     lock.unlock();
@@ -176,7 +184,7 @@ void ThreadWorker::run(Job& job)
         job.setExports(exports->toVariantMap());
     }
 
-    QMetaObject::invokeMethod(dispatcher, "finished", Qt::QueuedConnection, Q_ARG(Job, job));
+    dispatcher->finished(job);
 }
 
 JobDelegate::JobDelegate(const Job& job)
@@ -190,8 +198,6 @@ void JobDelegate::run()
 }
 
 JobDispatcher::JobDispatcher(const ProjectDatabase& database)
-    : m_db(database)
-
 {
     QThreadPool::globalInstance()->setMaxThreadCount(2);
     projectDatabase = const_cast<ProjectDatabase*>(&database);
