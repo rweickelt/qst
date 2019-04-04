@@ -31,9 +31,9 @@ public:
     QString dataPath(const QString& fileName) const;
 
 private slots:
-    //    void inlineNontaggedDependsNonTaggedOk();
     void dependsSingleResourcePerName();
     void duplicateNames();
+    void parallelExecutionExclusiveAccess();
 };
 
 QString test_resource::dataPath(const QString& fileName) const
@@ -51,6 +51,19 @@ void test_resource::duplicateNames()
 {
     RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("duplicate-names.qml"));
     QVERIFY(stdError().contains("duplicate-names.qml:4"));
+}
+
+#include <QtDebug>
+void test_resource::parallelExecutionExclusiveAccess()
+{
+    QElapsedTimer timer;
+    timer.start();
+    RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("parallel-execution-exclusive-access.qml"));
+    auto elapsedTime = timer.elapsed();
+
+    QCOMPARE(results().passCount(), 4);
+    QVERIFY((elapsedTime >= (3*100)));
+    QVERIFY((elapsedTime <= (3*100 + 50)));
 }
 
 QTEST_MAIN(test_resource)
