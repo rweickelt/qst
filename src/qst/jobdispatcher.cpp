@@ -108,11 +108,11 @@ void ThreadWorker::run(Job& job)
     m_engine.rootContext()->setContextProperty("path", QFileInfo(job.filePath()).dir().absolutePath());
 
     Component::resetInstancesCounter();
-    QQmlComponent component(&m_engine, job.filePath());
     // There is a concurrency bug in Qt's meta type system that requires
     // us to lock access here. Seems like it starts somewhere in QVariant::canConvert<QPair>() and
-    // goes further down.
+    // goes further down. https://bugreports.qt.io/browse/QTBUG-75007
     QMutexLocker lock(&mutex);
+    QQmlComponent component(&m_engine, job.filePath());
     QstItem* rootItem = qobject_cast<QstItem*>(component.beginCreate(m_engine.rootContext()));
     lock.unlock();
     if (component.errors().length() > 0) {
@@ -168,7 +168,7 @@ void ThreadWorker::run(Job& job)
 
     // There seems to be a concurrency bug in the QML engine that causes
     // singleton objects to not get properly instantiated. Thus we prevent from
-    // parallel access here once more.
+    // parallel access here once more. https://bugreports.qt.io/browse/QTBUG-75007
     lock.relock();
     component.completeCreate();
     lock.unlock();
@@ -199,7 +199,6 @@ void JobDelegate::run()
 
 JobDispatcher::JobDispatcher(const ProjectDatabase& database)
 {
-    QThreadPool::globalInstance()->setMaxThreadCount(2);
     projectDatabase = const_cast<ProjectDatabase*>(&database);
     dispatcher = this;
 }
