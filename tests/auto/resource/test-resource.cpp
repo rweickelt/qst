@@ -63,7 +63,7 @@ void test_resource::parallelExecutionExclusiveAccess()
 
     QCOMPARE(results().passCount(), 4);
     QVERIFY((elapsedTime >= (3*100)));
-    QVERIFY((elapsedTime <= (3*100 + 50)));
+    QVERIFY((elapsedTime <= (3*100 + 100)));
 }
 
 QTEST_MAIN(test_resource)
