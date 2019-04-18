@@ -3,7 +3,8 @@ Depends Item
 
 ..  cpp:class:: Depends
 
-    Describes dependencies between :class:`Testcase` items.
+    Describes dependencies between :qml:item:`Testcase` and :qml:item:`Resource`
+    items.
 
 ..  cpp:namespace:: Depends
 
@@ -11,20 +12,24 @@ Depends Item
     :cpp:class:`Testcase`
 
 :Properties:
-    :qml:prop:`alias`, :qml:prop:`name`
+    :qml:prop:`alias`, :qml:prop:`count`, :qml:prop:`name`
 
 Detailed Description
 --------------------
 
 ..  cpp:namespace:: Depends
 
-The ``Depends`` defines a dependency on another test case specified by
-:qml:prop:`name`. In its simplest form, it specifies only a precedence relation
-as for instance in the following example:
+The ``Depends`` item defines a dependency on a :qml:item:`Testcase` or
+:qml:item:`Resource` specified by :qml:prop:`name`. If :qml:prop:`name` points
+to a test case, the dependency behaves like a precedence relation as shown
+in the following example:
 
 ..  literalinclude:: code/reference/simple-depends.qml
     :caption: `simple-depends-depends.qml`
     :emphasize-lines: 15
+
+When :qml:prop:`name` matches a :qml:item:`Resource` item, the test case will
+only run when the resource is exclusively available.
 
 
 Accessing properties of dependencies
@@ -44,6 +49,10 @@ item over to `B`. Test case `B` can access them through the
 :qml:prop:`dependencies` property. Only
 :ref:`basic QML types <language_basic-data-types>` are considered for exporting
 which avoids side effects.
+
+Dependencies on :qml:item:`Resource` items work in a similar way, except that
+all properties of the resource item can be accessed and hence,
+:qml:item:`Exports` is not necessary.
 
 
 Dependencies and tags
@@ -150,6 +159,13 @@ Properties
     accessed through the :qml:prop:`Testcase::dependencies` property.
 
     This property must be a plain string and a valid JavaScipt identifer.
+
+..  cpp:member:: int count
+
+    Specifies how many :qml:item:`Resource` items are to be acquired.
+
+    Only available when :qml:prop:`name` points to a :qml:item:`Resource` item
+    of which multiple instances exist.
 
 ..  cpp:member:: string name
 

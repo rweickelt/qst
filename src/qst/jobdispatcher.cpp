@@ -49,13 +49,14 @@ in the threadpool.
 class ThreadWorker {
 public:
     ThreadWorker();
+    ~ThreadWorker();
 
     void run(Job& job);
 
 private:
     QString createWorkingDirectory(const QString& name);
 
-    QQmlEngine m_engine;
+    QScopedPointer<QQmlEngine> m_engine;
     QDir m_projectWorkingDirectory;
 };
 
@@ -85,12 +86,22 @@ QMutex mutex;
 
 ThreadWorker::ThreadWorker()
 {
+    // Concurrent creation of QQmlEngine objects needs protection.
+    // https://bugreports.qt.io/browse/QTBUG-75007
+    QMutexLocker lock(&mutex);
+    m_engine.reset(new QQmlEngine());
     m_projectWorkingDirectory.setPath(projectDatabase->project["workingDirectory"].toString());
 
     for (const auto& path : ApplicationOptions::instance()->importPaths) {
-        m_engine.addImportPath(path);
+        m_engine->addImportPath(path);
     }
-    TextFile::registerJSType(&m_engine);
+    TextFile::registerJSType(m_engine.data());
+}
+
+ThreadWorker::~ThreadWorker()
+{
+    QMutexLocker lock(&mutex);
+    m_engine.reset();
 }
 
 void ThreadWorker::run(Job& job)
@@ -103,17 +114,16 @@ void ThreadWorker::run(Job& job)
     QList<Tag> tags = job.tags().toList();
     std::sort(tags.begin(), tags.end());
 
-    m_engine.rootContext()->setContextProperty("profile", m_db.profile);
-    m_engine.rootContext()->setContextProperty("project", m_db.project);
-    m_engine.rootContext()->setContextProperty("path", QFileInfo(job.filePath()).dir().absolutePath());
+    m_engine->rootContext()->setContextProperty("profile", m_db.profile);
+    m_engine->rootContext()->setContextProperty("project", m_db.project);
+    m_engine->rootContext()->setContextProperty("path", QFileInfo(job.filePath()).dir().absolutePath());
 
     Component::resetInstancesCounter();
-    // There is a concurrency bug in Qt's meta type system that requires
-    // us to lock access here. Seems like it starts somewhere in QVariant::canConvert<QPair>() and
-    // goes further down. https://bugreports.qt.io/browse/QTBUG-75007
+    // Concurrent creation needs protection
+    // https://bugreports.qt.io/browse/QTBUG-75007
     QMutexLocker lock(&mutex);
-    QQmlComponent component(&m_engine, job.filePath());
-    QstItem* rootItem = qobject_cast<QstItem*>(component.beginCreate(m_engine.rootContext()));
+    QQmlComponent component(m_engine.data(), job.filePath());
+    QstItem* rootItem = qobject_cast<QstItem*>(component.beginCreate(m_engine->rootContext()));
     lock.unlock();
     if (component.errors().length() > 0) {
         QST_ERROR_AND_EXIT(QString("Error while loading '%1': %2").arg(job.filePath()).arg(component.errorString()));
@@ -135,7 +145,7 @@ void ThreadWorker::run(Job& job)
         }
     }
 
-    m_engine.rootContext()->setContextProperty("test", testcase);
+    m_engine->rootContext()->setContextProperty("test", testcase);
 
     if (job.tags().size() > 0) {
         QStringList tagsStrings;
@@ -166,16 +176,15 @@ void ThreadWorker::run(Job& job)
         testcase->setDependencyData(job.dependenciesData());
     }
 
-    // There seems to be a concurrency bug in the QML engine that causes
-    // singleton objects to not get properly instantiated. Thus we prevent from
-    // parallel access here once more. https://bugreports.qt.io/browse/QTBUG-75007
+    // Concurrent creation needs protection
+    // https://bugreports.qt.io/browse/QTBUG-75007
     lock.relock();
     component.completeCreate();
-    lock.unlock();
     if (component.errors().length() > 0) {
         QST_ERROR_AND_EXIT(QString("Error while completing creation of '%1': %2").arg(job.filePath()).arg(component.errorString()));
     }
     rootItem->afterComponentComplete();
+    lock.unlock();
 
     Testcase::Result result = testcase->exec();
 
@@ -185,6 +194,7 @@ void ThreadWorker::run(Job& job)
     }
 
     dispatcher->finished(job);
+    lock.relock();
 }
 
 JobDelegate::JobDelegate(const Job& job)
@@ -201,6 +211,7 @@ JobDispatcher::JobDispatcher(const ProjectDatabase& database)
 {
     projectDatabase = const_cast<ProjectDatabase*>(&database);
     dispatcher = this;
+    QThreadPool::globalInstance()->setMaxThreadCount(2);
 }
 
 JobDispatcher::~JobDispatcher()

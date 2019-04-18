@@ -1,7 +1,7 @@
 import qst 1.0
 
 Project {
-    property int waitTimeMs: 100
+    property int waitTimeMs: 1
 
     Resource {
         name: "r1"
@@ -49,6 +49,22 @@ Project {
 
         function run() {
             Qst.wait(3*project.waitTimeMs)
+        }
+    }
+
+    Testcase {
+        name: "t3"
+
+        function run() {
+            Qst.compare(name, name)
+        }
+    }
+
+    Testcase {
+        name: "t4"
+
+        function run() {
+            Qst.compare(name, name)
         }
     }
 }

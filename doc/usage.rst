@@ -491,21 +491,52 @@ When executing above project, the command line output looks as follows:
     PASS, normal-test,,,
 
 
-Specifying dependencies between test cases
-------------------------------------------
+Controlling execution order by dependencies
+-------------------------------------------
 
-The default execution order of test cases is undefined in Qst. But in practise,
-a test case ``B`` might require the completion of another test case ``A``. Such
-dependencies can be expressed with the :qml:item:`Depends` item as shown in the
-following code snippet:
+Qst executes several test cases in parallel and in an unpredictable order. In
+practise, however, very often a test case ``B`` requires the completion of
+another test case ``A``. Such dependencies can be expressed with the
+:qml:item:`Depends` item as shown in the following code snippet:
 
 ..  literalinclude:: code/reference/simple-depends.qml
-    :caption: `simple-depends-depends.qml`
+    :caption: `simple-depends.qml`
 
-Of course the test cases ``A`` and ``B`` can be defined in different files and
-each test case can have multiple dependencies.
+Of course, each test case can have multiple dependencies. In the event that
+``A`` fails, ``B`` and all other dependent test cases are skipped.
 
-Sometimes it might also be desired to access data from a preceding test. By the
-help of the :qml:item:`Exports` item, a test case can specify which data is to
-be forward to dependent test cases. This is not possible otherwise because test
+Sometimes it might be desired to access data from a preceding test. By the help
+of the :qml:item:`Exports` item, a test case can specify properties to be
+forward to dependent test cases. This is not possible otherwise because test
 cases are isolated from each other do not share any memory.
+
+
+Controlling parallel execution by resources
+-------------------------------------------
+
+Parallel execution is a first-class feature in Qst. By default, the maximum
+amount of parallel jobs depends on the number of available CPU cores and can be
+overridden by the ``--jobs`` command line option. However, this does not scale
+well in case that:
+
+- real hardware is involved such as probes or evaluation boards and some test
+  cases need exclusive access
+
+- some test cases make heavy use of I/O and running more than one at the
+  same time would affect other test cases.
+
+Both problems are elegantly solved with project-wide :qml:item:`Resource` items.
+Test cases can depend on and use resources the same way as they would depend on
+another test case:
+
+..  literalinclude:: code/reference/single-resource.qml
+    :name: single-resource.qml
+
+``Resource`` items in Qst are abstract in the sense that they only represent a
+physical resource, but do not provide own runtime functionality. Typically, they
+contain configuration data with which the test case initializes its probes. The example in
+
+A project may contain multiple resources with the same name. Qst uses the name
+to map matching resources to dependent test cases at run-time. Adding more
+:qml:item:`Resource` items under the same name is equivalent to plugging more
+hardware into the test setup or adding another I/O harness.
