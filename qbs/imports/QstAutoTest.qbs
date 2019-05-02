@@ -3,6 +3,8 @@ import qbs
 QtApplication {
     type: [ "application", "autotest" ]
 
+    condition : { return qbs.architecture.startsWith("x86") }
+
     property string dataDirectory: sourceDirectory
 
     destinationDirectory: "bin"

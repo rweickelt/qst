@@ -4,6 +4,8 @@ Product {
     name : "shared resources"
     type: ["copied qst resources"]
 
+    condition : { return qbs.architecture.startsWith("x86") }
+
     readonly property stringList qmlImportPaths : [
         sourceDirectory + "/share/qst/imports",
     ]

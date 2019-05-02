@@ -1,6 +1,9 @@
 import qbs
 
 Product {
+
+    condition : { return qbs.architecture.startsWith("x86") }
+
     files: [
         "imports/QstAutoTest.qbs",
         "modules/simplelink/SimpleLinkModule.qbs",
