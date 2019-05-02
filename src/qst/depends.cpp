@@ -111,7 +111,7 @@ void Depends::evaluateTags()
     m_tags = tags.toList();
 }
 
-void DependsParser::verifyBindings(const QV4::CompiledData::Unit* qmlUnit, const QList<const QV4::CompiledData::Binding*>& props)
+void DependsParser::verifyBindings(const QQmlRefPointer<QV4::CompiledData::CompilationUnit> &qmlUnit, const QList<const QV4::CompiledData::Binding *> &props)
 {
     QSet<QString> names;
     for (const auto& binding: props) {
@@ -129,7 +129,7 @@ void DependsParser::verifyBindings(const QV4::CompiledData::Unit* qmlUnit, const
 
         if (binding->type == QV4::CompiledData::Binding::Type_Script)
         {
-            QString script = binding->valueAsScriptString(qmlUnit);
+            QString script = binding->valueAsScriptString(qmlUnit.data());
             if (definesEmptyList(script))
             {
                 error(binding, "List must not be empty.");
@@ -148,7 +148,7 @@ void DependsParser::verifyBindings(const QV4::CompiledData::Unit* qmlUnit, const
 Just store the QML expressions. Evaluation happens later when DependencyResolver
 applies tags to the surrounding testcase.
 */
-void DependsParser::applyBindings(QObject* object, QV4::CompiledData::CompilationUnit* compilationUnit, const QList<const QV4::CompiledData::Binding*>& bindings)
+void DependsParser::applyBindings(QObject* object, const QQmlRefPointer<QV4::CompiledData::CompilationUnit> &compilationUnit, const QList<const QV4::CompiledData::Binding*> &bindings)
 {
     Depends* depends = qobject_cast<Depends*>(object);
 
@@ -158,7 +158,7 @@ void DependsParser::applyBindings(QObject* object, QV4::CompiledData::Compilatio
     for (const auto& binding: bindings)
     {
         QString propName = compilationUnit->stringAt(binding->propertyNameIndex);
-        QString script = binding->valueAsScriptString(compilationUnit->data);
+        QString script = binding->valueAsScriptString(compilationUnit.data());
 
         QQmlExpression* expression = new QQmlExpression(qmlContext(depends), nullptr, script, qmlEngine(depends));
         depends->m_tagExpressions[propName] = expression;

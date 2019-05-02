@@ -1,13 +1,14 @@
 import qst 1.0
 
 Project {
-    property int waitTimeMs: 1
+    property int waitTimeMs: 100
 
     Resource {
         name: "r1"
         property string text: "r1"
     }
 
+    // t1a-c have to run in series because of their resource dependency
     Testcase {
         name: "t1a"
 
@@ -43,28 +44,12 @@ Project {
 
     // Should run in parallel to the other testcases and serves as a guarant
     // that parallel execution is enabled. If not, overall execution would take
-    // twice as long as t2.
+    // twice as long as t2 (t1a + t1b + t1c + t2).
     Testcase {
         name: "t2"
 
         function run() {
             Qst.wait(3*project.waitTimeMs)
-        }
-    }
-
-    Testcase {
-        name: "t3"
-
-        function run() {
-            Qst.compare(name, name)
-        }
-    }
-
-    Testcase {
-        name: "t4"
-
-        function run() {
-            Qst.compare(name, name)
         }
     }
 }

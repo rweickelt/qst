@@ -76,8 +76,8 @@ inline QList<TagSet> Depends::tags() const { return m_tags; }
 class DependsParser : public QQmlCustomParser
 {
 public:
-    void verifyBindings(const QV4::CompiledData::Unit* qmlUnit, const QList<const QV4::CompiledData::Binding*>& props) override;
-    void applyBindings(QObject* object, QV4::CompiledData::CompilationUnit* compilationUnit, const QList<const QV4::CompiledData::Binding*> &bindings) override;
+    void verifyBindings(const QQmlRefPointer<QV4::CompiledData::CompilationUnit> &qmlUnit, const QList<const QV4::CompiledData::Binding *> &props) override;
+    void applyBindings(QObject* object, const QQmlRefPointer<QV4::CompiledData::CompilationUnit> &compilationUnit, const QList<const QV4::CompiledData::Binding*> &bindings) override;
 private:
     bool definesEmptyList(const QString& script);
 };

@@ -133,8 +133,10 @@ void execRunCommand()
     qmlRegisterType<PinProbe>("qst", 1,0, "PinProbe");
     qmlRegisterType<ProcessProbe>("qst", 1,0, "ProcessProbe");
     qmlRegisterType<Project>("qst", 1,0, "Project");
-    qmlRegisterType<ResourceItem>("qst", 1,0, "Resource");
+    qmlRegisterUncreatableType<QObject>("qst", 1,0, "QObject", "Type is not creatable");
+    qmlRegisterUncreatableType<QstItem>("qst", 1,0, "QstItem", "Type is not creatable");
     qmlRegisterType<QstService>("qst", 1, 0, "QstService");
+    qmlRegisterType<ResourceItem>("qst", 1,0, "Resource");
     qmlRegisterUncreatableType<TextFile>("qst", 1, 0, "TextFile", "TextFile can only be created in a JS context");
 
     qRegisterMetaType<Job>();

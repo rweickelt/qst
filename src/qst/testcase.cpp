@@ -267,7 +267,7 @@ void Testcase::finishAndExit(Testcase::Result result, const QString& file, int l
 {
 
     // This seems to be the only way to inject an exception in the Qml engine from C++ context.
-    QV4::ExecutionEngine* engine = QV8Engine::getV4(qmlEngine(this)->handle());
+    QV4::ExecutionEngine* engine = qmlEngine(this)->handle();
 
     m_result = result;
     m_callerFile = file;
@@ -317,7 +317,7 @@ void Testcase::waitUntilExpression(QJSValue expression, int milliseconds, const 
             // Catch potential exceptions in the expression or
             // exceptions that have been thrown by finishAndExit()
             // while evaluating the expression.
-            QV4::ExecutionEngine* engine = QV8Engine::getV4(qmlEngine(this)->handle());
+            QV4::ExecutionEngine* engine = qmlEngine(this)->handle();
             // The error object is an error string that starts with "Error: "
             // followed by a message. We re-use the message, but remove the first part.
             engine->throwError(result.toString().remove(QRegExp("^Error\\:\\s")));
@@ -377,7 +377,7 @@ void Testcase::onQmlEngineWarnings(const QList<QQmlError> &warnings)
 {
     Q_ASSERT(warnings.size() == 1);
 
-    QV4::ExecutionEngine* engine = QV8Engine::getV4(qmlEngine(this)->handle());
+    QV4::ExecutionEngine* engine = qmlEngine(this)->handle();
     // qDebug() << "onQmlEngineWarnings Calling depth: " << engine->callDepth;
 
     const QQmlError& error = warnings.first();

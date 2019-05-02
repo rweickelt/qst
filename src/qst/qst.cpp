@@ -180,7 +180,7 @@ QmlContext QstService::qmlCallerContext()
     QQmlEngine* engine = qmlEngine(this);
     Q_ASSERT(engine != nullptr);
 
-    QV4::ExecutionEngine* executionEngine = QV8Engine::getV4(engine->handle());
+    QV4::ExecutionEngine* executionEngine = engine->handle();
     Q_ASSERT(executionEngine != nullptr);
 
     QV4::StackTrace trace = executionEngine->stackTrace(2);
@@ -198,7 +198,7 @@ QVariantList QstService::qmlCallerTrace()
     QQmlEngine* engine = qmlEngine(this);
     Q_ASSERT(engine != nullptr);
 
-    QV4::ExecutionEngine* executionEngine = QV8Engine::getV4(engine->handle());
+    QV4::ExecutionEngine* executionEngine = engine->handle();
     Q_ASSERT(executionEngine != nullptr);
 
     QVariantList result;

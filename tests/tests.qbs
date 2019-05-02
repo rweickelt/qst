@@ -1,8 +1,6 @@
 import qbs
 
 Project {
-    condition : qbs.architecture.contains("x86")
-
     references: [
         "auto/auto.qbs",
         "manual/manual.qbs"

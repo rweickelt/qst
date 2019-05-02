@@ -86,7 +86,7 @@ void Dimension::setTestcases(const QStringList& names)
     }
 }
 
-void DimensionParser::verifyBindings(const QV4::CompiledData::Unit* qmlUnit, const QList<const QV4::CompiledData::Binding*>& props)
+void DimensionParser::verifyBindings(const QQmlRefPointer<QV4::CompiledData::CompilationUnit> &qmlUnit, const QList<const QV4::CompiledData::Binding *> &props)
 {
     QSet<QString> names;
     for (const auto& binding: props) {
@@ -104,7 +104,7 @@ void DimensionParser::verifyBindings(const QV4::CompiledData::Unit* qmlUnit, con
 
         if (binding->type == QV4::CompiledData::Binding::Type_Script)
         {
-            QString script = binding->valueAsScriptString(qmlUnit);
+            QString script = binding->valueAsScriptString(qmlUnit.data());
             if (definesEmptyList(script))
             {
                 error(binding, "List must not be empty.");
@@ -119,7 +119,7 @@ void DimensionParser::verifyBindings(const QV4::CompiledData::Unit* qmlUnit, con
     }
 }
 
-void DimensionParser::applyBindings(QObject* object, QV4::CompiledData::CompilationUnit* compilationUnit, const QList<const QV4::CompiledData::Binding*>& bindings)
+void DimensionParser::applyBindings(QObject* object, const QQmlRefPointer<QV4::CompiledData::CompilationUnit> &compilationUnit, const QList<const QV4::CompiledData::Binding*> &bindings)
 {
     Dimension* dimension = qobject_cast<Dimension*>(object);
     QV4::ExecutionEngine* v4 = compilationUnit->engine;
@@ -142,15 +142,15 @@ void DimensionParser::applyBindings(QObject* object, QV4::CompiledData::Compilat
         }
         else if (binding->type == QV4::CompiledData::Binding::Type_Number)
         {
-            values[propName] << binding->valueAsNumber();
+            values[propName] << binding->valueAsNumber(compilationUnit->constants);
         }
         else if (binding->type == QV4::CompiledData::Binding::Type_String)
         {
-            values[propName] << binding->valueAsString(compilationUnit->data);
+            values[propName] << binding->valueAsString(compilationUnit.data());
         }
         else if (binding->type == QV4::CompiledData::Binding::Type_Script)
         {
-            QString script = binding->valueAsScriptString(compilationUnit->data);
+            QString script = binding->valueAsScriptString(compilationUnit.data());
             QQmlExpression expression(qmlContext(dimension), nullptr, script);
 
             bool undefined = false;
