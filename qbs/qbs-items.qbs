@@ -2,7 +2,7 @@ import qbs
 
 Product {
 
-    condition : { return qbs.architecture.startsWith("x86") }
+    condition : qbs.architecture.startsWith("x86")
 
     files: [
         "imports/QstAutoTest.qbs",

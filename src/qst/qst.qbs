@@ -3,7 +3,7 @@ import qbs
 QtApplication {
     name : "qst-application"
 
-    condition : { return qbs.architecture.startsWith("x86") }
+    condition : qbs.architecture.startsWith("x86")
 
     Depends { name : "Qt.qml"; }
     Depends { name : "Qt.serialport"; }

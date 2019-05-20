@@ -9,7 +9,7 @@ Project {
     StaticLibrary {
         name: "qsttestlib"
 
-        condition : { return qbs.architecture.startsWith("x86") }
+        condition : qbs.architecture.startsWith("x86")
 
         Depends { name: "Qt.core" }
         Depends { name: "Qt.testlib" }
