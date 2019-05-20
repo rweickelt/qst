@@ -33,12 +33,11 @@ jobs:
             - docker-ce
       env:
         - TARGET=qst
-        - PLATFORM=linux
+        - PLATFORM=linux-x86_64
         - QBS_PROFILE=qt5
         - QBS_OPTIONS="project.runAutotest:true project.version:$QST_VERSION"
       script:
         - docker-compose run --rm linux qbs install
-              --build-directory build-${PLATFORM}
               --install-root qst
               release
               profile:$QBS_PROFILE
@@ -61,7 +60,6 @@ jobs:
         - QBS_OPTIONS="project.version:$QST_VERSION"
       script:
         - docker-compose run --rm mingw qbs install
-              --build-directory build-${PLATFORM}
               --install-root qst
               release
               profile:$QBS_PROFILE
@@ -85,7 +83,6 @@ jobs:
       script:
         - docker-compose build simplelink
         - docker-compose run --rm simplelink qbs install
-              --build-directory build-${PLATFORM}
               --install-root qst
               release
               profile:$PROFILE
