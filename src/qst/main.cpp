@@ -32,10 +32,11 @@
 #include "exports.h"
 #include "file.h"
 #include "job.h"
+#include "jobserver.h"
 #include "xds.h"
 #include "plaintextlogger.h"
 #include "matrix.h"
-#include "jobmultiplier.h"
+#include "matrixresolver.h"
 #include "pinprobe.h"
 #include "processprobe.h"
 #include "profileloader.h"
@@ -43,6 +44,8 @@
 #include "projectdatabase.h"
 #include "projectresolver.h"
 #include "proxylogger.h"
+#include "resource.h"
+#include "resourceitem.h"
 #include "qst.h"
 #include "serialjobscheduler.h"
 #include "testcase.h"
@@ -130,7 +133,10 @@ void execRunCommand()
     qmlRegisterType<PinProbe>("qst", 1,0, "PinProbe");
     qmlRegisterType<ProcessProbe>("qst", 1,0, "ProcessProbe");
     qmlRegisterType<Project>("qst", 1,0, "Project");
+    qmlRegisterUncreatableType<QObject>("qst", 1,0, "QObject", "Type is not creatable");
+    qmlRegisterUncreatableType<QstItem>("qst", 1,0, "QstItem", "Type is not creatable");
     qmlRegisterType<QstService>("qst", 1, 0, "QstService");
+    qmlRegisterType<ResourceItem>("qst", 1,0, "Resource");
     qmlRegisterUncreatableType<TextFile>("qst", 1, 0, "TextFile", "TextFile can only be created in a JS context");
 
     qRegisterMetaType<Job>();
@@ -159,7 +165,7 @@ void execRunCommand()
 
     // Resolve basic dependency relations between test cases
     // and attach Exports items so that bindings will work.
-    DependencyResolver dependencyResolver;
+    DependencyResolver dependencyResolver(&db);
     dependencyResolver.beginResolve(projectResolver.documents());
     CHECK_FOR_ERRORS(dependencyResolver);
 
@@ -171,42 +177,46 @@ void execRunCommand()
 
     // Create an overview over tags if defined and prepare
     // executable jobs.
-    JobMultiplier multiplier(projectResolver.documents());
-    CHECK_FOR_ERROR(multiplier);
-    JobTable jobs = multiplier.jobs();
+    MatrixResolver matrixResolver(projectResolver.documents());
+    CHECK_FOR_ERRORS(matrixResolver);
 
-    // Do more fine-grained dependency resolution, taking tags into account.
-    dependencyResolver.completeResolve(jobs);
+    // Do more fine-grained dependency resolution, now taking tags into account.
+    dependencyResolver.completeResolve(matrixResolver.jobs(), matrixResolver.resources());
+    CHECK_FOR_ERRORS(dependencyResolver);
+    db.eligibleResourcesPerJob = dependencyResolver.resourcesPerJob();
+    db.jobGraph = dependencyResolver.jobGraph();
 
     //Does the dirty work
     JobDispatcher dispatcher(db);
 
     // Schedules jobs one-by-one, taking dependency relations into account.
-    SerialJobScheduler scheduler(dependencyResolver.jobGraph());
+    JobServer scheduler(&db);
     QEventLoop eventLoop;
 
-    QObject::connect(&scheduler, &SerialJobScheduler::jobReady,
+    QObject::connect(&scheduler, &JobServer::jobReady,
                      &dispatcher, &JobDispatcher::dispatch,
                      Qt::QueuedConnection);
 
     QObject::connect(&dispatcher, &JobDispatcher::finished,
-                     &scheduler, &SerialJobScheduler::onJobFinished,
+                     &scheduler, &JobServer::onJobFinished,
                      Qt::QueuedConnection);
 
-    QObject::connect(&scheduler, &SerialJobScheduler::finished,
+    QObject::connect(&scheduler, &JobServer::finished,
                      &eventLoop, &QEventLoop::quit);
 
     scheduler.start();
     eventLoop.exec();
 
-    if (scheduler.results().contains(Testcase::Fail))
+    qst::ExitCode exitCode = qst::ExitNormal;
+    for (const auto& job: db.jobGraph.nodes())
     {
-        QCoreApplication::exit(qst::ExitTestCaseFailed);
+        if (job.result() == Testcase::Fail)
+        {
+            exitCode = qst::ExitTestCaseFailed;
+            break;
+        }
     }
-    else
-    {
-        QCoreApplication::exit(qst::ExitNormal);
-    }
+    QCoreApplication::exit(exitCode);
 }
 
 

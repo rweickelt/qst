@@ -35,6 +35,7 @@
 #include <QtCore/QString>
 
 class Exports;
+class ProjectDatabase;
 
 /*
 Creates a job schedule and supervises execution by a dispatcher.
@@ -46,7 +47,7 @@ class SerialJobScheduler : public QObject
 {
     Q_OBJECT
 public:
-    SerialJobScheduler(const DirectedGraph<Job, Dependency>& jobs, QObject* parent = nullptr);
+    SerialJobScheduler(ProjectDatabase* db, QObject* parent = nullptr);
     void start();
     QList<Testcase::Result> results() const;
 
@@ -59,12 +60,12 @@ signals:
 
 private:
 
-    QList<Job> m_todo;
+    ProjectDatabase* m_db;
+    QMap<Job, int> m_dependencyCounts;
     QList<Job> m_done;
-    DirectedGraph<Job, Dependency> m_dependencies;
-    QMap<Job, uint> m_dependencyCounts;
     QList<Job> m_readyList;
     QList<Testcase::Result> m_results;
+    QList<Job> m_todo;
 };
 
 #endif // SERIALJOBSCHEDULER_H

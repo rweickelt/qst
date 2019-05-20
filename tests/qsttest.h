@@ -52,6 +52,7 @@ protected:
     QProcess& qstProcess();
     const QstTestResults& results() const;
     QString stdError() const;
+    QString qstFilepath() const;
 
 private:
     QProcess m_qstProcess;

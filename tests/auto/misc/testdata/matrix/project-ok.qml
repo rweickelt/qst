@@ -4,7 +4,7 @@ Project {
     name: "ok"
 
     Matrix {
-        testcases: [
+        names: [
             "testcase",
         ]
 

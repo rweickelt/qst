@@ -4,7 +4,7 @@ Project {
     name: "incompatible-properties"
 
     Matrix {
-        testcases: [
+        names: [
             "testcase",
         ]
 

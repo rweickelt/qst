@@ -329,43 +329,44 @@ void test_misc::profile()
 void test_misc::matrix()
 {
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/project-ok.qml"));
-    VERIFY_PASS(results(), "testcase 0000003 [ dog white ]");
-    VERIFY_PASS(results(), "testcase 0000002 [ cat white ]");
-    VERIFY_PASS(results(), "testcase 0000001 [ dog brown ]");
-    VERIFY_PASS(results(), "testcase 0000000 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0000000 [ dog white ]");
+    VERIFY_PASS(results(), "testcase 0000001 [ cat white ]");
+    VERIFY_PASS(results(), "testcase 0000002 [ dog brown ]");
+    VERIFY_PASS(results(), "testcase 0000003 [ cat brown ]");
 
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/project-wildcard.qml"));
-    VERIFY_PASS(results(), "testcase 0000007 [ dog white ]");
-    VERIFY_PASS(results(), "testcase 0000006 [ cat white ]");
-    VERIFY_PASS(results(), "testcase 0000005 [ dog brown ]");
-    VERIFY_PASS(results(), "testcase 0000004 [ cat brown ]");
-    VERIFY_PASS(results(), "othertestcase 0000003 [ dog white ]");
-    VERIFY_PASS(results(), "othertestcase 0000002 [ cat white ]");
-    VERIFY_PASS(results(), "othertestcase 0000001 [ dog brown ]");
-    VERIFY_PASS(results(), "othertestcase 0000000 [ cat brown ]");
+    VERIFY_PASS(results(), "othertestcase 0000000 [ dog white ]");
+    VERIFY_PASS(results(), "othertestcase 0000001 [ cat white ]");
+    VERIFY_PASS(results(), "othertestcase 0000002 [ dog brown ]");
+    VERIFY_PASS(results(), "othertestcase 0000003 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0000004 [ dog white ]");
+    VERIFY_PASS(results(), "testcase 0000005 [ cat white ]");
+    VERIFY_PASS(results(), "testcase 0000006 [ dog brown ]");
+    VERIFY_PASS(results(), "testcase 0000007 [ cat brown ]");
     VERIFY_PASS(results(), "toastcase");
 
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/project-with-external-matrix.qml"));
-    VERIFY_PASS(results(), "testcase 0000003 [ dog white ]");
-    VERIFY_PASS(results(), "testcase 0000002 [ cat white ]");
-    VERIFY_PASS(results(), "testcase 0000001 [ dog brown ]");
-    VERIFY_PASS(results(), "testcase 0000000 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0000000 [ dog white ]");
+    VERIFY_PASS(results(), "testcase 0000001 [ cat white ]");
+    VERIFY_PASS(results(), "testcase 0000002 [ dog brown ]");
+    VERIFY_PASS(results(), "testcase 0000003 [ cat brown ]");
 
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/project-overlapping-matrices.qml"));
-    VERIFY_PASS(results(), "testcase 0000007 [ hog white ]");
-    VERIFY_PASS(results(), "testcase 0000006 [ bat white ]");
-    VERIFY_PASS(results(), "testcase 0000005 [ hog brown ]");
-    VERIFY_PASS(results(), "testcase 0000004 [ bat brown ]");
-    VERIFY_PASS(results(), "testcase 0000003 [ dog white ]");
-    VERIFY_PASS(results(), "testcase 0000002 [ cat white ]");
-    VERIFY_PASS(results(), "testcase 0000001 [ dog brown ]");
-    VERIFY_PASS(results(), "testcase 0000000 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0000000 [ dog white ]");
+    VERIFY_PASS(results(), "testcase 0000001 [ cat white ]");
+    VERIFY_PASS(results(), "testcase 0000002 [ dog brown ]");
+    VERIFY_PASS(results(), "testcase 0000003 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0000004 [ hog white ]");
+    VERIFY_PASS(results(), "testcase 0000005 [ bat white ]");
+    VERIFY_PASS(results(), "testcase 0000006 [ hog brown ]");
+    VERIFY_PASS(results(), "testcase 0000007 [ bat brown ]");
+
 
     RUN_AND_EXPECT(qst::ExitNormal, "-f", dataPath("matrix/matrix-inside-testcase-ok.qml"));
-    VERIFY_PASS(results(), "testcase 0000003 [ dog white ]");
-    VERIFY_PASS(results(), "testcase 0000002 [ cat white ]");
-    VERIFY_PASS(results(), "testcase 0000001 [ dog brown ]");
-    VERIFY_PASS(results(), "testcase 0000000 [ cat brown ]");
+    VERIFY_PASS(results(), "testcase 0000000 [ dog white ]");
+    VERIFY_PASS(results(), "testcase 0000001 [ cat white ]");
+    VERIFY_PASS(results(), "testcase 0000002 [ dog brown ]");
+    VERIFY_PASS(results(), "testcase 0000003 [ cat brown ]");
 
     RUN_AND_EXPECT(qst::ExitApplicationError, "-f", dataPath("matrix/project-overlapping-dimensions.qml"));
     QVERIFY(stdError().contains("project-overlapping-dimensions.qml:6"));

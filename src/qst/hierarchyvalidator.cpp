@@ -31,6 +31,7 @@
 #include "project.h"
 #include "projectresolver.h"
 #include "qst.h"
+#include "resourceitem.h"
 #include "testcase.h"
 
 #include <QtCore/QMetaObject>
@@ -59,9 +60,13 @@ namespace {
     const TypeList matrixParents = TypeList { INFO(Project), INFO(Testcase) };
     const HierarchyValidator::DocumentRootMode matrixRootMode = HierarchyValidator::DocumentRootAllowed;
 
-    const TypeList projectChildren = TypeList { INFO(Matrix), INFO(Testcase) };
+    const TypeList projectChildren = TypeList { INFO(Matrix), INFO(ResourceItem), INFO(Testcase) };
     const TypeList projectParents = TypeList {};
     const HierarchyValidator::DocumentRootMode projectRootMode = HierarchyValidator::DocumentRootAllowed;
+
+    const TypeList resourceChildren = TypeList {};
+    const TypeList resourceParents = TypeList { INFO(Project) };
+    const HierarchyValidator::DocumentRootMode resourceRootMode = HierarchyValidator::DocumentRootAllowed;
 
     const TypeList testcaseChildren = TypeList {
             INFO(Component), INFO(Depends), INFO(Exports), INFO(Matrix), INFO(QObject)
@@ -197,6 +202,12 @@ void HierarchyValidator::visit(Project* item)
 {
     validateChildrenAllowed(item, projectChildren);
     validateParentAllowed(item, projectParents, projectRootMode);
+}
+
+void HierarchyValidator::visit(ResourceItem* item)
+{
+    validateChildrenAllowed(item, resourceChildren);
+    validateParentAllowed(item, resourceParents, resourceRootMode);
 }
 
 void HierarchyValidator::visit(Testcase* item)

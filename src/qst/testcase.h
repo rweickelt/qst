@@ -157,8 +157,6 @@ private:
 
     QQmlPropertyMap m_dependencies;
     Exports* m_exports;
-
-    static QPointer<Testcase> m_currentTestCase;
 };
 
 Q_DECLARE_METATYPE(Testcase::State)

@@ -6,7 +6,7 @@ Project {
     Matrix {
         id: matrix
 
-        testcases: "*"
+        names: "*"
 
         property var animals: {
             var values = []

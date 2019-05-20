@@ -28,38 +28,51 @@
 #include "dependency.h"
 #include "directedgraph.h"
 #include "job.h"
+#include "resource.h"
 
 #include <QtCore/QHash>
 #include <QtCore/QList>
 #include <QtCore/QStringList>
 
 class Exports;
+class ProjectDatabase;
 class QstDocument;
+class ResourceItem;
 
 class DependencyResolver
 {
 public:
-    DependencyResolver();
+    DependencyResolver(ProjectDatabase* db);
     void beginResolve(const QList<QstDocument*>& documents);
-    void completeResolve(const JobTable& jobs);
-    DirectedGraph<Job, Dependency> jobGraph();
+    void completeResolve(const JobTable& jobs, const ResourceTable& resources);
+    DirectedGraph<Job, Dependency> jobGraph() const;
+    QMultiMap<Job, QPair<Dependency, QSet<Resource> > > resourcesPerJob() const;
 
     QStringList errors() const { return m_errors; }
     bool hasErrors() const { return !m_errors.isEmpty(); }
 
 private:
     friend class DependencyVisitor;
+    friend class ItemGatherVisitor;
 
+    QMultiMap<QString, ResourceItem*> m_resources;
     QMap<QString, Testcase*> m_testcases;
-//    QMultiMap<QString, Depends*> m_dependencies;
     QHash<QString, Exports*> m_exports;
 
+    DirectedGraph<QString, Depends*> m_resourceGraph;
     DirectedGraph<QString, Depends*> m_testcaseGraph;
+
     DirectedGraph<Job, Dependency> m_jobGraph;
+    QMultiMap<Job, QPair<Dependency, QSet<Resource> > > m_resourcesPerJob;
     QStringList m_errors;
+    ProjectDatabase* m_db;
 };
 
-inline DirectedGraph<Job, Dependency> DependencyResolver::jobGraph() { return m_jobGraph; }
+inline DirectedGraph<Job, Dependency> DependencyResolver::jobGraph() const { return m_jobGraph; }
+inline QMultiMap<Job, QPair<Dependency, QSet<Resource> > > DependencyResolver::resourcesPerJob() const
+{
+    return m_resourcesPerJob;
+}
 
 
 #endif // DEPENDENCYRESOLVER_H

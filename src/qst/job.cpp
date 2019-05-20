@@ -42,52 +42,57 @@ struct JobData
 };
 
 namespace {
-    QVector<JobData> jobs;
+    QVector<JobData> resources;
 }
 
 QMap<QString, QVariantList> Job::dependenciesData() const
 {
-    return jobs[m_id].dependenciesData;
+    return resources[m_id].dependenciesData;
 }
 
 void Job::setDependenciesData(const QMap<QString, QVariantList>& data)
 {
-    jobs[m_id].dependenciesData = data;
+    resources[m_id].dependenciesData = data;
+}
+
+void Job::insertDependencyData(const QString& name, const QVariant& data)
+{
+    resources[m_id].dependenciesData[name].append(data);
 }
 
 QVariantMap Job::exports() const
 {
-    return jobs[m_id].exports;
+    return resources[m_id].exports;
 }
 
 void Job::setExports(const QVariantMap& data)
 {
-    jobs[m_id].exports = data;
+    resources[m_id].exports = data;
 }
 
 QString Job::filePath() const
 {
-    return jobs[m_id].filePath;
+    return resources[m_id].filePath;
 }
 
 QString Job::name() const
 {
-    return jobs[m_id].name;
+    return resources[m_id].name;
 }
 
 Testcase::Result Job::result() const
 {
-    return jobs[m_id].result;
+    return resources[m_id].result;
 }
 
 void Job::setResult(Testcase::Result result)
 {
-    jobs[m_id].result = result;
+    resources[m_id].result = result;
 }
 
 TagSet Job::tags() const
 {
-    return jobs[m_id].tags;
+    return resources[m_id].tags;
 }
 
 Job Job::create(Testcase* testcase, const TagSet& tags)
@@ -97,9 +102,9 @@ Job Job::create(Testcase* testcase, const TagSet& tags)
     data.name = testcase->name();
     data.filePath = testcase->filepath();
     data.tags = tags;
-    jobs.append(data);
+    resources.append(data);
 
     Job job;
-    job.m_id = jobs.length() - 1;
+    job.m_id = resources.length() - 1;
     return job;
 }

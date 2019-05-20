@@ -25,6 +25,7 @@
 #include "proxylogger.h"
 
 #include <QtCore/QGlobalStatic>
+#include <QtCore/QMutexLocker>
 
 namespace {
     Q_GLOBAL_STATIC(ProxyLogger, singleLoggerObject)
@@ -43,6 +44,7 @@ void ProxyLogger::registerLogger(Logger* logger)
 
 void ProxyLogger::print(const LogInfo& info)
 {
+    QMutexLocker lock(&m_mutex);
     for (const auto logger : m_loggers)
     {
         logger->print(info);

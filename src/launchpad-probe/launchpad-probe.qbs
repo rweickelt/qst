@@ -11,6 +11,7 @@ Project {
 
         Depends { name: "simplelink"; submodules: [ "core", "drivers", "tirtos", "board" ] }
         Depends { name: "shared-types" }
+        Depends { name: "qstbuildconfig" }
 
         simplelink.core.device: "cc1310f128"
         simplelink.board.type: "CC1310_LAUNCHXL"

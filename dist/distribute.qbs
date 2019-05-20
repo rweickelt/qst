@@ -11,6 +11,7 @@ Product {
     Depends { name: "cpp" }
     Depends { name: "Qt.core" }
     Depends { name: "Qt.qml" }
+    Depends { name: "qstbuildconfig" }
 
     Group {
         name: "Qt QML files"

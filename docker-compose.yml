@@ -1,0 +1,25 @@
+version: "3.3"
+
+services:
+  base:
+    &base
+    working_dir: /project
+    volumes:
+      - .:/project
+    network_mode: bridge
+    image: dummy:latest
+
+  linux:
+    << : *base
+    image: rweickelt/qt:qst-qt-5.14-linux-x86_64
+
+  mingw:
+    << : *base
+    image: rweickelt/qt:qst-qt-5.14-mingw-w64
+
+  simplelink:
+    << : *base
+    image: rweickelt/docker-simplelink:latest
+    build:
+      dockerfile: docker/Dockerfile
+      context: ./

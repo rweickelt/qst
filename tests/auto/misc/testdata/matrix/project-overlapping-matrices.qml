@@ -4,7 +4,7 @@ Project {
     name: "overlapping-matrices"
 
     Matrix {
-        testcases: [
+        names: [
             "test*",
         ]
 
@@ -24,7 +24,7 @@ Project {
     }
 
     Matrix {
-        testcases: [
+        names: [
             "test*",
         ]
 

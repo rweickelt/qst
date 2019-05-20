@@ -26,14 +26,14 @@
 
 #include "job.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QString>
-#include <QtQml/QQmlEngine>
+#include <QtCore/QObject>
 
 class ProjectDatabase;
 
-class JobDispatcher : public QObject
-{
+/*
+Distributes jobs to multiple workers. There can only be one instance of JobDispatcher.
+*/
+class JobDispatcher : public QObject {
     Q_OBJECT
     Q_DISABLE_COPY(JobDispatcher)
 public:
@@ -45,14 +45,6 @@ public slots:
 
 signals:
     void finished(Job job);
-
-private:
-    QString createTestcaseWorkingDirectory(const QString& name);
-    static QVariantMap parseExports(Exports* item);
-
-    const ProjectDatabase& m_db;
-    QQmlEngine m_engine;
-    QDir m_projectWorkingDirectory;
 };
 
 #endif // JOBRUNNER_H

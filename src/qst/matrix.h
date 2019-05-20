@@ -1,10 +1,6 @@
-#ifndef MATRIX_H
-#define MATRIX_H
-
-#include "qstitem.h"
 /****************************************************************************
  **
- ** Copyright (C) 2018 The Qst project.
+ ** Copyright (C) 2018-2019 The Qst project.
  **
  ** Contact: https://github.com/rweickelt/qst
  **
@@ -25,6 +21,10 @@
  **
  ** $END_LICENSE$
 ****************************************************************************/
+#ifndef MATRIX_H
+#define MATRIX_H
+
+#include "qstitem.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
@@ -35,7 +35,7 @@ class Dimension;
 class Matrix : public QstItem
 {
     Q_OBJECT
-    Q_PROPERTY(QStringList testcases READ testcases WRITE setTestcases NOTIFY testcasesChanged)
+    Q_PROPERTY(QStringList names READ names WRITE setTestcases NOTIFY testcasesChanged)
 
 signals:
     void testcasesChanged();
@@ -49,7 +49,7 @@ public:
     Matrix(QObject* parent = nullptr);
     virtual const QMetaObject* baseTypeInfo() const final;
     QList<Dimension*> dimensions() const;
-    QStringList testcases() const;
+    QStringList names() const;
     Scope scope() const;
     void setTestcases(const QStringList& names);
 
@@ -59,11 +59,11 @@ protected:
 
 private:
     Scope m_scope;
-    QStringList m_testcases;
+    QStringList m_names;
 };
 
 inline const QMetaObject* Matrix::baseTypeInfo() const { return &Matrix::staticMetaObject; }
 inline Matrix::Scope Matrix::scope() const { return m_scope; }
-inline QStringList Matrix::testcases() const { return m_testcases; }
+inline QStringList Matrix::names() const { return m_names; }
 
 #endif // MATRIX_H

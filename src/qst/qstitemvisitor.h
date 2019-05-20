@@ -34,6 +34,7 @@ class Exports;
 class Matrix;
 class Project;
 class QstItem;
+class ResourceItem;
 class Testcase;
 
 class QstItemVisitor
@@ -45,7 +46,11 @@ class QstItemVisitor
     friend class Matrix;
     friend class Project;
     friend class QstItem;
+    friend class ResourceItem;
     friend class Testcase;
+
+public:
+    virtual ~QstItemVisitor();
 
 protected:
     virtual void visit(Component* item) { Q_UNUSED(item) }
@@ -54,6 +59,7 @@ protected:
     virtual void visit(Exports* item) { Q_UNUSED(item) }
     virtual void visit(Matrix* item) { Q_UNUSED(item) }
     virtual void visit(Project* item) { Q_UNUSED(item) }
+    virtual void visit(ResourceItem* item) { Q_UNUSED(item) }
     virtual void visit(Testcase* item) { Q_UNUSED(item) }
 };
 

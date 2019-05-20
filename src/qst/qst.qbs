@@ -3,17 +3,25 @@ import qbs
 QtApplication {
     name : "qst-application"
 
-    condition : { return qbs.architecture.startsWith("x86") }
+    condition : qbs.architecture.startsWith("x86")
 
-    Depends { name : "Qt.qml"; }
-    Depends { name : "Qt.serialport"; }
+    Depends {
+        name : "Qt";
+        submodules: [
+            "core",
+            "network",
+            "qml",
+            "qml-private",
+            "serialport"
+        ]
+    }
     Depends { name : "cpp" }
-    Depends { name : "Qt.qml-private"; }
     Depends { name : "shared-types" }
+    Depends { name: "qstbuildconfig" }
 
     cpp.cxxLanguageVersion : "c++14"
     cpp.rpaths: [
-        "$ORIGIN/../lib/"
+        cpp.rpathOrigin + "/../lib/"
     ]
     cpp.defines: [
         "QST_COMMIT="  + project.commit,
@@ -51,13 +59,15 @@ QtApplication {
         "job.h",
         "jobdispatcher.cpp",
         "jobdispatcher.h",
-        "jobmultiplier.cpp",
-        "jobmultiplier.h",
+        "jobserver.cpp",
+        "jobserver.h",
         "logger.cpp",
         "logger.h",
         "main.cpp",
         "matrix.cpp",
         "matrix.h",
+        "matrixresolver.cpp",
+        "matrixresolver.h",
         "plaintextlogger.cpp",
         "plaintextlogger.h",
         "profileloader.cpp",
@@ -74,7 +84,12 @@ QtApplication {
         "qstdocument.h",
         "qstitem.cpp",
         "qstitem.h",
+        "qstitemvisitor.cpp",
         "qstitemvisitor.h",
+        "resource.cpp",
+        "resource.h",
+        "resourceitem.cpp",
+        "resourceitem.h",
         "rochostcontroller.cpp",
         "rochostcontroller.h",
         "rochostobject.cpp",
@@ -105,16 +120,17 @@ QtApplication {
     ]
 
     Group {
-        fileTagsFilter: product.type
+        fileTagsFilter: "application"
         qbs.install: true
         qbs.installDir : "bin"
     }
 
-    destinationDirectory : "bin"
-
     Export {
         Depends { name: "cpp" }
         cpp.includePaths: product.sourceDirectory
+        cpp.defines: [
+            'QST_APPLICATION_DIR="' + product.destinationDirectory + '"'
+        ]
     }
 }
 

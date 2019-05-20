@@ -1,8 +1,6 @@
 import qbs
 
 Project {
-    condition : qbs.architecture.contains("x86")
-
     references: [
         "auto/auto.qbs",
         "manual/manual.qbs"
@@ -10,6 +8,8 @@ Project {
 
     StaticLibrary {
         name: "qsttestlib"
+
+        condition : qbs.architecture.startsWith("x86")
 
         Depends { name: "Qt.core" }
         Depends { name: "Qt.testlib" }
@@ -35,7 +35,10 @@ Project {
     }
 
     AutotestRunner {
-        builtByDefault: project.runAutotest
+        condition : qbs.architecture.startsWith("x86")
+
+        Depends { name: "qstbuildconfig" }
+        builtByDefault: qstbuildconfig.runAutotest
     }
 
 }

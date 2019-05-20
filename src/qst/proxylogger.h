@@ -26,6 +26,7 @@
 
 #include "logger.h"
 
+#include <QtCore/QMutex>
 #include <QtCore/QList>
 
 class ProxyLogger : public Logger
@@ -39,6 +40,7 @@ public:
 
 private:
     QList<Logger*> m_loggers;
+    QMutex m_mutex;
 };
 
 #endif // PROXYLOGGER_H

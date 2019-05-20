@@ -28,6 +28,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
 #include <QtCore/QProcessEnvironment>
+#include <QtCore/QSysInfo>
 #include <QtTest/QTest>
 
 #ifndef PROJECTPATH
@@ -42,6 +43,13 @@ const QString QstTest::m_defaultImportPath =
         QDir(QProcessEnvironment::systemEnvironment().value(
                  "PROJECTPATH", PROJECTPATH) + "/share/qst/imports/").absolutePath();
 
+namespace {
+    QVector<QDir> searchDirectories = {
+        QDir(QST_APPLICATION_DIR),
+        QDir(QCoreApplication::applicationDirPath())
+    };
+}
+
 QstTest::QstTest()
 {
     m_qstProcess.setWorkingDirectory(QDir::tempPath());
@@ -50,6 +58,20 @@ QstTest::QstTest()
 QString QstTest::dataPath(const QString& directory) const
 {
     return m_dataDirectory.absoluteFilePath(directory);
+}
+
+QString QstTest::qstFilepath() const
+{
+    QString executableSuffix = QSysInfo::productType() == "windows" ? ".exe" : "";
+    for (const auto& dir: searchDirectories)
+    {
+        if (dir.exists("qst" + executableSuffix))
+        {
+            return dir.absoluteFilePath("qst" + executableSuffix);
+        }
+    }
+    Q_ASSERT(false);
+    return "";
 }
 
 void QstTest::setTimeoutMs(int milliseconds)
@@ -61,8 +83,8 @@ QstTestResults QstTest::execQstRun(const QStringList& arguments, int timeoutMs)
 {
     QStringList cmdLine = { "run", "--import", m_defaultImportPath };
     cmdLine += arguments;
-    QDir qstDir(QCoreApplication::applicationDirPath());
-    m_qstProcess.start(qstDir.absoluteFilePath("qst"), cmdLine);
+
+    m_qstProcess.start(qstFilepath(), cmdLine);
     if (!m_qstProcess.waitForFinished(timeoutMs))
     {
         m_qstProcess.kill();
@@ -76,8 +98,7 @@ bool QstTest::execQstRun(const QStringList& arguments, int expectedExitCode, con
 {
     QStringList cmdLine = { "run", "--import", m_defaultImportPath };
     cmdLine += arguments;
-    QDir qstDir(QCoreApplication::applicationDirPath());
-    m_qstProcess.start(qstDir.absoluteFilePath("qst"), cmdLine);
+    m_qstProcess.start(qstFilepath(), cmdLine);
     m_qstProcess.waitForFinished();
 
     if (m_qstProcess.exitCode() == expectedExitCode)

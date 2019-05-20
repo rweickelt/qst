@@ -5,7 +5,7 @@ env:
     # Needed by AWS
     - PATH=$HOME/.local/bin:$PATH
     - QST_VERSION=$(if [[ "$TRAVIS_TAG" ]]; then echo -n ${TRAVIS_TAG:1} ; else echo -n ${TRAVIS_COMMIT::8} ; fi)
-    - QT_VERSION=v5.9.5-1
+    - QT_VERSION=qst-qt-5.14
 
 stages:
   - name: build
@@ -24,6 +24,7 @@ jobs:
   include:
     # Qst application for Linux
     - stage: build
+      name: Build Qst application (linux_amd64)
       sudo: required
       services:
         - docker
@@ -35,12 +36,10 @@ jobs:
         - TARGET=qst
         - PLATFORM=linux-x86_64
         - QBS_PROFILE=qt5
-        - QBS_OPTIONS="project.runAutotest:true project.version:$QST_VERSION"
+        - QBS_OPTIONS="modules.qstbuildconfig.runAutotest:true project.version:$QST_VERSION"
       script:
-        - docker run -v ${PWD}:/build rweickelt/qt:${QT_VERSION}-${PLATFORM} install
-              --file /build/qst-project.qbs
-              --build-directory /build/build-$QBS_PROFILE
-              --install-root /build/qst
+        - docker-compose run --rm linux qbs install
+              --install-root qst
               release
               profile:$QBS_PROFILE
               $QBS_OPTIONS
@@ -48,6 +47,7 @@ jobs:
         - find qst/
     # Qst application for Windows
     - stage: build
+      name: Build Qst application (mingw-w64)
       sudo: required
       services:
         - docker
@@ -61,10 +61,8 @@ jobs:
         - QBS_PROFILE=qt5
         - QBS_OPTIONS="project.version:$QST_VERSION"
       script:
-        - docker run -v ${PWD}:/build rweickelt/qt:${QT_VERSION}-${PLATFORM} install
-              --file /build/qst-project.qbs
-              --build-directory /build/build-$QBS_PROFILE
-              --install-root /build/qst
+        - docker-compose run --rm mingw qbs install
+              --install-root qst
               release
               profile:$QBS_PROFILE
               $QBS_OPTIONS
@@ -72,6 +70,7 @@ jobs:
         - find qst/
     # Launchpad probe for CC13x0
     - stage: build
+      name: Build Launchpad probe
       sudo: required
       services:
         - docker
@@ -85,11 +84,9 @@ jobs:
         - PROFILE=simplelink_cc13x0
         - QBS_OPTIONS="project.version:$QST_VERSION"
       script:
-        - docker build -f docker/Dockerfile -t rweickelt/qst-build .
-        - docker run -v ${PWD}:/build "rweickelt/qst-build" install
-              --file /build/qst-project.qbs
-              --build-directory /build/build-$PROFILE
-              --install-root /build/qst
+        - docker-compose build simplelink
+        - docker-compose run --rm simplelink qbs install
+              --install-root qst
               release
               profile:$PROFILE
               $QBS_OPTIONS
@@ -97,6 +94,7 @@ jobs:
         - find qst/
     # Deploy linux bundle
     - stage: bundle and deploy
+      name: Bundle and deploy for Linux
       sudo: false
       env:
         - TARGET="linux-x86_64 bundle"
@@ -119,6 +117,7 @@ jobs:
             all_branches: true
     # Deploy windows bundle
     - stage: bundle and deploy
+      name: Bundle and deploy for Windows
       sudo: false
       env:
         - TARGET="windows-x86_64 bundle"

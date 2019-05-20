@@ -35,6 +35,7 @@
 class Depends : public QstItem
 {
     Q_OBJECT
+    Q_PROPERTY(int count MEMBER m_count)
     Q_PROPERTY(QString name MEMBER m_name)
     Q_PROPERTY(QString alias MEMBER m_alias)
 
@@ -42,11 +43,11 @@ public:
     Depends(QObject* parent = nullptr);
 
     virtual const QMetaObject* baseTypeInfo() const final;
-    void accept(QstItemVisitor* visitor);
     bool specifiesTags() const;
     void evaluateTags();
 
     QString alias() const;
+    int count() const;
     QString name() const;
     QList<TagSet> tags() const;
 
@@ -58,6 +59,7 @@ private:
     friend class DependsParser;
 
     QString m_alias;
+    int m_count = 0;
     QString m_name;
     QList<TagSet> m_tags;
     QMap<QString, QQmlExpression*> m_tagExpressions;
@@ -65,6 +67,7 @@ private:
 
 inline const QMetaObject* Depends::baseTypeInfo() const { return &Depends::staticMetaObject; }
 inline QString Depends::alias() const { return m_alias; }
+inline int Depends::count() const { return m_count; }
 inline QString Depends::name() const { return m_name; }
 inline bool Depends::specifiesTags() const { return !m_tagExpressions.isEmpty(); }
 
@@ -73,8 +76,8 @@ inline QList<TagSet> Depends::tags() const { return m_tags; }
 class DependsParser : public QQmlCustomParser
 {
 public:
-    void verifyBindings(const QV4::CompiledData::Unit* qmlUnit, const QList<const QV4::CompiledData::Binding*>& props) override;
-    void applyBindings(QObject* object, QV4::CompiledData::CompilationUnit* compilationUnit, const QList<const QV4::CompiledData::Binding*> &bindings) override;
+    void verifyBindings(const QQmlRefPointer<QV4::CompiledData::CompilationUnit> &qmlUnit, const QList<const QV4::CompiledData::Binding *> &props) override;
+    void applyBindings(QObject* object, const QQmlRefPointer<QV4::CompiledData::CompilationUnit> &compilationUnit, const QList<const QV4::CompiledData::Binding*> &bindings) override;
 private:
     bool definesEmptyList(const QString& script);
 };

@@ -5,7 +5,7 @@ Module {
     Component {
         name: "Depends"
         prototype: "QObject"
-        exports: [ "qst/Depends 1.0" ]
+        exports: [ "Depends 1.0" ]
         exportMetaObjectRevisions: [0]
 
         Property { name: "name"; type: "string" }
@@ -15,7 +15,9 @@ Module {
     Component {
         name: "Dimension"
         prototype: "QObject"
-        exports: "qst/Dimension 1.0"
+        exports: [
+            "Dimension 1.0"
+        ]
         exportMetaObjectRevisions: [0]
     }
 }

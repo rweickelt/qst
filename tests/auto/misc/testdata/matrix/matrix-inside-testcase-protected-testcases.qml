@@ -23,7 +23,7 @@ Testcase {
 
         // Write access to testcases property not allowed
         // here.
-        testcases: [
+        names: [
             "blabla"
         ]
     }

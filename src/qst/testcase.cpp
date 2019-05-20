@@ -33,6 +33,7 @@
 #include <QtDebug>
 #include <QtCore/QDir>
 #include <QtCore/QEventLoop>
+#include <QtCore/QThreadStorage>
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlEngine>
 #include <QtQml/QQmlProperty>
@@ -40,7 +41,9 @@
 #include <private/qv4engine_p.h>
 #include <private/qv8engine_p.h>
 
-QPointer<Testcase> Testcase::m_currentTestCase;
+namespace {
+QThreadStorage<QPointer<Testcase> > m_currentTestCase;
+}
 
 Testcase::Testcase(QObject *parent) : Component(parent)
 {
@@ -125,7 +128,7 @@ Testcase::Result Testcase::exec()
 Testcase::State Testcase::unitializedStateFunction()
 {
     m_result = Unfinished;
-    m_currentTestCase = this;
+    m_currentTestCase.setLocalData(this);
 
     QList<Component*> nestedComponents = findChildren<Component*>(QString(), Qt::FindChildrenRecursively) << this;
     // created() is a signal that even QML children can subscribe.
@@ -250,7 +253,7 @@ Testcase::State Testcase::cleaningUpTestCaseStateFunction()
         QMetaObject::invokeMethod(attached, "destruction");
     }
     emit destruction();
-    m_currentTestCase.clear();
+    m_currentTestCase.localData().clear();
     return Destroyed;
 }
 
@@ -264,7 +267,7 @@ void Testcase::finishAndExit(Testcase::Result result, const QString& file, int l
 {
 
     // This seems to be the only way to inject an exception in the Qml engine from C++ context.
-    QV4::ExecutionEngine* engine = QV8Engine::getV4(qmlEngine(this)->handle());
+    QV4::ExecutionEngine* engine = qmlEngine(this)->handle();
 
     m_result = result;
     m_callerFile = file;
@@ -314,7 +317,7 @@ void Testcase::waitUntilExpression(QJSValue expression, int milliseconds, const 
             // Catch potential exceptions in the expression or
             // exceptions that have been thrown by finishAndExit()
             // while evaluating the expression.
-            QV4::ExecutionEngine* engine = QV8Engine::getV4(qmlEngine(this)->handle());
+            QV4::ExecutionEngine* engine = qmlEngine(this)->handle();
             // The error object is an error string that starts with "Error: "
             // followed by a message. We re-use the message, but remove the first part.
             engine->throwError(result.toString().remove(QRegExp("^Error\\:\\s")));
@@ -374,7 +377,7 @@ void Testcase::onQmlEngineWarnings(const QList<QQmlError> &warnings)
 {
     Q_ASSERT(warnings.size() == 1);
 
-    QV4::ExecutionEngine* engine = QV8Engine::getV4(qmlEngine(this)->handle());
+    QV4::ExecutionEngine* engine = qmlEngine(this)->handle();
     // qDebug() << "onQmlEngineWarnings Calling depth: " << engine->callDepth;
 
     const QQmlError& error = warnings.first();
@@ -405,7 +408,7 @@ TestcaseAttached* Testcase::qmlAttachedProperties(QObject* object)
 
 Testcase* Testcase::instance()
 {
-    return m_currentTestCase.data();
+    return m_currentTestCase.localData().data();
 }
 
 void Testcase::setDisplayName(const QString& name)
