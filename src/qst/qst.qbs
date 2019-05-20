@@ -5,15 +5,23 @@ QtApplication {
 
     condition : qbs.architecture.startsWith("x86")
 
-    Depends { name : "Qt.qml"; }
-    Depends { name : "Qt.serialport"; }
+    Depends {
+        name : "Qt";
+        submodules: [
+            "core",
+            "network",
+            "qml",
+            "qml-private",
+            "serialport"
+        ]
+    }
     Depends { name : "cpp" }
-    Depends { name : "Qt.qml-private"; }
     Depends { name : "shared-types" }
+    Depends { name: "qstbuildconfig" }
 
     cpp.cxxLanguageVersion : "c++14"
     cpp.rpaths: [
-        "$ORIGIN/../lib/"
+        cpp.rpathOrigin + "/../lib/"
     ]
     cpp.defines: [
         "QST_COMMIT="  + project.commit,
@@ -112,16 +120,17 @@ QtApplication {
     ]
 
     Group {
-        fileTagsFilter: product.type
+        fileTagsFilter: "application"
         qbs.install: true
         qbs.installDir : "bin"
     }
 
-    destinationDirectory : "bin"
-
     Export {
         Depends { name: "cpp" }
         cpp.includePaths: product.sourceDirectory
+        cpp.defines: [
+            'QST_APPLICATION_DIR="' + product.destinationDirectory + '"'
+        ]
     }
 }
 

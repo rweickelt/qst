@@ -3,14 +3,14 @@ import qbs
 QtApplication {
     type: [ "application", "autotest" ]
 
-    condition : { return qbs.architecture.startsWith("x86") }
+    condition : qbs.architecture.startsWith("x86")
 
     property string dataDirectory: sourceDirectory
 
-    destinationDirectory: "bin"
-
     Depends { name : "Qt.testlib" }
     Depends { name: "qsttestlib" }
+    Depends { name: "qstbuildconfig" }
+    Depends { name: "qst-application" }
 
     cpp.defines: base.concat([
         'SOURCE_DIR="' + dataDirectory + '"'
@@ -19,8 +19,8 @@ QtApplication {
     consoleApplication: true
 
     Group {
-        fileTagsFilter: product.type
-        qbs.install: project.installTests
+        fileTagsFilter: "application"
+        qbs.install: qstbuildconfig.installTests
         qbs.installDir : "bin"
     }
 }

@@ -35,9 +35,10 @@ Project {
     }
 
     AutotestRunner {
-        condition : { return qbs.architecture.startsWith("x86") }
+        condition : qbs.architecture.startsWith("x86")
 
-        builtByDefault: project.runAutotest
+        Depends { name: "qstbuildconfig" }
+        builtByDefault: qstbuildconfig.runAutotest
     }
 
 }

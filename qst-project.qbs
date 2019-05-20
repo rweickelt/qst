@@ -20,8 +20,6 @@ Project {
 
     minimumQbsVersion: "1.6"
 
-    property bool runAutotest: false
-    property bool installTests: false
     property string commit: Environment.getEnv("QST_COMMIT") || "unspecified"
     property string version: Environment.getEnv("QST_VERSION") || "local-build"
 }

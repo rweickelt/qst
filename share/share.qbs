@@ -10,6 +10,8 @@ Product {
         sourceDirectory + "/share/qst/imports",
     ]
 
+    Depends { name: "qstbuildconfig" }
+
     Group {
         name : "qst imports"
         prefix : "qst/imports/qst/"
